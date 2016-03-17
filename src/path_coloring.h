@@ -42,23 +42,14 @@ namespace boost {
 	 * Postconditions: returns a copy of g with the face enclosed by the cycle pq
 	 * 3-colored such that each color class induces a disjoint union of paths.
 	 */
-	template<typename Graph, typename Embedding, typename Coloring, typename Color,
-		typename VertexIter>
+	template<typename Graph, typename Embedding, typename Coloring, typename VertexIter>
 	void poh_path_color(const Graph & graph, const Embedding & embedding,
 		VertexIter p_0, VertexIter p_1, VertexIter q_0, VertexIter q_1, Coloring & coloring,
-		Color new_color)
+		typename property_traits<Coloring>::value_type new_color)
 	{
 		typedef graph_traits<Graph> GraphTraits;
 		typedef typename GraphTraits::vertex_descriptor vertex_descriptor;
 		typedef typename GraphTraits::edge_descriptor edge_descriptor;
-		typedef typename property_traits<Coloring>::value_type ColorType;
-		
-		/*BOOST_CONCEPT_ASSERT(( GraphConcept<Graph> ));
-		BOOST_CONCEPT_ASSERT(( ReadWritePropertyMapConcept<Coloring, vertex_descriptor> ));
-		BOOST_CONCEPT_ASSERT(( IntegerConcept<ColorType> ));
-		BOOST_CONCEPT_ASSERT (( L
-		BOOST_STATIC_ASSERT(( is_same<typename VertexIter::value_type,
-			vertex_descriptor>::value ));*/
 		
 		// Base case: K_2
 		if(p_1 - p_0 == 1 && q_1 - q_0 == 1)
@@ -91,6 +82,7 @@ namespace boost {
 		// Case 1: First triangle hits p or q
 		if(p_1 - p_0 > 1 && t_0 == *(p_0 + 1))
 		{
+			std::cout << "  --First triangle hit p--\n";
 			// Removing triangle removes first vertex of p
 			poh_path_color(graph, embedding, p_0 + 1, p_1, q_0, q_1, coloring, new_color);
 			
@@ -98,6 +90,7 @@ namespace boost {
 		}
 		else if(q_1 - q_0 > 1  && t_0 == *(q_0 + 1))
 		{
+			std::cout << "  --First triangle hit q--\n";
 			// Removing triangle removes first vertex of q
 			poh_path_color(graph, embedding, p_0, p_1, q_0 + 1, q_1, coloring, new_color);
 		
@@ -117,7 +110,7 @@ namespace boost {
 			{
 				// Triangulation vertex is one back counterclockwise
 				if(iter == embedding[*(q_1 - 1)].begin())
-					t_1 = getIncidentVertex(*p_0, *(embedding[*(q_1 - 1)].end() - 1), graph);	
+					t_1 = getIncidentVertex(*(q_1 - 1), *(embedding[*(q_1 - 1)].end() - 1), graph);	
 				else
 					t_1 = getIncidentVertex(*(q_1 - 1), *(iter - 1), graph);
 				break;
@@ -129,6 +122,7 @@ namespace boost {
 		// Case 2: Second triangle hits p or q
 		if(p_1 - p_0 > 1 && t_1 == *(p_1 - 2))
 		{	
+			std::cout << "  --Second triangle hit p--\n";
 			// Removing triangle removes last vertex of p
 			poh_path_color(graph, embedding, p_0, p_1 - 1, q_0, q_1, coloring, new_color);
 		
@@ -136,6 +130,7 @@ namespace boost {
 		}
 		else if(q_1 - q_0 > 1  && t_1 == *(q_1 - 2))
 		{
+			std::cout << "  --Second triangle hit q--\n";
 			// Removing triangle removes last vertex of q
 			poh_path_color(graph, embedding, p_0, p_1, q_0, q_1 - 1, coloring, new_color);
 		
@@ -144,6 +139,7 @@ namespace boost {
 		
 		// Case 3: Search for path-bridging edge
 		{
+			std::cout << "  --Finding bridging edge--\n";
 			std::unordered_map<vertex_descriptor,VertexIter> p_map;
 		
 			// Mark all edges from vertices on p
@@ -180,6 +176,7 @@ namespace boost {
 		
 		// Case 4: Find splitting path
 		{
+			std::cout << "  --Finding splitting path--\n";
 			std::unordered_map<vertex_descriptor,vertex_descriptor> parent_map;
 			std::queue<vertex_descriptor> bfs_queue;
 		

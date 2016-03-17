@@ -19,7 +19,7 @@
 #include <boost/graph/graphviz.hpp>
 
 #include "path_coloring.h"
-
+#include "graph_parser.h"
 
 
 using namespace boost;
@@ -62,10 +62,28 @@ int main(int argc, char** argv)
   // sequence to add a set of edges to any undirected planar graph to make
   // it maximal planar.
   
-  graph g(3);
+  graph g(9);
   add_edge(0,1,g);
-  add_edge(1,2,g);
-  add_edge(0,3,g);
+  add_edge(0,8,g);
+  add_edge(8,1,g);
+  add_edge(2,1,g);
+  add_edge(3,1,g);
+  add_edge(2,8,g);
+  add_edge(3,0,g);
+  add_edge(2,5,g);
+  add_edge(2,4,g);
+  add_edge(2,3,g);
+  add_edge(3,6,g);
+  add_edge(3,4,g);
+  add_edge(4,5,g);
+  add_edge(4,6,g);
+  add_edge(5,8,g);
+  add_edge(5,7,g);
+  add_edge(5,6,g);
+  add_edge(6,0,g);
+  add_edge(6,7,g);
+  add_edge(7,8,g);
+  add_edge(7,0,g);
 
   // Create the planar embedding
   embedding_storage_t embedding_storage(num_vertices(g));
@@ -74,7 +92,7 @@ int main(int argc, char** argv)
   boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
                                boyer_myrvold_params::embedding = embedding);
   
-  for(int i=0; i<3; i++)
+  for(int i=0; i<9; i++)
   {                      
   	  std::cout << "Adjacency list for " << i << ".\n";       
 	  for(auto iter = embedding[i].begin(); iter != embedding[i].end(); iter++)
@@ -84,27 +102,34 @@ int main(int argc, char** argv)
 	  }
 	  std::cout << "\n";
   }
+  
+  // Find a canonical ordering
+  std::vector<graph_traits<graph>::vertex_descriptor> ordering;
+  planar_canonical_ordering(g, embedding, std::back_inserter(ordering));
 
   std::vector<graph::vertex_descriptor> p;
   std::vector<graph::vertex_descriptor> q;
-  
-  p.push_back(0);
-  
-  q.push_back(1);
-  q.push_back(2);
   
   std::map<graph::vertex_descriptor,int> color_map;
   boost::associative_property_map< std::map<graph::vertex_descriptor, int> >
     color_property_map(color_map);
   
+  p.push_back(ordering.back());
+  color_property_map[ordering.back()] = 1;
+  
+  q.push_back(ordering[0]);
+  q.push_back(ordering[1]);
+  color_property_map[ordering[0]] = 2;
+  color_property_map[ordering[1]] = 2;
+  
   int color = 0;
   
   poh_path_color(g, embedding, p.begin(), p.end(), q.begin(), q.end(), color_property_map, color);
 
-  // Find a canonical ordering
-  /*std::vector<graph_traits<graph>::vertex_descriptor> ordering;
-  planar_canonical_ordering(g, embedding, std::back_inserter(ordering));
-
+  for(int i=0; i<3; i++)
+  {                      
+	  std::cout << "color[" << i << "] = " << color_property_map[i] << "\n";
+  }
 
   //Set up a property map to hold the mapping from vertices to coord_t's
   typedef std::vector< coord_t > straight_line_drawing_storage_t;
@@ -146,7 +171,9 @@ int main(int argc, char** argv)
   if (is_straight_line_drawing(g, straight_line_drawing))
     std::cout << "Is a plane drawing." << std::endl;
   else
-    std::cout << "Is not a plane drawing." << std::endl;*/
+    std::cout << "Is not a plane drawing." << std::endl;
+    
+  std::cout << drawTikzGraph(g, color_property_map, straight_line_drawing) << "\n";
 
   return 0;
 }
