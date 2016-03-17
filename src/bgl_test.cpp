@@ -99,7 +99,7 @@ int main(int argc, char** argv)
   
   int color = 0;
   
-  poh_color_recursive(g, embedding, p.begin(), p.end(), q.begin(), q.end(), color_property_map, color);
+  poh_path_color(g, embedding, p.begin(), p.end(), q.begin(), q.end(), color_property_map, color);
 
   // Find a canonical ordering
   /*std::vector<graph_traits<graph>::vertex_descriptor> ordering;

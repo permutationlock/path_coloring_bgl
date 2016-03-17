@@ -44,7 +44,7 @@ namespace boost {
 	 */
 	template<typename Graph, typename Embedding, typename Coloring, typename Color,
 		typename VertexIter>
-	void poh_color_recursive(const Graph & graph, const Embedding & embedding,
+	void poh_path_color(const Graph & graph, const Embedding & embedding,
 		VertexIter p_0, VertexIter p_1, VertexIter q_0, VertexIter q_1, Coloring & coloring,
 		Color new_color)
 	{
@@ -92,14 +92,14 @@ namespace boost {
 		if(p_1 - p_0 > 1 && t_0 == *(p_0 + 1))
 		{
 			// Removing triangle removes first vertex of p
-			poh_color_recursive(graph, embedding, p_0 + 1, p_1, q_0, q_1, coloring, new_color);
+			poh_path_color(graph, embedding, p_0 + 1, p_1, q_0, q_1, coloring, new_color);
 			
 			return;
 		}
 		else if(q_1 - q_0 > 1  && t_0 == *(q_0 + 1))
 		{
 			// Removing triangle removes first vertex of q
-			poh_color_recursive(graph, embedding, p_0, p_1, q_0 + 1, q_1, coloring, new_color);
+			poh_path_color(graph, embedding, p_0, p_1, q_0 + 1, q_1, coloring, new_color);
 		
 			return;
 		}
@@ -130,21 +130,21 @@ namespace boost {
 		if(p_1 - p_0 > 1 && t_1 == *(p_1 - 2))
 		{	
 			// Removing triangle removes last vertex of p
-			poh_color_recursive(graph, embedding, p_0, p_1 - 1, q_0, q_1, coloring, new_color);
+			poh_path_color(graph, embedding, p_0, p_1 - 1, q_0, q_1, coloring, new_color);
 		
 			return;
 		}
 		else if(q_1 - q_0 > 1  && t_1 == *(q_1 - 2))
 		{
 			// Removing triangle removes last vertex of q
-			poh_color_recursive(graph, embedding, p_0, p_1, q_0, q_1 - 1, coloring, new_color);
+			poh_path_color(graph, embedding, p_0, p_1, q_0, q_1 - 1, coloring, new_color);
 		
 			return;
 		}
-		/*
+		
 		// Case 3: Search for path-bridging edge
 		{
-			std::unordered_map<Label,VertexIter> p_map;
+			std::unordered_map<vertex_descriptor,VertexIter> p_map;
 		
 			// Mark all edges from vertices on p
 			for(auto p_iter = p_0; p_iter != p_1; p_iter++)
@@ -154,8 +154,10 @@ namespace boost {
 		
 			for (auto q_iter = q_0; q_iter != q_1; ++q_iter)
 			{
-				for (auto q_nbr : graph[*q_iter])
+				for (edge_descriptor inc_edge : embedding[*q_iter])
 				{
+					vertex_descriptor q_nbr = getIncidentVertex(*q_iter, inc_edge, graph);
+					
 					if(p_map.count(q_nbr) != 0)
 					{
 						// Check if our edge is one of the outside edges
@@ -165,9 +167,9 @@ namespace boost {
 							continue;
 					
 						// Recurse on "left" and "right" halves
-						poh_color_recursive(graph, p_0, p_map[q_nbr] + 1, q_0,q_iter + 1,
+						poh_path_color(graph, embedding, p_0, p_map[q_nbr] + 1, q_0,q_iter + 1,
 							coloring, new_color);
-						poh_color_recursive(graph, p_map[q_nbr], p_1, q_iter, q_1,
+						poh_path_color(graph, embedding, p_map[q_nbr], p_1, q_iter, q_1,
 							coloring, new_color);
 					
 						return;
@@ -175,11 +177,11 @@ namespace boost {
 				}
 			}
 		}
-	
+		
 		// Case 4: Find splitting path
 		{
-			std::unordered_map<Label,Label> parent_map;
-			std::queue<Label> bfs_queue;
+			std::unordered_map<vertex_descriptor,vertex_descriptor> parent_map;
+			std::queue<vertex_descriptor> bfs_queue;
 		
 			// Perform BFS from t_1 inside the cycle and locate t_1-t_0 path
 			bfs_queue.push(t_1);
@@ -195,15 +197,16 @@ namespace boost {
 				parent_map[*q_iter] = *q_iter;
 			}
 	
-			Label curr_vertex;
+			vertex_descriptor curr_vertex;
 		
 			while(!bfs_queue.empty() && curr_vertex != t_0)
 			{
 				curr_vertex = bfs_queue.front();
 				bfs_queue.pop();
 		
-				for(const auto & neighbor : graph[curr_vertex])
+				for(edge_descriptor inc_edge : embedding[curr_vertex])
 				{
+					vertex_descriptor neighbor = getIncidentVertex(curr_vertex, inc_edge, graph);
 					if(parent_map.count(neighbor) == 0)
 					{
 						bfs_queue.push(neighbor);
@@ -219,7 +222,7 @@ namespace boost {
 			}
 		
 			// Backtrack to construct t_0 - t_1 path and color using new_color
-			std::vector<Label> splitting_path;
+			std::vector<vertex_descriptor> splitting_path;
 			splitting_path.push_back(curr_vertex);
 			coloring[curr_vertex] = new_color;
 		
@@ -231,11 +234,11 @@ namespace boost {
 			}
 		
 			// Recurse on top and bottom halves, now coloring with correct colors
-			poh_color_recursive(graph, p_0, p_1, splitting_path.begin(),
-				splitting_path.end(), coloring, coloring.at(*q_0));
-			poh_color_recursive(graph, splitting_path.begin(), splitting_path.end(),
-				q_0, q_1, coloring, coloring.at(*p_0));
-		}*/
+			poh_path_color(graph, embedding, p_0, p_1, splitting_path.begin(),
+				splitting_path.end(), coloring, coloring[*q_0]);
+			poh_path_color(graph, embedding, splitting_path.begin(), splitting_path.end(),
+				q_0, q_1, coloring, coloring[*p_0]);
+		}
 	}
 }
 
