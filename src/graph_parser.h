@@ -68,7 +68,7 @@ std::string drawTikzGraph(const Graph & graph, const Coloring & coloring,
 		std::string y = std::to_string(get(drawing, curr_vertex).y);
 		
 		tikz_string += "  \\node [fill=" + vcolor + "!35] (" + vname
-			+ ") at (" + x + "cm, " + y + "cm) {$" + vname + "$};\n";
+			+ ") at (" + x + "cm, " + y + "cm) {$" /* +  vname */ + "$};\n";
 	}
 	
 	typename GraphTraits::edge_iterator e_iter, e_end;

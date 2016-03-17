@@ -21,9 +21,16 @@
 
 namespace boost {
 
+	/*
+	 * get_incident_vertex
+	 *
+	 * Preconditions: edge is incident to vertex in graph.
+	 * 
+	 * Postconditions: returns the endpoint of edge that is not vertex.
+	 */
 	template<typename Graph>
 	typename graph_traits<Graph>::vertex_descriptor
-		getIncidentVertex(typename graph_traits<Graph>::vertex_descriptor vertex,
+		get_incident_vertex(typename graph_traits<Graph>::vertex_descriptor vertex,
 		typename graph_traits<Graph>::edge_descriptor edge, const Graph & graph)
 	{
 		auto adj = source(edge, graph);
@@ -33,13 +40,15 @@ namespace boost {
 	}
 
 	/*
-	 * Preconditions: graph is a weakly triangulated planar graph the neighbors of each
-	 * vertex arranged in clockwise order for some embedding. p and q are paths with
-	 * p above q (in clockwise orientation scheme) such that joining the beginnings and
-	 * ends of the paths forms a chordless cycle, and with p and q each colored a
+	 * poh_path_color
+	 *
+	 * Preconditions: graph is a weakly triangulated planar graph the incident edges of each
+	 * vertex arranged in counter-clockwise order in the embedding. p and q are paths with
+	 * p above q (in counter-clockwise orientation scheme) such that joining the beginnings
+	 * and ends of the paths forms a chordless cycle, and with p and q each colored a
 	 * different color. new_color is a third color different from the color of p and q.
 	 * 
-	 * Postconditions: returns a copy of g with the face enclosed by the cycle pq
+	 * Postconditions: returns a coloring of g with the face enclosed by the cycle pq
 	 * 3-colored such that each color class induces a disjoint union of paths.
 	 */
 	template<typename Graph, typename Embedding, typename Coloring, typename VertexIter>
@@ -64,15 +73,15 @@ namespace boost {
 		for(auto iter = embedding[*p_0].begin(); iter != embedding[*p_0].end(); iter++)
 		{
 			// Locate vertex on the end of edge
-			vertex_descriptor neighbor = getIncidentVertex(*p_0, *iter, graph);
+			vertex_descriptor neighbor = get_incident_vertex(*p_0, *iter, graph);
 			
 			if(neighbor == *q_0)	// Find begining vertex of second path
 			{
 				// Triangulation vertex is one back counterclockwise
-				if(iter == embedding[*p_0].begin())
-					t_0 = getIncidentVertex(*p_0, *(embedding[*p_0].end() - 1), graph);	
+				if(iter == embedding[*p_0].end() - 1)
+					t_0 = get_incident_vertex(*p_0, *(embedding[*p_0].begin()), graph);	
 				else
-					t_0 = getIncidentVertex(*p_0, *(iter - 1), graph);
+					t_0 = get_incident_vertex(*p_0, *(iter + 1), graph);
 				break;
 			}
 		}
@@ -82,7 +91,6 @@ namespace boost {
 		// Case 1: First triangle hits p or q
 		if(p_1 - p_0 > 1 && t_0 == *(p_0 + 1))
 		{
-			std::cout << "  --First triangle hit p--\n";
 			// Removing triangle removes first vertex of p
 			poh_path_color(graph, embedding, p_0 + 1, p_1, q_0, q_1, coloring, new_color);
 			
@@ -90,7 +98,6 @@ namespace boost {
 		}
 		else if(q_1 - q_0 > 1  && t_0 == *(q_0 + 1))
 		{
-			std::cout << "  --First triangle hit q--\n";
 			// Removing triangle removes first vertex of q
 			poh_path_color(graph, embedding, p_0, p_1, q_0 + 1, q_1, coloring, new_color);
 		
@@ -104,15 +111,15 @@ namespace boost {
 		for(auto iter = embedding[*(q_1 - 1)].begin(); iter != embedding[*(q_1 - 1)].end(); iter++)
 		{
 			// Locate vertex on the end of edge
-			vertex_descriptor neighbor = getIncidentVertex(*(q_1 - 1), *iter, graph);
+			vertex_descriptor neighbor = get_incident_vertex(*(q_1 - 1), *iter, graph);
 			
 			if(neighbor == *(p_1 - 1))	// Find begining vertex of second path
 			{
 				// Triangulation vertex is one back counterclockwise
-				if(iter == embedding[*(q_1 - 1)].begin())
-					t_1 = getIncidentVertex(*(q_1 - 1), *(embedding[*(q_1 - 1)].end() - 1), graph);	
+				if(iter == embedding[*(q_1 - 1)].end() - 1)
+					t_1 = get_incident_vertex(*(q_1 - 1), *(embedding[*(q_1 - 1)].begin()), graph);	
 				else
-					t_1 = getIncidentVertex(*(q_1 - 1), *(iter - 1), graph);
+					t_1 = get_incident_vertex(*(q_1 - 1), *(iter + 1), graph);
 				break;
 			}
 		}
@@ -122,7 +129,6 @@ namespace boost {
 		// Case 2: Second triangle hits p or q
 		if(p_1 - p_0 > 1 && t_1 == *(p_1 - 2))
 		{	
-			std::cout << "  --Second triangle hit p--\n";
 			// Removing triangle removes last vertex of p
 			poh_path_color(graph, embedding, p_0, p_1 - 1, q_0, q_1, coloring, new_color);
 		
@@ -130,7 +136,6 @@ namespace boost {
 		}
 		else if(q_1 - q_0 > 1  && t_1 == *(q_1 - 2))
 		{
-			std::cout << "  --Second triangle hit q--\n";
 			// Removing triangle removes last vertex of q
 			poh_path_color(graph, embedding, p_0, p_1, q_0, q_1 - 1, coloring, new_color);
 		
@@ -139,7 +144,6 @@ namespace boost {
 		
 		// Case 3: Search for path-bridging edge
 		{
-			std::cout << "  --Finding bridging edge--\n";
 			std::unordered_map<vertex_descriptor,VertexIter> p_map;
 		
 			// Mark all edges from vertices on p
@@ -152,7 +156,7 @@ namespace boost {
 			{
 				for (edge_descriptor inc_edge : embedding[*q_iter])
 				{
-					vertex_descriptor q_nbr = getIncidentVertex(*q_iter, inc_edge, graph);
+					vertex_descriptor q_nbr = get_incident_vertex(*q_iter, inc_edge, graph);
 					
 					if(p_map.count(q_nbr) != 0)
 					{
@@ -176,7 +180,6 @@ namespace boost {
 		
 		// Case 4: Find splitting path
 		{
-			std::cout << "  --Finding splitting path--\n";
 			std::unordered_map<vertex_descriptor,vertex_descriptor> parent_map;
 			std::queue<vertex_descriptor> bfs_queue;
 		
@@ -203,7 +206,7 @@ namespace boost {
 		
 				for(edge_descriptor inc_edge : embedding[curr_vertex])
 				{
-					vertex_descriptor neighbor = getIncidentVertex(curr_vertex, inc_edge, graph);
+					vertex_descriptor neighbor = get_incident_vertex(curr_vertex, inc_edge, graph);
 					if(parent_map.count(neighbor) == 0)
 					{
 						bfs_queue.push(neighbor);

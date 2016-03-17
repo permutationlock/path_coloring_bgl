@@ -16,7 +16,9 @@
 #include <boost/graph/is_straight_line_drawing.hpp>
 #include <boost/graph/chrobak_payne_drawing.hpp>
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
-#include <boost/graph/graphviz.hpp>
+#include <boost/graph/make_connected.hpp>
+#include <boost/graph/make_biconnected_planar.hpp>
+#include <boost/graph/make_maximal_planar.hpp>
 
 #include "path_coloring.h"
 #include "graph_parser.h"
@@ -38,7 +40,8 @@ int main(int argc, char** argv)
     < vecS,
       vecS,
       undirectedS,
-      property<vertex_index_t, int>
+      property<vertex_index_t, int>,
+      property<edge_index_t, int>
     > graph;
 
   
@@ -62,28 +65,15 @@ int main(int argc, char** argv)
   // sequence to add a set of edges to any undirected planar graph to make
   // it maximal planar.
   
-  graph g(9);
-  add_edge(0,1,g);
-  add_edge(0,8,g);
-  add_edge(8,1,g);
-  add_edge(2,1,g);
-  add_edge(3,1,g);
-  add_edge(2,8,g);
-  add_edge(3,0,g);
-  add_edge(2,5,g);
-  add_edge(2,4,g);
-  add_edge(2,3,g);
-  add_edge(3,6,g);
-  add_edge(3,4,g);
-  add_edge(4,5,g);
-  add_edge(4,6,g);
-  add_edge(5,8,g);
-  add_edge(5,7,g);
-  add_edge(5,6,g);
-  add_edge(6,0,g);
-  add_edge(6,7,g);
-  add_edge(7,8,g);
-  add_edge(7,0,g);
+  graph g(30);
+  make_connected(g);
+  
+  //Initialize the interior edge index
+  property_map<graph, edge_index_t>::type e_index = get(edge_index, g);
+  graph_traits<graph>::edges_size_type edge_count = 0;
+  graph_traits<graph>::edge_iterator ei, ei_end;
+  for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
+    put(e_index, *ei, edge_count++);
 
   // Create the planar embedding
   embedding_storage_t embedding_storage(num_vertices(g));
@@ -92,7 +82,32 @@ int main(int argc, char** argv)
   boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
                                boyer_myrvold_params::embedding = embedding);
   
-  for(int i=0; i<9; i++)
+  // Re-initialize the edge index, since we just added a few edges
+  edge_count = 0;
+  for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
+    put(e_index, *ei, edge_count++);
+  
+  make_biconnected_planar(g, embedding);
+  
+  boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
+                               boyer_myrvold_params::embedding = embedding);
+  
+  // Re-initialize the edge index, since we just added a few edges
+  edge_count = 0;
+  for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
+    put(e_index, *ei, edge_count++);
+  
+  make_maximal_planar(g, embedding);
+  
+  // Re-initialize the edge index, since we just added a few edges
+  edge_count = 0;
+  for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
+    put(e_index, *ei, edge_count++);
+    
+  boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
+                               boyer_myrvold_params::embedding = embedding);
+  
+  /*for(int i=0; i<9; i++)
   {                      
   	  std::cout << "Adjacency list for " << i << ".\n";       
 	  for(auto iter = embedding[i].begin(); iter != embedding[i].end(); iter++)
@@ -101,7 +116,7 @@ int main(int argc, char** argv)
 	  		<< "} adj = " << getIncidentVertex(i,*iter,g) << "\n"; 
 	  }
 	  std::cout << "\n";
-  }
+  }*/
   
   // Find a canonical ordering
   std::vector<graph_traits<graph>::vertex_descriptor> ordering;

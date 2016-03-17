@@ -1,0 +1,243 @@
+\documentclass[12pt,a4paper]{article}
+%\title{Software Requirements Specification}
+%\date{December 14, 2015}
+%\author{Aven Bross}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage{chngpage}
+\usepackage{geometry}
+\usepackage{tabularx}
+\usepackage{algorithm2e}
+\geometry{legalpaper, portrait, margin=1.25in}
+
+\usepackage{tikz}
+
+\usepackage [autostyle, english = american]{csquotes}
+\MakeOuterQuote{"}
+
+\pagenumbering{gobble}
+
+\begin{document}
+
+\tikzset{every loop/.style={min distance=1cm,in=-15,out=45,looseness=15}}
+
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+  \node [fill=red!70] (0) at (0cm, 0cm) {$$};
+  \node [fill=red!70] (1) at (20cm, 0cm) {$$};
+  \node [fill=blue!70] (2) at (17cm, 2cm) {$$};
+  \node [fill=yellow!70] (3) at (12cm, 1cm) {$$};
+  \node [fill=red!70] (4) at (12cm, 6cm) {$$};
+  \node [fill=blue!70] (5) at (10cm, 9cm) {$$};
+  \node [fill=yellow!70] (6) at (8cm, 2cm) {$$};
+  \node [fill=blue!70] (7) at (4cm, 3cm) {$$};
+  \node [fill=yellow!70] (8) at (10cm, 10cm) {$$};
+  \node [fill=red!70] (9) at (6cm, 4cm) {$$};
+  \node [fill=blue!70] (10) at (10cm, 3cm) {$$};
+  \node [fill=red!70] (11) at (14cm, 3cm) {$$};
+  \draw (0) -- (1);
+  \draw (0) -- (8);
+  \draw (8) -- (1);
+  \draw (2) -- (1);
+  \draw (3) -- (1);
+  \draw (2) -- (8);
+  \draw (3) -- (0);
+  \draw (2) -- (5);
+  \draw (2) -- (4);
+  \draw (2) -- (3);
+  \draw (3) -- (6);
+  \draw (3) -- (4);
+  \draw (4) -- (5);
+  \draw (4) -- (6);
+  \draw (5) -- (8);
+  \draw (5) -- (7);
+  \draw (5) -- (6);
+  \draw (6) -- (0);
+  \draw (6) -- (7);
+  \draw (7) -- (8);
+  \draw (7) -- (0);
+  \draw (7) -- (9);
+  \draw (6) -- (9);
+  \draw (5) -- (9);
+  \draw (4) -- (10);
+  \draw (6) -- (10);
+  \draw (3) -- (10);
+  \draw (4) -- (11);
+  \draw (3) -- (11);
+  \draw (2) -- (11);
+\end{tikzpicture}\\
+\hfill\\
+\hfill\\
+\hfill\\
+
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+  \node [fill=red!70] (0) at (0cm, 0cm) {$$};
+  \node [fill=red!70] (1) at (20cm, 0cm) {$$};
+  \node [fill=blue!70] (2) at (10cm, 10cm) {$$};
+  \node [fill=yellow!70] (3) at (2cm, 1cm) {$$};
+  \node [fill=yellow!70] (4) at (17cm, 2cm) {$$};
+  \node [fill=red!70] (5) at (10cm, 9cm) {$$};
+  \node [fill=blue!70] (6) at (5cm, 3cm) {$$};
+  \node [fill=blue!70] (7) at (14cm, 4cm) {$$};
+  \node [fill=yellow!70] (8) at (10cm, 8cm) {$$};
+  \node [fill=red!70] (9) at (8cm, 5cm) {$$};
+  \node [fill=red!70] (10) at (11cm, 6cm) {$$};
+  \node [fill=blue!70] (11) at (10cm, 7cm) {$$};
+  \draw (0) -- (1);
+  \draw (1) -- (2);
+  \draw (2) -- (3);
+  \draw (3) -- (4);
+  \draw (4) -- (5);
+  \draw (5) -- (6);
+  \draw (6) -- (7);
+  \draw (7) -- (8);
+  \draw (8) -- (9);
+  \draw (9) -- (10);
+  \draw (10) -- (11);
+  \draw (9) -- (11);
+  \draw (8) -- (10);
+  \draw (7) -- (9);
+  \draw (6) -- (8);
+  \draw (5) -- (7);
+  \draw (4) -- (6);
+  \draw (3) -- (5);
+  \draw (2) -- (4);
+  \draw (1) -- (3);
+  \draw (0) -- (2);
+  \draw (0) -- (3);
+  \draw (1) -- (4);
+  \draw (2) -- (5);
+  \draw (6) -- (3);
+  \draw (7) -- (4);
+  \draw (8) -- (5);
+  \draw (9) -- (6);
+  \draw (10) -- (7);
+  \draw (11) -- (8);
+\end{tikzpicture}\\
+\hfill\\
+\hfill\\
+\hfill\\
+
+\begin{tikzpicture}[scale=.25, every node/.style={circle, draw, minimum size=1mm, scale=.5}]
+  \node [fill=red!70] (0) at (0cm, 0cm) {$$};
+  \node [fill=red!70] (1) at (56cm, 0cm) {$$};
+  \node [fill=blue!70] (2) at (28cm, 28cm) {$$};
+  \node [fill=yellow!70] (3) at (2cm, 1cm) {$$};
+  \node [fill=yellow!70] (4) at (53cm, 2cm) {$$};
+  \node [fill=red!70] (5) at (28cm, 27cm) {$$};
+  \node [fill=blue!70] (6) at (5cm, 3cm) {$$};
+  \node [fill=blue!70] (7) at (50cm, 4cm) {$$};
+  \node [fill=yellow!70] (8) at (28cm, 26cm) {$$};
+  \node [fill=red!70] (9) at (8cm, 5cm) {$$};
+  \node [fill=red!70] (10) at (47cm, 6cm) {$$};
+  \node [fill=blue!70] (11) at (28cm, 25cm) {$$};
+  \node [fill=yellow!70] (12) at (11cm, 7cm) {$$};
+  \node [fill=yellow!70] (13) at (44cm, 8cm) {$$};
+  \node [fill=red!70] (14) at (28cm, 24cm) {$$};
+  \node [fill=blue!70] (15) at (14cm, 9cm) {$$};
+  \node [fill=blue!70] (16) at (41cm, 10cm) {$$};
+  \node [fill=yellow!70] (17) at (28cm, 23cm) {$$};
+  \node [fill=red!70] (18) at (17cm, 11cm) {$$};
+  \node [fill=red!70] (19) at (38cm, 12cm) {$$};
+  \node [fill=blue!70] (20) at (28cm, 22cm) {$$};
+  \node [fill=yellow!70] (21) at (20cm, 13cm) {$$};
+  \node [fill=yellow!70] (22) at (35cm, 14cm) {$$};
+  \node [fill=red!70] (23) at (28cm, 21cm) {$$};
+  \node [fill=blue!70] (24) at (23cm, 15cm) {$$};
+  \node [fill=blue!70] (25) at (32cm, 16cm) {$$};
+  \node [fill=yellow!70] (26) at (28cm, 20cm) {$$};
+  \node [fill=red!70] (27) at (26cm, 17cm) {$$};
+  \node [fill=red!70] (28) at (29cm, 18cm) {$$};
+  \node [fill=blue!70] (29) at (28cm, 19cm) {$$};
+  \draw (0) -- (1);
+  \draw (1) -- (2);
+  \draw (2) -- (3);
+  \draw (3) -- (4);
+  \draw (4) -- (5);
+  \draw (5) -- (6);
+  \draw (6) -- (7);
+  \draw (7) -- (8);
+  \draw (8) -- (9);
+  \draw (9) -- (10);
+  \draw (10) -- (11);
+  \draw (11) -- (12);
+  \draw (12) -- (13);
+  \draw (13) -- (14);
+  \draw (14) -- (15);
+  \draw (15) -- (16);
+  \draw (16) -- (17);
+  \draw (17) -- (18);
+  \draw (18) -- (19);
+  \draw (19) -- (20);
+  \draw (20) -- (21);
+  \draw (21) -- (22);
+  \draw (22) -- (23);
+  \draw (23) -- (24);
+  \draw (24) -- (25);
+  \draw (25) -- (26);
+  \draw (26) -- (27);
+  \draw (27) -- (28);
+  \draw (28) -- (29);
+  \draw (27) -- (29);
+  \draw (26) -- (28);
+  \draw (25) -- (27);
+  \draw (24) -- (26);
+  \draw (23) -- (25);
+  \draw (22) -- (24);
+  \draw (21) -- (23);
+  \draw (20) -- (22);
+  \draw (19) -- (21);
+  \draw (18) -- (20);
+  \draw (17) -- (19);
+  \draw (16) -- (18);
+  \draw (15) -- (17);
+  \draw (14) -- (16);
+  \draw (13) -- (15);
+  \draw (12) -- (14);
+  \draw (11) -- (13);
+  \draw (10) -- (12);
+  \draw (9) -- (11);
+  \draw (8) -- (10);
+  \draw (7) -- (9);
+  \draw (6) -- (8);
+  \draw (5) -- (7);
+  \draw (4) -- (6);
+  \draw (3) -- (5);
+  \draw (2) -- (4);
+  \draw (1) -- (3);
+  \draw (0) -- (2);
+  \draw (0) -- (3);
+  \draw (1) -- (4);
+  \draw (2) -- (5);
+  \draw (6) -- (3);
+  \draw (7) -- (4);
+  \draw (8) -- (5);
+  \draw (9) -- (6);
+  \draw (10) -- (7);
+  \draw (11) -- (8);
+  \draw (12) -- (9);
+  \draw (13) -- (10);
+  \draw (14) -- (11);
+  \draw (15) -- (12);
+  \draw (16) -- (13);
+  \draw (17) -- (14);
+  \draw (18) -- (15);
+  \draw (19) -- (16);
+  \draw (20) -- (17);
+  \draw (21) -- (18);
+  \draw (22) -- (19);
+  \draw (23) -- (20);
+  \draw (24) -- (21);
+  \draw (25) -- (22);
+  \draw (26) -- (23);
+  \draw (27) -- (24);
+  \draw (28) -- (25);
+  \draw (29) -- (26);
+\end{tikzpicture}
+
+\end{document}
