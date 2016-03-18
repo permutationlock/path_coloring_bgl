@@ -5,8 +5,8 @@
  * Recursive descent parser for simplified dot language
  */
 
-#ifndef GRAPH_PARSER_HPP
-#define GRAPH_PARSER_HPP
+#ifndef DRAW_TIKZ_GRAPH_HPP
+#define DRAW_TIKZ_GRAPH_HPP
 
 #include <string>
 #include <utility>
@@ -26,7 +26,7 @@ const std::vector<std::string> color_strings = {"red", "blue","yellow"};
 
 // Produce a dot language string to draw the given graph that has been three colored
 template<typename Graph, typename Coloring, typename Drawing>
-std::string drawTikzGraph(const Graph & graph, const Coloring & coloring,
+std::string draw_tikz_graph(const Graph & graph, const Coloring & coloring,
 	const Drawing & drawing)
 {
 	typedef boost::graph_traits<Graph> GraphTraits;
@@ -68,7 +68,7 @@ std::string drawTikzGraph(const Graph & graph, const Coloring & coloring,
 		std::string y = std::to_string(get(drawing, curr_vertex).y);
 		
 		tikz_string += "  \\node [fill=" + vcolor + "!35] (" + vname
-			+ ") at (" + x + "cm, " + y + "cm) {$" /* +  vname */ + "$};\n";
+			+ ") at (" + x + "cm, " + y + "cm) {$" +  vname + "$};\n";
 	}
 	
 	typename GraphTraits::edge_iterator e_iter, e_end;

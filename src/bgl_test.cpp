@@ -20,8 +20,8 @@
 #include <boost/graph/make_biconnected_planar.hpp>
 #include <boost/graph/make_maximal_planar.hpp>
 
-#include "path_coloring.h"
-#include "graph_parser.h"
+#include "path_coloring.hpp"
+#include "draw_tikz_graph.hpp"
 
 
 using namespace boost;
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
   else
     std::cout << "Is not a plane drawing." << std::endl;
     
-  std::cout << drawTikzGraph(g, color_property_map, straight_line_drawing) << "\n";
+  std::cout << draw_tikz_graph(g, color_property_map, straight_line_drawing) << "\n";
 
   return 0;
 }

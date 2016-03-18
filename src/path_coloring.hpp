@@ -5,8 +5,8 @@
  * Implementation of several algorithms for path coloring graphs.
  */
 
-#ifndef __PATH_COLORING_H
-#define __PATH_COLORING_H
+#ifndef __PATH_COLORING_HPP
+#define __PATH_COLORING_HPP
 
 #include <vector>
 #include <list>
