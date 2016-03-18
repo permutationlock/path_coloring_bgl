@@ -65,11 +65,15 @@ namespace boost {
 		{
 			return;
 		}
+		
+		/*std::cout <<  std::string("p_0=") + std::to_string(*p_0)
+				+ ", p_1-1=" + std::to_string(*(p_1-1)) + ", q_0=" + std::to_string(*q_0)
+				+ ", q_1-1=" + std::to_string(*(q_1-1)) + ".\n";*/
 	
 		// Find inner triangulation vertex for beginning of paths
 		vertex_descriptor t_0 = *p_0;
 		
-		// Iterate incident edges in clockwise embedded order
+		// Iterate incident edges in counterclockwise embedded order
 		for(auto iter = embedding[*p_0].begin(); iter != embedding[*p_0].end(); iter++)
 		{
 			// Locate vertex on the end of edge
@@ -77,8 +81,8 @@ namespace boost {
 			
 			if(neighbor == *q_0)	// Find begining vertex of second path
 			{
-				// Triangulation vertex is one back counterclockwise
-				if(iter == embedding[*p_0].end() - 1)
+				// Triangulation vertex is one forward counterclockwise
+				if(iter + 1 == embedding[*p_0].end())
 					t_0 = get_incident_vertex(*p_0, *(embedding[*p_0].begin()), graph);	
 				else
 					t_0 = get_incident_vertex(*p_0, *(iter + 1), graph);
@@ -86,7 +90,13 @@ namespace boost {
 			}
 		}
 	
-		if(t_0 == *p_0) throw std::runtime_error("no triangulation vertex found at start of paths.");
+		if(t_0 == *p_0)
+		{
+			std::string error = "start of paths does not form cycle, p_0=" + std::to_string(*p_0)
+				+ ", p_1-1=" + std::to_string(*(p_1-1)) + ", q_0=" + std::to_string(*q_0)
+				+ ", q_1-1=" + std::to_string(*(q_1-1)) + ".";
+			throw std::runtime_error(error);
+		}
 	
 		// Case 1: First triangle hits p or q
 		if(p_1 - p_0 > 1 && t_0 == *(p_0 + 1))
@@ -105,27 +115,42 @@ namespace boost {
 		}
 	
 		// Find inner triangulation vertex for end of paths
-		vertex_descriptor t_1 = *q_1;
-	
-		// Iterate incident edges in clockwise embedded order
+		vertex_descriptor t_1 = *(q_1 - 1);
+		
+		//std::cout << "  p_0=" << *p_0 << " p_1-1=" << *(p_1-1) << " q_0=" << *q_0 << " q_1-1=" << *(q_1-1) << "\n";
+		
+		// Iterate incident edges in counterclockwise embedded order
 		for(auto iter = embedding[*(q_1 - 1)].begin(); iter != embedding[*(q_1 - 1)].end(); iter++)
 		{
 			// Locate vertex on the end of edge
 			vertex_descriptor neighbor = get_incident_vertex(*(q_1 - 1), *iter, graph);
 			
+			//std::cout << "    n = " << neighbor << " vs. p_1-1 = " << *(p_1-1) << "\n";
+			
 			if(neighbor == *(p_1 - 1))	// Find begining vertex of second path
 			{
-				// Triangulation vertex is one back counterclockwise
-				if(iter == embedding[*(q_1 - 1)].end() - 1)
+				// Triangulation vertex is one forward counterclockwise
+				if(iter + 1 == embedding[*(q_1 - 1)].end())
+				{
 					t_1 = get_incident_vertex(*(q_1 - 1), *(embedding[*(q_1 - 1)].begin()), graph);	
+				}
 				else
+				{
 					t_1 = get_incident_vertex(*(q_1 - 1), *(iter + 1), graph);
+				}
 				break;
 			}
 		}
-	
-		if(t_1 == *q_1) throw std::runtime_error("no triangulation vertex found at end of paths.");
-	
+		
+		//std::cout << "    t_1 = " << t_1 << " vs. q_1 = " << *(q_1-1) << "\n";
+		if(t_1 == *(q_1 -1))
+		{
+			std::string error = "end of paths does not form cycle, p_0=" + std::to_string(*p_0)
+				+ ", p_1-1=" + std::to_string(*(p_1-1)) + ", q_0=" + std::to_string(*q_0)
+				+ ", q_1-1=" + std::to_string(*(q_1-1)) + ".";
+			throw std::runtime_error(error);
+		}
+		
 		// Case 2: Second triangle hits p or q
 		if(p_1 - p_0 > 1 && t_1 == *(p_1 - 2))
 		{	
