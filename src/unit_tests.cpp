@@ -26,8 +26,11 @@
 
 using namespace boost;
 
-//Comment line below to hide passing tests.
+// Comment line below to hide passing tests.
 #define SHOW_PASSES
+
+// Comment line below to hide tikz drawing printouts
+#define SHOW_VISUALIZATION
 
 bool failed=false;
 
@@ -38,6 +41,175 @@ struct coord_t
   std::size_t y;
 };
 
+template<typename Graph>
+void make_triangulated(Graph & graph)
+{
+	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
+	
+	// Define the storage type for the planar embedding
+	typedef std::vector<
+			std::vector<edge_descriptor>
+		> embedding_storage_t;
+
+	typedef iterator_property_map
+		< typename embedding_storage_t::iterator, 
+			typename property_map<Graph, vertex_index_t>::type
+		> embedding_t;
+
+	make_connected(graph);
+
+	//Initialize the interior edge index
+	typename property_map<Graph, edge_index_t>::type e_index = get(edge_index, graph);
+	typename graph_traits<Graph>::edges_size_type edge_count = 0;
+	typename graph_traits<Graph>::edge_iterator ei, ei_end;
+	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
+		put(e_index, *ei, edge_count++);
+
+	// Create the planar embedding
+	embedding_storage_t embedding_storage(num_vertices(graph));
+	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
+
+	if(!boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
+		                   boyer_myrvold_params::embedding = embedding))
+	{
+		std::string error = "Non-planar graph.";
+		throw std::logic_error(error);
+	}            
+
+	// Re-initialize the edge index, since we just added a few edges
+	edge_count = 0;
+	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
+		put(e_index, *ei, edge_count++);
+
+	make_biconnected_planar(graph, embedding);
+
+	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
+		                   boyer_myrvold_params::embedding = embedding);
+
+	// Re-initialize the edge index, since we just added a few edges
+	edge_count = 0;
+	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
+		put(e_index, *ei, edge_count++);
+
+	make_maximal_planar(graph, embedding);
+
+	// Re-initialize the edge index, since we just added a few edges
+	edge_count = 0;
+	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
+		put(e_index, *ei, edge_count++);
+}
+
+template<typename Graph>
+void draw_graph_no_color(Graph & graph)
+{
+	typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
+	
+	// Define the storage type for the planar embedding
+	typedef std::vector<
+			std::vector<edge_descriptor>
+		> embedding_storage_t;
+
+	typedef iterator_property_map
+		< typename embedding_storage_t::iterator, 
+			typename property_map<Graph, vertex_index_t>::type
+		> embedding_t;
+	
+	// Create the planar embedding
+	embedding_storage_t embedding_storage(num_vertices(graph));
+	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
+
+	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
+		                   boyer_myrvold_params::embedding = embedding);
+	
+	std::map<vertex_descriptor,int> color_map;
+  	boost::associative_property_map< std::map<vertex_descriptor, int> >
+    	color_property_map(color_map);
+    	
+	// Find a canonical ordering
+	std::vector<vertex_descriptor> ordering;
+	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
+    	
+	//Set up a property map to hold the mapping from vertices to coord_t's
+	typedef std::vector< coord_t > straight_line_drawing_storage_t;
+	typedef boost::iterator_property_map
+		< straight_line_drawing_storage_t::iterator, 
+			typename property_map<Graph, vertex_index_t>::type 
+		> straight_line_drawing_t;
+
+	straight_line_drawing_storage_t straight_line_drawing_storage
+		(num_vertices(graph));
+	straight_line_drawing_t straight_line_drawing
+		(straight_line_drawing_storage.begin(), 
+			get(vertex_index, graph)
+		);
+
+
+
+	// Compute the straight line drawing
+	chrobak_payne_straight_line_drawing(graph, 
+			embedding, 
+			ordering.begin(),
+			ordering.end(),
+			straight_line_drawing
+		);
+	
+	std::cout << draw_tikz_graph(graph, color_property_map, straight_line_drawing) << "\n";
+}
+
+template<typename Graph, typename Coloring>
+void draw_graph_color(const Graph & graph, const Coloring & coloring)
+{
+	typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
+	
+	// Define the storage type for the planar embedding
+	typedef std::vector<
+			std::vector<edge_descriptor>
+		> embedding_storage_t;
+
+	typedef iterator_property_map
+		< typename embedding_storage_t::iterator, 
+			typename property_map<Graph, vertex_index_t>::type
+		> embedding_t;
+	
+	// Create the planar embedding
+	embedding_storage_t embedding_storage(num_vertices(graph));
+	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
+
+	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
+		                   boyer_myrvold_params::embedding = embedding);
+    	
+	// Find a canonical ordering
+	std::vector<vertex_descriptor> ordering;
+	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
+    	
+	//Set up a property map to hold the mapping from vertices to coord_t's
+	typedef std::vector< coord_t > straight_line_drawing_storage_t;
+	typedef boost::iterator_property_map
+		< straight_line_drawing_storage_t::iterator, 
+			typename property_map<Graph, vertex_index_t>::type 
+		> straight_line_drawing_t;
+
+	straight_line_drawing_storage_t straight_line_drawing_storage
+		(num_vertices(graph));
+	straight_line_drawing_t straight_line_drawing
+		(straight_line_drawing_storage.begin(), 
+			get(vertex_index, graph)
+		);
+
+
+
+	// Compute the straight line drawing
+	chrobak_payne_straight_line_drawing(graph, 
+			embedding, 
+			ordering.begin(),
+			ordering.end(),
+			straight_line_drawing
+		);
+	
+	std::cout << draw_tikz_graph(graph, coloring, straight_line_drawing) << "\n";
+}
 
 template<typename AdjacencyGraph, typename Coloring>
 void test_path_coloring(const AdjacencyGraph & graph, const Coloring & coloring)
@@ -61,7 +233,6 @@ void test_path_coloring(const AdjacencyGraph & graph, const Coloring & coloring)
 		if(visited.count(curr_vertex) == 0)
 		{
 			std::queue<vertex_descriptor> bfs_queue;
-			visited.insert(curr_vertex);
 			bfs_queue.push(curr_vertex);
 			
 			std::size_t extra = 1;
@@ -88,8 +259,6 @@ void test_path_coloring(const AdjacencyGraph & graph, const Coloring & coloring)
 							visited.insert(n);
 							bfs_queue.push(n);
 						}
-						
-						
 					}
 					
 					// Find more than one unvisited neighbor, not a path
@@ -163,122 +332,10 @@ void poh_color_test(const AdjacencyGraph & graph)
 	
 	// Test correctness of path coloring
 	test_path_coloring(graph, color_property_map);
-}
-
-template<typename Graph>
-void make_triangulated(Graph & graph)
-{
-	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
 	
-	// Define the storage type for the planar embedding
-	typedef std::vector<
-			std::vector<edge_descriptor>
-		> embedding_storage_t;
-
-	typedef iterator_property_map
-		< typename embedding_storage_t::iterator, 
-			typename property_map<Graph, vertex_index_t>::type
-		> embedding_t;
-
-	make_connected(graph);
-
-	//Initialize the interior edge index
-	typename property_map<Graph, edge_index_t>::type e_index = get(edge_index, graph);
-	typename graph_traits<Graph>::edges_size_type edge_count = 0;
-	typename graph_traits<Graph>::edge_iterator ei, ei_end;
-	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
-		put(e_index, *ei, edge_count++);
-
-	// Create the planar embedding
-	embedding_storage_t embedding_storage(num_vertices(graph));
-	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-
-	if(!boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		                   boyer_myrvold_params::embedding = embedding))
-	{
-		std::string error = "Non-planar graph.";
-		throw std::logic_error(error);
-	}            
-
-	// Re-initialize the edge index, since we just added a few edges
-	edge_count = 0;
-	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
-		put(e_index, *ei, edge_count++);
-
-	make_biconnected_planar(graph, embedding);
-
-	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		                   boyer_myrvold_params::embedding = embedding);
-
-	// Re-initialize the edge index, since we just added a few edges
-	edge_count = 0;
-	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
-		put(e_index, *ei, edge_count++);
-
-	make_maximal_planar(graph, embedding);
-
-	// Re-initialize the edge index, since we just added a few edges
-	edge_count = 0;
-	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
-		put(e_index, *ei, edge_count++);
-}
-
-template<typename Graph>
-void draw_graph(Graph & graph)
-{
-	typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
-	
-	// Define the storage type for the planar embedding
-	typedef std::vector<
-			std::vector<edge_descriptor>
-		> embedding_storage_t;
-
-	typedef iterator_property_map
-		< typename embedding_storage_t::iterator, 
-			typename property_map<Graph, vertex_index_t>::type
-		> embedding_t;
-	
-	// Create the planar embedding
-	embedding_storage_t embedding_storage(num_vertices(graph));
-	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-
-	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		                   boyer_myrvold_params::embedding = embedding);
-	
-	std::map<vertex_descriptor,int> color_map;
-  	boost::associative_property_map< std::map<vertex_descriptor, int> >
-    	color_property_map(color_map);
-    	
-	// Find a canonical ordering
-	std::vector<vertex_descriptor> ordering;
-	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
-    	
-	//Set up a property map to hold the mapping from vertices to coord_t's
-	typedef std::vector< coord_t > straight_line_drawing_storage_t;
-	typedef boost::iterator_property_map
-		< straight_line_drawing_storage_t::iterator, 
-			typename property_map<Graph, vertex_index_t>::type 
-		> straight_line_drawing_t;
-
-	straight_line_drawing_storage_t straight_line_drawing_storage
-		(num_vertices(graph));
-	straight_line_drawing_t straight_line_drawing
-		(straight_line_drawing_storage.begin(), 
-			get(vertex_index, graph)
-		);
-
-
-
-	// Compute the straight line drawing
-	chrobak_payne_straight_line_drawing(graph, 
-			embedding, 
-			ordering.begin(),
-			ordering.end(),
-			straight_line_drawing
-		);
-	
-	std::cout << draw_tikz_graph(graph, color_property_map, straight_line_drawing) << "\n";
+	#ifdef SHOW_VISUALIZATION
+		draw_graph_color(graph, color_property_map);
+	#endif
 }
 
 void test_poh_color()
@@ -294,49 +351,35 @@ void test_poh_color()
 				property<vertex_index_t, int>,
 				property<edge_index_t, int>
 			> Graph;
-		for(std::size_t order=3; order<20; order++)
+		
+		for(std::size_t order = 3; order < 50; order++)
 		{
-			for(std::size_t seed=5; seed<8; seed+=2)
+			try
 			{
-			
-				try
-				{
-					// Construct triangulated plane graph on 9 vertices
-					Graph graph(order);
-					
-					for(std::size_t i=0; i<order; i++)
-					{
-						for(std::size_t j=i+1; j<order; j++)
-						{
-							if(i % seed == j % seed)
-							{
-								add_edge(i, j, graph);
-							}
-						}
-					}
-			
-					make_triangulated(graph);
-			
-					poh_color_test(graph);
-			
-					#ifdef SHOW_PASSES
-						std::cout<<"    PASS " << order << " vertex Poh path color."<<std::endl;
-					#endif
-				}
-				catch(std::logic_error error)
-				{
-					// Generated a non-planar graph, ignore this case
-				}
-				catch(std::exception& error)
-				{
-					std::cout<<"    FAIL " << order << " vertex Poh path color ("<<error.what()<<")."<<std::endl;
-					failed=true;
-				}
-				catch(...)
-				{
-					std::cout<<"    FAIL " << order << " vertex Poh path color (unknown error)."<<std::endl;
-					failed=true;
-				}
+				// Construct triangulated plane graph on 9 vertices
+				Graph graph(order);
+		
+				make_triangulated(graph);
+				
+				poh_color_test(graph);
+		
+				#ifdef SHOW_PASSES
+					std::cout<<"    PASS " << order << " vertex Poh path color."<<std::endl;
+				#endif
+			}
+			catch(std::logic_error error)
+			{
+				// Generated a non-planar graph, ignore this case
+			}
+			catch(std::exception& error)
+			{
+				std::cout<<"    FAIL " << order << " vertex Poh path color ("<<error.what()<<")."<<std::endl;
+				failed=true;
+			}
+			catch(...)
+			{
+				std::cout<<"    FAIL " << order << " vertex Poh path color (unknown error)."<<std::endl;
+				failed=true;
 			}
 		}
 	}

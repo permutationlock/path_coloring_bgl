@@ -20,7 +20,7 @@
 #include <boost/property_map/property_map.hpp>
 
 namespace boost {
-
+	
 	/*
 	 * get_incident_vertex
 	 *
@@ -38,231 +38,234 @@ namespace boost {
 			adj = target(edge, graph);
 		return adj;
 	}
-
+	
 	/*
 	 * poh_path_color
 	 *
 	 * Preconditions: graph is a weakly triangulated planar graph the incident edges of each
-	 * vertex arranged in counter-clockwise order in the embedding. p and q are paths with
-	 * p above q (in counter-clockwise orientation scheme) such that joining the beginnings
+	 * vertex arranged in counterclockwise order in the embedding. p and q are paths with
+	 * p above q (in counterclockwise orientation scheme) such that joining the beginnings
 	 * and ends of the paths forms a chordless cycle, and with p and q each colored a
 	 * different color. new_color is a third color different from the color of p and q.
 	 * 
-	 * Postconditions: returns a coloring of g with the face enclosed by the cycle pq
+	 * Postconditions: a coloring of g with the face enclosed by the cycle pq
 	 * 3-colored such that each color class induces a disjoint union of paths.
 	 */
 	template<typename Graph, typename Embedding, typename Coloring, typename VertexIter>
 	void poh_path_color(const Graph & graph, const Embedding & embedding,
-		VertexIter p_0, VertexIter p_1, VertexIter q_0, VertexIter q_1, Coloring & coloring,
+		VertexIter p_begin, VertexIter p_end, VertexIter q_begin, VertexIter q_end, Coloring & coloring,
 		typename property_traits<Coloring>::value_type new_color)
 	{
 		typedef graph_traits<Graph> GraphTraits;
 		typedef typename GraphTraits::vertex_descriptor vertex_descriptor;
-		typedef typename GraphTraits::edge_descriptor edge_descriptor;
 		
-		// Base case: K_2
-		if(p_1 - p_0 == 1 && q_1 - q_0 == 1)
+		// Base case: Paths are each single vertices, K_2
+		if(p_end - p_begin == 1 && q_end - q_begin == 1)
 		{
 			return;
 		}
 		
-		/*std::cout <<  std::string("p_0=") + std::to_string(*p_0)
-				+ ", p_1-1=" + std::to_string(*(p_1-1)) + ", q_0=" + std::to_string(*q_0)
-				+ ", q_1-1=" + std::to_string(*(q_1-1)) + ".\n";*/
-	
-		// Find inner triangulation vertex for beginning of paths
-		vertex_descriptor t_0 = *p_0;
+		// Vertices at the start and end of our paths
+		vertex_descriptor p_0 = *p_begin, p_1 = *(p_end - 1), q_0 = *q_begin,
+			q_1 = *(q_end - 1);
 		
-		// Iterate incident edges in counterclockwise embedded order
-		for(auto iter = embedding[*p_0].begin(); iter != embedding[*p_0].end(); iter++)
+		// Triangulation vertices at the beginning and end of the paths
+		vertex_descriptor t_0, t_1;
+		
+		// Case 1.1: Find t_0 and check if it hits a path
 		{
-			// Locate vertex on the end of edge
-			vertex_descriptor neighbor = get_incident_vertex(*p_0, *iter, graph);
+			t_0 = q_0;
 			
-			if(neighbor == *q_0)	// Find begining vertex of second path
+			// Iterate q_0's incident edges in counterclockwise order
+			auto ordering = embedding[q_0];
+			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
 			{
-				// Triangulation vertex is one forward counterclockwise
-				if(iter + 1 == embedding[*p_0].end())
-					t_0 = get_incident_vertex(*p_0, *(embedding[*p_0].begin()), graph);	
-				else
-					t_0 = get_incident_vertex(*p_0, *(iter + 1), graph);
-				break;
+				// Find p_0
+				if(get_incident_vertex(q_0, *edge_iter, graph) == p_0)
+				{
+					if(edge_iter == ordering.begin())
+					{
+						t_0 = get_incident_vertex(q_0, *(ordering.end() - 1), graph);
+					}
+					else
+					{
+						t_0 = get_incident_vertex(q_0, *(edge_iter - 1), graph);
+					}
+					break;
+				}
 			}
-		}
-	
-		if(t_0 == *p_0)
-		{
-			std::string error = "start of paths does not form cycle, p_0=" + std::to_string(*p_0)
-				+ ", p_1-1=" + std::to_string(*(p_1-1)) + ", q_0=" + std::to_string(*q_0)
-				+ ", q_1-1=" + std::to_string(*(q_1-1)) + ".";
-			throw std::runtime_error(error);
-		}
-	
-		// Case 1: First triangle hits p or q
-		if(p_1 - p_0 > 1 && t_0 == *(p_0 + 1))
-		{
-			// Removing triangle removes first vertex of p
-			poh_path_color(graph, embedding, p_0 + 1, p_1, q_0, q_1, coloring, new_color);
 			
-			return;
-		}
-		else if(q_1 - q_0 > 1  && t_0 == *(q_0 + 1))
-		{
-			// Removing triangle removes first vertex of q
-			poh_path_color(graph, embedding, p_0, p_1, q_0 + 1, q_1, coloring, new_color);
-		
-			return;
-		}
-	
-		// Find inner triangulation vertex for end of paths
-		vertex_descriptor t_1 = *(q_1 - 1);
-		
-		//std::cout << "  p_0=" << *p_0 << " p_1-1=" << *(p_1-1) << " q_0=" << *q_0 << " q_1-1=" << *(q_1-1) << "\n";
-		
-		// Iterate incident edges in counterclockwise embedded order
-		for(auto iter = embedding[*(q_1 - 1)].begin(); iter != embedding[*(q_1 - 1)].end(); iter++)
-		{
-			// Locate vertex on the end of edge
-			vertex_descriptor neighbor = get_incident_vertex(*(q_1 - 1), *iter, graph);
+			if(t_0 == q_0) throw std::runtime_error("No t_0");
 			
-			//std::cout << "    n = " << neighbor << " vs. p_1-1 = " << *(p_1-1) << "\n";
-			
-			if(neighbor == *(p_1 - 1))	// Find begining vertex of second path
+			// Case 1.1.1: Triangle formed at start with path p
+			if(p_end - p_begin > 1 && t_0 == *(p_begin + 1))
 			{
-				// Triangulation vertex is one forward counterclockwise
-				if(iter + 1 == embedding[*(q_1 - 1)].end())
-				{
-					t_1 = get_incident_vertex(*(q_1 - 1), *(embedding[*(q_1 - 1)].begin()), graph);	
-				}
-				else
-				{
-					t_1 = get_incident_vertex(*(q_1 - 1), *(iter + 1), graph);
-				}
-				break;
+				poh_path_color(graph, embedding, p_begin + 1, p_end, q_begin, q_end, coloring, new_color);
+				return;
+			}
+			
+			// Case 1.1.2: Triangle formed at start with path q
+			if(q_end - q_begin > 1 && t_0 == *(q_begin + 1))
+			{
+				poh_path_color(graph, embedding, p_begin, p_end, q_begin + 1, q_end, coloring, new_color);
+				return;
 			}
 		}
 		
-		//std::cout << "    t_1 = " << t_1 << " vs. q_1 = " << *(q_1-1) << "\n";
-		if(t_1 == *(q_1 -1))
+		// Case 1.2: Find t_1 and check if it hits a path
 		{
-			std::string error = "end of paths does not form cycle, p_0=" + std::to_string(*p_0)
-				+ ", p_1-1=" + std::to_string(*(p_1-1)) + ", q_0=" + std::to_string(*q_0)
-				+ ", q_1-1=" + std::to_string(*(q_1-1)) + ".";
-			throw std::runtime_error(error);
+			t_1 = p_1;
+			
+			// Iterate p_1's incident edges in counterclockwise order
+			auto ordering = embedding[p_1];
+			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
+			{
+				// Find q_1
+				if(get_incident_vertex(p_1, *edge_iter, graph) == q_1)
+				{
+					if(edge_iter == ordering.begin())
+					{
+						t_1 = get_incident_vertex(p_1, *(ordering.end() - 1), graph);
+					}
+					else
+					{
+						t_1 = get_incident_vertex(p_1, *(edge_iter - 1), graph);
+					}
+					break;
+				}
+			}
+			
+			if(t_1 == p_1) throw std::runtime_error("No t_1");
+			
+			// Case 1.2.1: Triangle formed at end with path p
+			if(p_end - p_begin > 1 && t_1 == *(p_end - 2))
+			{
+				//std::cout << "Triangle formed at end with path p.\n";
+				poh_path_color(graph, embedding, p_begin, p_end - 1, q_begin, q_end,
+					coloring, new_color);
+				return;
+			}
+			
+			// Case 1.2.1: Triangle formed at end with path q
+			if(q_end - q_begin > 1 && t_1 == *(q_end - 2))
+			{
+				//std::cout << "Triangle formed at end with path q.\n";
+				poh_path_color(graph, embedding, p_begin, p_end, q_begin, q_end - 1,
+					coloring, new_color);
+				return;
+			}
 		}
 		
-		// Case 2: Second triangle hits p or q
-		if(p_1 - p_0 > 1 && t_1 == *(p_1 - 2))
-		{	
-			// Removing triangle removes last vertex of p
-			poh_path_color(graph, embedding, p_0, p_1 - 1, q_0, q_1, coloring, new_color);
-		
-			return;
-		}
-		else if(q_1 - q_0 > 1  && t_1 == *(q_1 - 2))
+		// Case 2: Check for bridging edge between the two paths
 		{
-			// Removing triangle removes last vertex of q
-			poh_path_color(graph, embedding, p_0, p_1, q_0, q_1 - 1, coloring, new_color);
-		
-			return;
-		}
-		
-		// Case 3: Search for path-bridging edge
-		{
-			std::unordered_map<vertex_descriptor,VertexIter> p_map;
-		
-			// Mark all edges from vertices on p
-			for(auto p_iter = p_0; p_iter != p_1; p_iter++)
+			std::unordered_map<vertex_descriptor, VertexIter> p_map;
+			
+			// Mark all vertices in path p
+			for(auto p_iter = p_begin; p_iter != p_end; p_iter++)
 			{
 				p_map[*p_iter] = p_iter;
 			}
-		
-			for (auto q_iter = q_0; q_iter != q_1; ++q_iter)
+			
+			// Check vertices in path q for neighbors in p
+			for(auto q_iter = q_begin; q_iter != q_end; q_iter++)
 			{
-				for (edge_descriptor inc_edge : embedding[*q_iter])
+				// Look at each neighbor
+				auto ordering = embedding[*q_iter];
+				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
 				{
-					vertex_descriptor q_nbr = get_incident_vertex(*q_iter, inc_edge, graph);
+					vertex_descriptor neighbor = get_incident_vertex(*q_iter, *edge_iter, graph);
 					
-					if(p_map.count(q_nbr) != 0)
+					// If a vertex has neighbor in p
+					if(p_map.count(neighbor) != 0)
 					{
 						// Check if our edge is one of the outside edges
-						if(q_iter == q_0 && p_map[q_nbr] == p_0)
+						if(*q_iter == q_0 && *p_map[neighbor] == p_0)
 							continue;
-						if(q_iter == q_1 - 1 && p_map[q_nbr] == p_1 - 1)
+						if(*q_iter == q_1 && *p_map[neighbor] == p_1)
 							continue;
-					
-						// Recurse on "left" and "right" halves
-						poh_path_color(graph, embedding, p_0, p_map[q_nbr] + 1, q_0,q_iter + 1,
-							coloring, new_color);
-						poh_path_color(graph, embedding, p_map[q_nbr], p_1, q_iter, q_1,
-							coloring, new_color);
-					
+						
+						// Recurse on left and right halves
+						poh_path_color(graph, embedding, p_begin, p_map[*q_iter] + 1,
+							q_begin, q_iter + 1, coloring, new_color);
+						poh_path_color(graph, embedding, p_map[*q_iter], p_end,
+							q_iter, q_end, coloring, new_color);
 						return;
 					}
 				}
 			}
 		}
 		
-		// Case 4: Find splitting path
+		// Case 3: Find splitting path between triangulation vertices
 		{
-			std::unordered_map<vertex_descriptor,vertex_descriptor> parent_map;
-			std::queue<vertex_descriptor> bfs_queue;
-		
-			// Perform BFS from t_1 inside the cycle and locate t_1-t_0 path
-			bfs_queue.push(t_1);
-			parent_map[t_1] = t_1;
-	
-			for(auto p_iter = p_0; p_iter != p_1; p_iter++)
+			/* 
+			 * We will perform a BFS from t_1 to find a chordless t_0t_1-path.
+			 * We initially mark paths p and q to contain the search within the
+			 * pq-cycle.
+			 */
+			
+			std::unordered_map<vertex_descriptor, vertex_descriptor> parent_map;
+			
+			// Mark vertices in path p
+			for(auto p_iter = p_begin; p_iter != p_end; p_iter++)
 			{
 				parent_map[*p_iter] = *p_iter;
 			}
-		
-			for(auto q_iter = q_0; q_iter != q_1; q_iter++)
+			
+			// Mark vertices in path q
+			for(auto q_iter = q_begin; q_iter != q_end; q_iter++)
 			{
 				parent_map[*q_iter] = *q_iter;
 			}
-	
-			vertex_descriptor curr_vertex;
-		
-			while(!bfs_queue.empty() && curr_vertex != t_0)
+			
+			std::queue<vertex_descriptor> bfs_queue;
+			
+			// Start bfs
+			parent_map[t_1] = t_1;
+			bfs_queue.push(t_1);
+			
+			vertex_descriptor curr_vertex = t_1;
+			
+			while(!bfs_queue.empty())
 			{
 				curr_vertex = bfs_queue.front();
 				bfs_queue.pop();
-		
-				for(edge_descriptor inc_edge : embedding[curr_vertex])
+				
+				// We are done as soon as we find t_0
+				if(curr_vertex == t_0) break;
+				
+				// Add all unmarked neighbors of curr_vertex to bfs_queue
+				auto ordering = embedding[curr_vertex];
+				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
 				{
-					vertex_descriptor neighbor = get_incident_vertex(curr_vertex, inc_edge, graph);
+					vertex_descriptor neighbor = get_incident_vertex(curr_vertex, *edge_iter, graph);
+					
 					if(parent_map.count(neighbor) == 0)
 					{
-						bfs_queue.push(neighbor);
 						parent_map[neighbor] = curr_vertex;
+						bfs_queue.push(neighbor);
 					}
 				}
 			}
-		
-			// A t_1 - t_0 path should be guaranteed, throw if not found
-			if(curr_vertex != t_0)
-			{
-				throw std::runtime_error("No splitting path or bridging edge.");
-			}
-		
-			// Backtrack to construct t_0 - t_1 path and color using new_color
+			
+			if(curr_vertex != t_0) throw std::runtime_error("No splitting_path");
+			
+			// Backtrack and generate splitting path, coloring it new_color
 			std::vector<vertex_descriptor> splitting_path;
 			splitting_path.push_back(curr_vertex);
 			coloring[curr_vertex] = new_color;
-		
+			
 			while(parent_map[curr_vertex] != curr_vertex)
 			{
 				curr_vertex = parent_map[curr_vertex];
 				splitting_path.push_back(curr_vertex);
 				coloring[curr_vertex] = new_color;
 			}
-		
-			// Recurse on top and bottom halves, now coloring with correct colors
-			poh_path_color(graph, embedding, p_0, p_1, splitting_path.begin(),
-				splitting_path.end(), coloring, coloring[*q_0]);
+			
+			// Recurse on top and bottom halves with the appropriate color
+			poh_path_color(graph, embedding, p_begin, p_end, splitting_path.begin(),
+				splitting_path.end(), coloring, coloring[q_0]);
 			poh_path_color(graph, embedding, splitting_path.begin(), splitting_path.end(),
-				q_0, q_1, coloring, coloring[*p_0]);
+				q_begin, q_end, coloring, coloring[p_0]);
 		}
 	}
 }
