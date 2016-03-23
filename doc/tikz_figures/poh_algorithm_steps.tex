@@ -29,7 +29,53 @@
 
 \begin{center}
 
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{huge}
+Poh Path $3$-Coloring Algorithm for Triangulated Plane Graphs\\
+\end{huge}
+\hfill\\
+\hfill\\
+\hfill\\
+
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
+  \node (0) at (0cm, 0cm) {$0$};
+  \node (1) at (14cm, 0cm) {$1$};
+  \node (2) at (11cm, 2cm) {$2$};
+  \node (3) at (8cm, 1cm) {$3$};
+  \node (4) at (8cm, 4cm) {$4$};
+  \node (5) at (7cm, 6cm) {$5$};
+  \node (6) at (6cm, 2cm) {$6$};
+  \node (7) at (4cm, 3cm) {$7$};
+  \node (8) at (7cm, 7cm) {$8$};
+  \draw (0) -- (1);
+  \draw (0) -- (8);
+  \draw (8) -- (1);
+  \draw (2) -- (1);
+  \draw (3) -- (1);
+  \draw (2) -- (8);
+  \draw (3) -- (0);
+  \draw (2) -- (5);
+  \draw (2) -- (4);
+  \draw (2) -- (3);
+  \draw (3) -- (6);
+  \draw (3) -- (4);
+  \draw (4) -- (5);
+  \draw (4) -- (6);
+  \draw (5) -- (8);
+  \draw (5) -- (7);
+  \draw (5) -- (6);
+  \draw (6) -- (0);
+  \draw (6) -- (7);
+  \draw (7) -- (8);
+  \draw (7) -- (0);
+\end{tikzpicture}\\
+\hfill\\
+Coloring the above maximally planar graph with the Poh path coloring algorithm.
+\hfill\\
+\hfill\\
+\hfill\\
+\hfill\\
+
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node [fill=red!70] (0) at (0cm, 0cm) {$0$};
   \node [fill=red!70] (1) at (14cm, 0cm) {$1$};
   \node (2) at (11cm, 2cm) {$2$};
@@ -66,8 +112,9 @@
 \hfill\\
 \hfill\\
 \hfill\\
+\hfill\\
 
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node [fill=red!70] (0) at (0cm, 0cm) {$0$};
   \node [fill=red!70] (1) at (14cm, 0cm) {$1$};
   \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
@@ -104,8 +151,9 @@
 \hfill\\
 \hfill\\
 \hfill\\
+\hfill\\
 
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node [fill=red!70] (0) at (0cm, 0cm) {$0$};
   \node [fill=red!70] (1) at (14cm, 0cm) {$1$};
   \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
@@ -138,12 +186,13 @@
   \draw (7) -- (0);
 \end{tikzpicture}\\
 \hfill\\
-3) Find path.
+3) Find shortest path between triangulating vertices.
+\hfill\\
 \hfill\\
 \hfill\\
 \hfill\\
 
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
   \node (5) [fill=blue!70] at (7cm, 6cm) {$5$};
   \node (7) [fill=blue!70] at (4cm, 3cm) {$7$};
@@ -154,7 +203,7 @@
   \draw (5) -- (7);
   \draw (7) -- (8);
 \end{tikzpicture}\\
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node [fill=red!70] (0) at (0cm, 0cm) {$0$};
   \node [fill=red!70] (1) at (14cm, 0cm) {$1$};
   \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
@@ -185,8 +234,9 @@
 \hfill\\
 \hfill\\
 \hfill\\
+\hfill\\
 
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
   \node (5) [fill=blue!70] at (7cm, 6cm) {$5$};
   \node (7) [fill=blue!70] at (4cm, 3cm) {$7$};
@@ -198,7 +248,7 @@
   \draw (5) -- (7);
   \draw (7) -- (8);
 \end{tikzpicture}
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node (5) [fill=blue!70] at (7cm, 6cm) {$5$};
   \node (7) [fill=blue!70] at (4cm, 3cm) {$7$};
   \node [fill=yellow!70] (8) at (7cm, 7cm) {$8$};
@@ -208,7 +258,7 @@
   \draw (7) -- (8);
 \end{tikzpicture}
 $\qquad$
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
   \node (5) [fill=blue!70] at (7cm, 6cm) {$5$};
   \node [fill=yellow!70] (8) at (7cm, 7cm) {$8$};
@@ -216,12 +266,14 @@ $\qquad$
   \draw (2) -- (5);
   \draw (5) -- (8);
 \end{tikzpicture}\\
-5) Recurse on bottom and split on bridging edge.
+\hfill\\
+5) Recurse on top and split on bridging edge.
+\hfill\\
 \hfill\\
 \hfill\\
 \hfill\\
 
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node [fill=red!70] (0) at (0cm, 0cm) {$0$};
   \node [fill=red!70] (1) at (14cm, 0cm) {$1$};
   \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
@@ -252,8 +304,9 @@ $\qquad$
 \hfill\\
 \hfill\\
 \hfill\\
+\hfill\\
 
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
   \node (3) [fill=yellow!70] at (8cm, 1cm) {$3$};
   \node (4) at (8cm, 4cm) {$4$};
@@ -271,7 +324,7 @@ $\qquad$
   \draw (5) -- (6);
   \draw (6) -- (7);
 \end{tikzpicture}\\
-\begin{tikzpicture}[scale=.5, every node/.style={circle, draw, minimum size=8.5mm, scale=.5}]
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
   \node [fill=red!70] (0) at (0cm, 0cm) {$0$};
   \node [fill=red!70] (1) at (14cm, 0cm) {$1$};
   \node (3) [fill=yellow!70] at (8cm, 1cm) {$3$};
@@ -287,7 +340,116 @@ $\qquad$
 \hfill\\
 \hfill\\
 \hfill\\
+\hfill\\
 
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
+  \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
+  \node (3) [fill=yellow!70] at (8cm, 1cm) {$3$};
+  \node (4) at (8cm, 4cm) {$4$};
+  \node (5) [fill=blue!70] at (7cm, 6cm) {$5$};
+  \node (6) [fill=yellow!70] at (6cm, 2cm) {$6$};
+  \node (7) [fill=blue!70] at (4cm, 3cm) {$7$};
+  \node (a) [draw=none, scale=2] at (13cm, 3cm) {$\Longrightarrow$};
+  \draw (2) -- (5);
+  \draw (2) -- (4);
+  \draw (2) -- (3);
+  \draw (3) -- (6);
+  \draw (3) -- (4);
+  \draw (4) -- (5);
+  \draw (4) -- (6);
+  \draw (5) -- (7);
+  \draw (5) -- (6);
+  \draw (6) -- (7);
+\end{tikzpicture}
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
+  \node (3) [draw=none] at (8cm, 1cm) {$$};
+  \node (5) [fill=blue!70] at (7cm, 6cm) {$5$};
+  \node (6) [fill=yellow!70] at (6cm, 2cm) {$6$};
+  \node (7) [fill=blue!70] at (4cm, 3cm) {$7$};
+  \draw (5) -- (7);
+  \draw (5) -- (6);
+  \draw (6) -- (7);
+\end{tikzpicture}
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
+  \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
+  \node (3) [fill=yellow!70] at (8cm, 1cm) {$3$};
+  \node (4) at (8cm, 4cm) {$4$};
+  \node (5) [fill=blue!70] at (7cm, 6cm) {$5$};
+  \node (6) [fill=yellow!70] at (6cm, 2cm) {$6$};
+  \draw (2) -- (5);
+  \draw (2) -- (4);
+  \draw (2) -- (3);
+  \draw (3) -- (6);
+  \draw (3) -- (4);
+  \draw (4) -- (5);
+  \draw (4) -- (6);
+  \draw (5) -- (6);
+\end{tikzpicture}
+\hfill\\
+\hfill\\
+8) Recurse on top and split along bridging edge.
+\hfill\\
+\hfill\\
+\hfill\\
+\hfill\\
+
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
+  \node (2) [fill=blue!70] at (11cm, 2cm) {$2$};
+  \node (3) [fill=yellow!70] at (8cm, 1cm) {$3$};
+  \node (4) [fill=red!70] at (8cm, 4cm) {$4$};
+  \node (5) [fill=blue!70] at (7cm, 6cm) {$5$};
+  \node (6) [fill=yellow!70] at (6cm, 2cm) {$6$};
+  \draw (2) -- (5);
+  \draw (2) -- (4);
+  \draw (2) -- (3);
+  \draw (3) -- (6);
+  \draw (3) -- (4);
+  \draw (4) -- (5);
+  \draw (4) -- (6);
+  \draw (5) -- (6);
+\end{tikzpicture}
+\hfill\\
+\hfill\\
+9) Find triangulation vertices and splitting path.
+\hfill\\
+\hfill\\
+\hfill\\
+\hfill\\
+
+\begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.6}]
+  \node [fill=red!70] (0) at (0cm, 0cm) {$0$};
+  \node [fill=red!70] (1) at (14cm, 0cm) {$1$};
+  \node [fill=blue!70] (2) at (11cm, 2cm) {$2$};
+  \node [fill=yellow!70] (3) at (8cm, 1cm) {$3$};
+  \node [fill=red!70] (4) at (8cm, 4cm) {$4$};
+  \node [fill=blue!70] (5) at (7cm, 6cm) {$5$};
+  \node [fill=yellow!70] (6) at (6cm, 2cm) {$6$};
+  \node [fill=blue!70] (7) at (4cm, 3cm) {$7$};
+  \node [fill=yellow!70] (8) at (7cm, 7cm) {$8$};
+  \draw (0) -- (1);
+  \draw (0) -- (8);
+  \draw (8) -- (1);
+  \draw (2) -- (1);
+  \draw (3) -- (1);
+  \draw (2) -- (8);
+  \draw (3) -- (0);
+  \draw (2) -- (5);
+  \draw (2) -- (4);
+  \draw (2) -- (3);
+  \draw (3) -- (6);
+  \draw (3) -- (4);
+  \draw (4) -- (5);
+  \draw (4) -- (6);
+  \draw (5) -- (8);
+  \draw (5) -- (7);
+  \draw (5) -- (6);
+  \draw (6) -- (0);
+  \draw (6) -- (7);
+  \draw (7) -- (8);
+  \draw (7) -- (0);
+\end{tikzpicture}\\
+\hfill\\
+Done!
 \end{center}
 
 \end{document}

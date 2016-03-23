@@ -68,6 +68,8 @@ namespace boost {
 		// Vertices at the start and end of our paths
 		vertex_descriptor p_0 = *p_begin, p_1 = *(p_end - 1), q_0 = *q_begin,
 			q_1 = *(q_end - 1);
+			
+		//std::cout << "p_0=" << p_0 << ", p_1=" << p_1 << ", q_0=" << q_0 << ", q_1=" << q_1 << "\n";
 		
 		// Triangulation vertices at the beginning and end of the paths
 		vertex_descriptor t_0, t_1;
@@ -80,9 +82,10 @@ namespace boost {
 			auto ordering = embedding[q_0];
 			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
 			{
-				// Find p_0
+				// Find p_0 for orientation
 				if(get_incident_vertex(q_0, *edge_iter, graph) == p_0)
 				{
+					// t_0 is one back from p_0 in the adjacency list
 					if(edge_iter == ordering.begin())
 					{
 						t_0 = get_incident_vertex(q_0, *(ordering.end() - 1), graph);
@@ -95,7 +98,7 @@ namespace boost {
 				}
 			}
 			
-			if(t_0 == q_0) throw std::runtime_error("No t_0");
+			if(t_0 == q_0) throw std::runtime_error("Invalid embedding (no t_0).");
 			
 			// Case 1.1.1: Triangle formed at start with path p
 			if(p_end - p_begin > 1 && t_0 == *(p_begin + 1))
@@ -120,9 +123,10 @@ namespace boost {
 			auto ordering = embedding[p_1];
 			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
 			{
-				// Find q_1
+				// Find q_1 for orientation
 				if(get_incident_vertex(p_1, *edge_iter, graph) == q_1)
 				{
+					// t_1 is one back from q_1 in the adjacency list
 					if(edge_iter == ordering.begin())
 					{
 						t_1 = get_incident_vertex(p_1, *(ordering.end() - 1), graph);
@@ -135,7 +139,7 @@ namespace boost {
 				}
 			}
 			
-			if(t_1 == p_1) throw std::runtime_error("No t_1");
+			if(t_1 == p_1) throw std::runtime_error("Invalid embedding (no t_1).");
 			
 			// Case 1.2.1: Triangle formed at end with path p
 			if(p_end - p_begin > 1 && t_1 == *(p_end - 2))
@@ -185,9 +189,9 @@ namespace boost {
 							continue;
 						
 						// Recurse on left and right halves
-						poh_path_color(graph, embedding, p_begin, p_map[*q_iter] + 1,
+						poh_path_color(graph, embedding, p_begin, p_map[neighbor] + 1,
 							q_begin, q_iter + 1, coloring, new_color);
-						poh_path_color(graph, embedding, p_map[*q_iter], p_end,
+						poh_path_color(graph, embedding, p_map[neighbor], p_end,
 							q_iter, q_end, coloring, new_color);
 						return;
 					}
@@ -247,7 +251,7 @@ namespace boost {
 				}
 			}
 			
-			if(curr_vertex != t_0) throw std::runtime_error("No splitting_path");
+			if(curr_vertex != t_0) throw std::runtime_error("Invalid embedding (no splitting path).");
 			
 			// Backtrack and generate splitting path, coloring it new_color
 			std::vector<vertex_descriptor> splitting_path;
@@ -266,6 +270,42 @@ namespace boost {
 				splitting_path.end(), coloring, coloring[q_0]);
 			poh_path_color(graph, embedding, splitting_path.begin(), splitting_path.end(),
 				q_begin, q_end, coloring, coloring[p_0]);
+		}
+	}
+	
+	/*
+	 * hartman_path_list_color_biconnected
+	 *
+	 * Preconditions: graph is a weakly triangulated planar biconnected graph. Incidence lists of each
+	 * vertex are arranged in counterclockwise order in the embedding. p and q are paths with
+	 * p above q (in counterclockwise orientation scheme) such that joining the beginnings
+	 * and ends of the paths forms a cycle. The first vertex of p is our vertex x
+	 * and the first vertex of q is our vertex y. The property_map color_list maps each
+	 * vertex to a list of potential colors. Vertices x and y have a list size >=1,
+	 * vertices in p or q have list size >=2, and all other vertices have list size
+	 * >= 3.
+	 * 
+	 * Postconditions: coloring maps each vertex of g contained in the pq-cycle,
+	 * including vertices in p and q, to a color in their respective color_list
+	 * and each color class induces a disjoint union of cycles. Furthermore, x and
+	 * y have no more than one neighbor assigned the same color.
+	 */
+	template<typename Graph, typename Embedding, typename ColorList, typename Coloring,
+		typename VertexIter>
+	void hartman_path_list_color_nocut(const Graph & graph, const Embedding & embedding,
+		VertexIter p_begin, VertexIter p_end, VertexIter q_begin, VertexIter q_end,
+		const ColorList & color_list, Coloring & coloring)
+	{
+		typedef graph_traits<Graph> GraphTraits;
+		typedef typename GraphTraits::vertex_descriptor vertex_descriptor;
+		
+		std::unordered_map<vertex_descriptor, VertexIter> p_map;
+		
+		// Walk xy-path p and find cutvertices
+		auto mid1_iter = p_begin, mid2_iter = p_begin;
+		for(auto p_iter = p_begin; p_iter != p_end; p_iter++)
+		{
+			
 		}
 	}
 }

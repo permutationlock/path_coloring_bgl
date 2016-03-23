@@ -5,14 +5,21 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <cmath>
 #include <unordered_map>
 #include <set>
 
+// Basic graph headers
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/properties.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
+// Random graph headers
+#include <boost/graph/erdos_renyi_generator.hpp>
+#include <boost/random/linear_congruential.hpp>
+
+// Planar graph headers
 #include <boost/graph/planar_canonical_ordering.hpp>
 #include <boost/graph/is_straight_line_drawing.hpp>
 #include <boost/graph/chrobak_payne_drawing.hpp>
@@ -21,6 +28,7 @@
 #include <boost/graph/make_biconnected_planar.hpp>
 #include <boost/graph/make_maximal_planar.hpp>
 
+// Local project headers
 #include "path_coloring.hpp"
 #include "draw_tikz_graph.hpp"
 
@@ -352,34 +360,49 @@ void test_poh_color()
 				property<edge_index_t, int>
 			> Graph;
 		
-		for(std::size_t order = 3; order < 50; order++)
+		typedef erdos_renyi_iterator<minstd_rand, Graph> ERGen;
+		
+		boost::minstd_rand gen;
+		
+		for(std::size_t order = 10; order < 25; order++)
 		{
-			try
+			bool found_planar = false;
+			while(!found_planar)
 			{
-				// Construct triangulated plane graph on 9 vertices
-				Graph graph(order);
-		
-				make_triangulated(graph);
-				
-				poh_color_test(graph);
-		
-				#ifdef SHOW_PASSES
-					std::cout<<"    PASS " << order << " vertex Poh path color."<<std::endl;
-				#endif
-			}
-			catch(std::logic_error error)
-			{
-				// Generated a non-planar graph, ignore this case
-			}
-			catch(std::exception& error)
-			{
-				std::cout<<"    FAIL " << order << " vertex Poh path color ("<<error.what()<<")."<<std::endl;
-				failed=true;
-			}
-			catch(...)
-			{
-				std::cout<<"    FAIL " << order << " vertex Poh path color (unknown error)."<<std::endl;
-				failed=true;
+				try
+				{
+					// Construct triangulated plane graph on 9 vertices
+					//std::cout << "Generating graph.\n";
+					Graph graph(ERGen(gen, order, 2 * order - 4), ERGen(), order);
+					
+					//std::cout << "Triangulating graph.\n";
+					make_triangulated(graph);
+					
+					found_planar = true;
+					
+					draw_graph_no_color(graph);
+					
+					//std::cout << "Testing planarity.\n";
+					poh_color_test(graph);
+					
+					#ifdef SHOW_PASSES
+						std::cout<<"    PASS " << order << " vertex Poh path color."<<std::endl;
+					#endif
+				}
+				catch(std::logic_error error)
+				{
+					// Generated a non-planar graph, ignore this case
+				}
+				catch(std::exception& error)
+				{
+					std::cout<<"    FAIL " << order << " vertex Poh path color ("<<error.what()<<")."<<std::endl;
+					failed=true;
+				}
+				catch(...)
+				{
+					std::cout<<"    FAIL " << order << " vertex Poh path color (unknown error)."<<std::endl;
+					failed=true;
+				}
 			}
 		}
 	}
