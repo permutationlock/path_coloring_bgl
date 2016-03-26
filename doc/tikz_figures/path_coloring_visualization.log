@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  24 MAR 2016 07:26
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  26 MAR 2016 01:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**poh_figures.tex
-(./poh_figures.tex
+**path_coloring_visualization.tex
+(./path_coloring_visualization.tex
 LaTeX2e <2015/10/01> patch level 2
 Babel <3.9m> and hyphenation patterns for 79 languages loaded.
 (/usr/share/texmf-dist/tex/latex/base/article.cls
@@ -570,8 +570,9 @@ Package csquotes Info: Redefining alias 'english' -> 'english/american'.
 Package csquotes Info: Allocating character ".
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... found 'babel' package.
- (./poh_figures.aux)
-\openout1 = `poh_figures.aux'.
+
+(./path_coloring_visualization.aux)
+\openout1 = `path_coloring_visualization.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 27.
 LaTeX Font Info:    ... okay on input line 27.
@@ -689,30 +690,30 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 34.
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Overfull \hbox (14.63382pt too wide) in paragraph at lines 132--132
- [] 
- []
+Missing character: There is no W in font nullfont!
+Missing character: There is no W in font nullfont!
+Missing character: There is no W in font nullfont!
+ [1
 
-[1
-
-] [2] [3] (./poh_figures.aux) )
+]
+(./path_coloring_visualization.aux) )
 (\end occurred inside a group at level 1)
 
 ### simple group (level 1) entered at line 1061 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 15815 strings out of 493054
- 292290 string characters out of 6140585
- 407805 words of memory out of 5000000
- 19031 multiletter control sequences out of 15000+600000
+ 15685 strings out of 493054
+ 290824 string characters out of 6140585
+ 372082 words of memory out of 5000000
+ 18901 multiletter control sequences out of 15000+600000
  8285 words of font info for 32 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 55i,6n,68p,818b,12215s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 55i,6n,68p,834b,12215s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on poh_figures.pdf (3 pages, 21980 bytes).
+Output written on path_coloring_visualization.pdf (1 page, 2454 bytes).
 PDF statistics:
- 17 PDF objects out of 1000 (max. 8388607)
- 11 compressed objects within 1 object stream
+ 11 PDF objects out of 1000 (max. 8388607)
+ 7 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 
