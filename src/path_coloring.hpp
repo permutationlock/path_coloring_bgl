@@ -56,8 +56,7 @@ namespace boost {
 		VertexIter p_begin, VertexIter p_end, VertexIter q_begin, VertexIter q_end, Coloring & coloring,
 		typename property_traits<Coloring>::value_type new_color)
 	{
-		typedef graph_traits<Graph> GraphTraits;
-		typedef typename GraphTraits::vertex_descriptor vertex_descriptor;
+		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
 		
 		// Base case: Paths are each single vertices, K_2
 		if(p_end - p_begin == 1 && q_end - q_begin == 1)
@@ -296,16 +295,57 @@ namespace boost {
 		VertexIter p_begin, VertexIter p_end, VertexIter q_begin, VertexIter q_end,
 		const ColorList & color_list, Coloring & coloring)
 	{
-		typedef graph_traits<Graph> GraphTraits;
-		typedef typename GraphTraits::vertex_descriptor vertex_descriptor;
+		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+		typedef typename property_traits<Coloring>::value_type color_type;
 		
-		std::unordered_map<vertex_descriptor, VertexIter> p_map;
+		// Select the first color in p_0's list
+		color_type path_color = *(color_list[p_0].begin());
 		
-		// Walk xy-path p and find cutvertices
-		auto mid1_iter = p_begin, mid2_iter = p_begin;
-		for(auto p_iter = p_begin; p_iter != p_end; p_iter++)
+		// Find and color path of outer face vertices between p_0 and q_0
+		std::vector<VertexIter> path;
 		{
+			std::unordered_map<vertex_descriptor, VertexIter> p_map;
+		
+			for(auto p_iter = p_begin; p_iter != p_end; p_iter++)
+			{
+				p_map[*p_iter] = p_iter;
+			}
 			
+			path.push_back(p_begin);
+			coloring[*p_begin] = path_color;
+			
+			bool done = false;
+			while(!done)
+			{
+				done = true;
+				
+				// Iterate through incidentedges of the end of the path
+				auto ordering = embedding[*(path.back())];
+				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
+				{
+					// Find neighbor vertex
+					vertex_descriptor neighbor = get_incident_vertex(*(path.back()), *edge_iter, graph);
+				
+					// If neighbor is on the outer face between p_0 and q_0
+					if(p_map.count(neighbor) != 0)
+					{
+						path.push_back(p_map.at(neighbor));
+						coloring[neighbor] = path_color;
+						done = false;
+					}
+				}
+			}
+		}
+		
+		// Determine lobes and center
+		{
+			for(std::size_t i = 0; i < path.size(); i++)
+			{
+				if(path[i+1] - path[i)
+				{
+				
+				}
+			}
 		}
 	}
 }

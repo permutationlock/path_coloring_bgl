@@ -371,7 +371,7 @@ void test_poh_color()
 			{
 				try
 				{
-					// Construct triangulated plane graph on 9 vertices
+					// Construct a random trriangulated graph
 					//std::cout << "Generating graph.\n";
 					Graph graph(ERGen(gen, order, 2 * order - 4), ERGen(), order);
 					
@@ -380,7 +380,7 @@ void test_poh_color()
 					
 					found_planar = true;
 					
-					draw_graph_no_color(graph);
+					//draw_graph_no_color(graph);
 					
 					//std::cout << "Testing planarity.\n";
 					poh_color_test(graph);
