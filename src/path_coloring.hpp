@@ -290,18 +290,18 @@ namespace boost {
 	 * y have no more than one neighbor assigned the same color.
 	 */
 	template<typename Graph, typename Embedding, typename ColorList, typename Coloring,
-		typename VertexIter>
-	void hartman_path_list_color_nocut(const Graph & graph, const Embedding & embedding,
-		VertexIter p_begin, VertexIter p_end, VertexIter q_begin, VertexIter q_end,
+		typename VertexList>
+	void hartman_path_list_color_block(const Graph & graph, const Embedding & embedding,
+		VertexList & top, VertexList & bottom,
 		const ColorList & color_list, Coloring & coloring)
 	{
 		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
 		typedef typename property_traits<Coloring>::value_type color_type;
 		
-		// Select the first color in p_0's list
-		color_type path_color = *(color_list[p_0].begin());
+		// Select the first color in x's list
+		color_type path_color = *(color_list[*p_begin].begin());
 		
-		// Find and color path of outer face vertices between p_0 and q_0
+		// Find and color path of outer face vertices between x and y
 		std::vector<VertexIter> path;
 		{
 			std::unordered_map<vertex_descriptor, VertexIter> p_map;
@@ -341,13 +341,40 @@ namespace boost {
 		{
 			for(std::size_t i = 0; i < path.size(); i++)
 			{
-				if(path[i+1] - path[i)
+			    // Check to see if we take a chord
+			    auto p_iter = path[i];
+				if(path[i+1] != p_iter++)
 				{
-				
+				    // Deal with the lobe that was chopped off by the chord
+				    std::list<vertex_descriptor> new_path = { *path[i], *path[i+1] };
+				    hartman_remove_path_vertex(graph, embedding, p_iter, path[i+1], p_iter, p_iter, new_path.begin(),
+				        new_path.end(), color_list, coloring, path_color);
 				}
 			}
 		}
+		
+		// Remove path and deal with the interior
+		{
+		    // Find path to remove
+		    std::list<vertex_descriptor> new_path;
+		    for(VertexIter p_iter : path)
+		    {
+		        new_path.push_back(*p_iter);
+		    }
+		    hartman_remove_path_vertex(graph, embedding, path.back(), p_end(), q_begin(), q_end(), new_path.begin(),
+		        new_path.end(), color_list, coloring, path_color);
+		}
 	}
+	
+	template<typename Graph, typename Embedding, typename ColorList, typename Coloring,
+		typename VertexIter>
+	void hartman_list_color_remove_path(const Graph & graph, const Embedding & embedding,
+		VertexList top, VertexList bottom, VertexList::iterator p_begin, VertexList::iterator p_end,
+		const ColorList & color_list, Coloring & coloring)
+	{
+		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+		typedef typename property_traits<Coloring>::value_type color_type;
+    }
 }
 
 #endif
