@@ -78,7 +78,7 @@ void make_triangulated(Graph & graph)
 	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
 
 	if(!boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		                   boyer_myrvold_params::embedding = embedding))
+						   boyer_myrvold_params::embedding = embedding))
 	{
 		std::string error = "Non-planar graph.";
 		throw std::logic_error(error);
@@ -92,7 +92,7 @@ void make_triangulated(Graph & graph)
 	make_biconnected_planar(graph, embedding);
 
 	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		                   boyer_myrvold_params::embedding = embedding);
+						   boyer_myrvold_params::embedding = embedding);
 
 	// Re-initialize the edge index, since we just added a few edges
 	edge_count = 0;
@@ -128,16 +128,16 @@ void draw_graph_no_color(Graph & graph)
 	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
 
 	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		                   boyer_myrvold_params::embedding = embedding);
+						   boyer_myrvold_params::embedding = embedding);
 	
 	std::map<vertex_descriptor,int> color_map;
   	boost::associative_property_map< std::map<vertex_descriptor, int> >
-    	color_property_map(color_map);
-    	
+		color_property_map(color_map);
+		
 	// Find a canonical ordering
 	std::vector<vertex_descriptor> ordering;
 	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
-    	
+		
 	//Set up a property map to hold the mapping from vertices to coord_t's
 	typedef std::vector< coord_t > straight_line_drawing_storage_t;
 	typedef boost::iterator_property_map
@@ -186,12 +186,12 @@ void draw_graph_color(const Graph & graph, const Coloring & coloring)
 	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
 
 	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		                   boyer_myrvold_params::embedding = embedding);
-    	
+						   boyer_myrvold_params::embedding = embedding);
+		
 	// Find a canonical ordering
 	std::vector<vertex_descriptor> ordering;
 	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
-    	
+		
 	//Set up a property map to hold the mapping from vertices to coord_t's
 	typedef std::vector< coord_t > straight_line_drawing_storage_t;
 	typedef boost::iterator_property_map
@@ -232,8 +232,8 @@ void test_path_coloring(const AdjacencyGraph & graph, const Coloring & coloring)
 	
 	// Iterate over each vertex
 	vertex_iterator v_iter, v_end;
-    for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++)
-    {
+	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++)
+	{
 		vertex_descriptor curr_vertex = *v_iter;
 		color_type curr_color = coloring[curr_vertex];
 		

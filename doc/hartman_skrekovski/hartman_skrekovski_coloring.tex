@@ -238,16 +238,25 @@ share only vertices in $P$, the coloring of $G=G_0\cup G_1$ will be a path color
 \begin{adjustwidth}{2em}{2em}
 \begin{center}
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
-  \node (y) at (1.75cm,-1.25cm) {$y$};
-  \node (x) [fill=black!15] at (-1.75cm,-1.25cm) {$x$};
-  \node (p1) [fill=black!15] at (-1.75cm,1.25cm) {$c_i$};
-  \node (p2) [fill=black!15] at (1.75cm,1.25cm) {$c_j$};
+  \node (y) at (1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(315:0.5cm)]y.315) {$y$};
+  
+  \node (x) at (-1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(225:0.5cm)]x.225) {$x$};
+  
+  \node (ci) at (-1.75cm,1.25cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(135:0.5cm)]ci.135) {$c_i$};
+  
+  \node (cj) at (1.75cm,1.25cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(45:0.5cm)]cj.45) {$c_j$};
+  
   \node (temp) [draw=none] at (0,-2cm) {};
+  
   \draw (y) edge [bend left] (x) [dashed];
-  \draw (x) edge [bend left] (p1) [dashed];
-  \draw (p1) edge [bend left] (p2) [dashed];
-  \draw (p2) edge [bend left] (y) [dashed];
-  \draw (p1) edge (p2);
+  \draw (x) edge [bend left] (ci) [dashed];
+  \draw (ci) edge [bend left] (cj) [dashed];
+  \draw (cj) edge [bend left] (y) [dashed];
+  \draw (ci) edge (cj);
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]

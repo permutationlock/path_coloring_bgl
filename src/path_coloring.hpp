@@ -341,40 +341,49 @@ namespace boost {
 		{
 			for(std::size_t i = 0; i < path.size(); i++)
 			{
-			    // Check to see if we take a chord
-			    auto p_iter = path[i];
+				// Check to see if we take a chord
+				auto p_iter = path[i];
 				if(path[i+1] != p_iter++)
 				{
-				    // Deal with the lobe that was chopped off by the chord
-				    std::list<vertex_descriptor> new_path = { *path[i], *path[i+1] };
-				    hartman_remove_path_vertex(graph, embedding, p_iter, path[i+1], p_iter, p_iter, new_path.begin(),
-				        new_path.end(), color_list, coloring, path_color);
+					// Deal with the lobe that was chopped off by the chord
+					std::list<vertex_descriptor> new_path = { *path[i], *path[i+1] };
+					hartman_remove_path_vertex(graph, embedding, p_iter, path[i+1], p_iter, p_iter,
+						new_path.begin(), new_path.end(), color_list, coloring, path_color);
 				}
 			}
 		}
 		
 		// Remove path and deal with the interior
 		{
-		    // Find path to remove
-		    std::list<vertex_descriptor> new_path;
-		    for(VertexIter p_iter : path)
-		    {
-		        new_path.push_back(*p_iter);
-		    }
-		    hartman_remove_path_vertex(graph, embedding, path.back(), p_end(), q_begin(), q_end(), new_path.begin(),
-		        new_path.end(), color_list, coloring, path_color);
+			// Find path to remove
+			std::list<vertex_descriptor> new_path;
+			for(VertexIter p_iter : path)
+			{
+				new_path.push_back(*p_iter);
+			}
+			hartman_remove_path_vertex(graph, embedding, path.back(), p_end(), q_begin(), q_end(),
+				new_path.begin(), new_path.end(), color_list, coloring, path_color);
 		}
 	}
 	
 	template<typename Graph, typename Embedding, typename ColorList, typename Coloring,
-		typename VertexIter>
-	void hartman_list_color_remove_path(const Graph & graph, const Embedding & embedding,
-		VertexList top, VertexList bottom, VertexList::iterator p_begin, VertexList::iterator p_end,
-		const ColorList & color_list, Coloring & coloring)
+		typename VertexList>
+	void path_list_color(const Graph & graph, const Embedding & embedding,
+		VertexList & outer_face, VertexList & colored_path, VertexList::iterator p,
+		VertexList::iterator x, VertexList::iterator y,
+		ColorList & color_list, Coloring & coloring)
 	{
 		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
 		typedef typename property_traits<Coloring>::value_type color_type;
-    }
+		
+		// If path is null, create path
+		if(colored_path.size() == 0)
+		{
+			
+		}
+		
+		//
+	}
 }
 
 #endif
