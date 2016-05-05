@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <queue>
 #include <stdexcept>
+#include <utility>
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/properties.hpp>
@@ -289,7 +290,7 @@ namespace boost {
 	 * and each color class induces a disjoint union of cycles. Furthermore, x and
 	 * y have no more than one neighbor assigned the same color.
 	 */
-	template<typename Graph, typename Embedding, typename ColorList, typename Coloring,
+	/*template<typename Graph, typename Embedding, typename ColorList, typename Coloring,
 		typename VertexList>
 	void hartman_path_list_color_block(const Graph & graph, const Embedding & embedding,
 		VertexList & top, VertexList & bottom,
@@ -302,7 +303,7 @@ namespace boost {
 		color_type path_color = *(color_list[*p_begin].begin());
 		
 		// Find and color path of outer face vertices between x and y
-		std::vector<VertexIter> path;
+		std::list<VertexIter> path;
 		{
 			std::unordered_map<vertex_descriptor, VertexIter> p_map;
 		
@@ -364,13 +365,13 @@ namespace boost {
 			hartman_remove_path_vertex(graph, embedding, path.back(), p_end(), q_begin(), q_end(),
 				new_path.begin(), new_path.end(), color_list, coloring, path_color);
 		}
-	}
+	}*/
 	
-	template<typename Graph, typename Embedding, typename ColorList, typename Coloring,
-		typename VertexList>
+	/*template<typename Graph, typename Embedding, typename VertexList, typename VertexMap,
+		typename ColorList, typename Coloring>
 	void path_list_color(const Graph & graph, const Embedding & embedding,
 		VertexList & outer_face, VertexList & colored_path, VertexList::iterator p,
-		VertexList::iterator x, VertexList::iterator y,
+		VertexList::iterator x, VertexList::iterator y, VertexMap & marked
 		ColorList & color_list, Coloring & coloring)
 	{
 		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
@@ -379,10 +380,176 @@ namespace boost {
 		// If path is null, create path
 		if(colored_path.size() == 0)
 		{
+			// Retrieve the first color in L(x)
+			color_type path_color = *(color_list[*x].begin());
 			
+			bool done = false;
+			while(!done)
+			{
+				done = true;
+				
+				// Iterate through incidentedges of the end of the path
+				auto ordering = embedding[*(path.back())];
+				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
+				{
+					// Find neighbor vertex
+					vertex_descriptor neighbor = get_incident_vertex(*(path.back()), *edge_iter, graph);
+				
+					// If neighbor is on the outer face between p_0 and q_0
+					if(p_map.count(neighbor) != 0)
+					{
+						path.push_back(p_map.at(neighbor));
+						coloring[neighbor] = path_color;
+						done = false;
+					}
+				}
+			}
 		}
 		
 		//
+	}*/
+	
+	template<typename VertexDescriptor, typename EdgeIter>
+	struct SubgraphTraits
+	{
+		VertexDescriptor x, p, y;
+		std::size_t x_begin, x_end
+		EdgeIter y_begin, y_end;
+		
+		SubgraphTraits(VertexDescriptor x, EdgeIter x_begin, EdgeIter x_end, VertexDescriptor y,
+			EdgeIter y_begin, EdgeIter y_ends, VertexDescriptor p) : x(x), p(p), y(y), x_begin(x_begin),
+			x_end(x_end), y_begin(y_begin), y_end(y_end) {}
+	};
+	
+	template<typename Graph, typename Embedding, typename VertexList, typename ColorList, typename Coloring>
+	void path_list_color(const Graph & graph, const Embedding & embedding,
+		VertexList & outer_face, ColorList & color_list, Coloring & coloring)
+	{
+		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+		typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
+		typedef typename property_traits<Coloring>::value_type color_type;
+		typedef typename boost::property_traits<Embedding>::value_type::const_iterator edge_iterator;
+		
+		enum Mark { none = 0, on_face = 1, between = 2, colored = 3 };
+		
+		// Tracks the range in which uncolored neighbors lie for the given vertex
+		std::unordered_map<std::pair<edge_iterator, edge_iterator> > neighbor_range;
+		
+		// Tracks the current state of each vertex in the graph
+		std::unordered_map<vertex_descriptor, Mark> markings;
+		
+		// Setup initial conditions for the outer face of the graph
+		for(auto face_iter = outer_face.begin(); face_iter != outer_face.end(); face_iter++)
+		{
+			vertex_iter vertex = *face_iter;
+			
+			// Mark vertex as between x and y
+			markings[*face_iter] = Mark::between;
+			
+			// Computer next and previous vertices on outer face
+			vertex_iter previous, next;
+			if(face_iter + 1 == outer_face.end())
+			{
+				next = outer_face.front();
+			}
+			else
+			{
+				next = *(face_iter + 1);
+			}
+			if(face_iter == outer_face.begin())
+			{
+				previous = outer_face.back();
+			}
+			else
+			{
+				previous = *(face_iter - 1);
+			}
+			
+			// Note the index of previous and next vertices on the outer face in incidence list
+			edge_iterator begin, end;
+			auto ordering = embedding[vertex];
+			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
+			{
+				vertex_descriptor neighbor = get_incident_vertex(*q_iter, *edge_iter, graph);
+				if(neighbor == previous)
+				{
+					begin = edge_iter; 
+				}
+				else if(neighbor == next)
+				{
+					end = edge_iter;
+					end++;
+				}
+			}
+			neighbor_range[vertex] = std::pair<edge_iterator, edge_iterator>(begin, end);
+		}
+		
+		// Tracks all remaining graphs to be colored
+		std::queue<SubgraphTraits<vertex_descriptor> > subgraphs;
+		
+		// Start with no path, outer face of graph, and set x and y to the start and end of the face
+		subgraphs.push(SubgraphTraits(outer_face.front(), outer_face.front(), outer_face.back());
+		
+		// Loop until all subgraphs have been colored
+		while(!subgraphs.empty())
+		{
+			// Get current graph info
+			SubgraphTraits sgt = subgraphs.front();
+			subgraphs.pop();
+			
+			// Update neighbor_range for this iteration
+			neighbor_range[sgt.x] = std::pair<edge_iterator, edge_iterator>(sgt.x_begin, sgt.x_end);
+			neighbor_range[sgt.y] = std::pair<edge_iterator, edge_iterator>(sgt.y_begin, sgt.y_end);
+			
+			// If a colored path doesn't exist, we must create one
+			if(markings.at(p) != Mark::colored)
+			{
+				vertex_descriptor path_end, next_vertex = sgt.x;
+				color_type path_color = color_list[sgt.x].first();
+				
+				// Color an induced path of vertices along the outer face between x and y with path color
+				do
+				{
+					// Update the path end
+					path_end = next_vertex;
+					
+					// Color and mark next vertex
+					coloring[next_vertex] = path_color;
+					markings[next_vertex] = Mark::colored;
+					
+					// Look through our current range of interior neighbors
+					edge_iterator begin = neighbor_range[path_end].first, end = neighbor_range[path_end].second;
+					auto ordering = embedding[path_end];
+					for(auto edge_iter = begin; edge_iter != end; edge_iter++)
+					{
+						// Wrap if we hit the end of the incidence list
+						if(edge_iter == ordering.end())
+						{
+							edge_iter == ordering.begin();
+						}
+					
+						vertex_descriptor neighbor = get_incident_vertex(*q_iter, *edge_iter, graph);
+					
+						// Check if vertex is on the outer face between x and y
+						if(markings.at(neighbor) == Mark::between)
+						{
+							// Check if it may be colored path_color
+							for(auto color : color_list[neighbor])
+							{
+								if(color == path_color)
+								{
+									next_vertex = neighbor;
+									break;
+								}
+							}
+						}
+					}
+				}
+				while(path_end != next_vertex);
+			}
+			
+			// Iterate through
+		}
 	}
 }
 

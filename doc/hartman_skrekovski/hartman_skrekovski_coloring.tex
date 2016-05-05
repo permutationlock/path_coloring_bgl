@@ -192,7 +192,7 @@ $\qquad$
 
 In this section we present a correct algorithm for producing path $3$-list coloring of a plane graph. The following
 theorem is equivalent to the results produced by Hartman in [1] and independantly by Skrekovski in [3]. The objective in restructuring
-the theorem is to empasize the mechanical operations that would take place in an algorithm implementation
+the theorem is to emphasize the mechanical operations that would take place in an algorithm implementation
 to produce such a coloring.\\
 
 \begin{adjustwidth}{2em}{2em}
@@ -260,17 +260,30 @@ share only vertices in $P$, the coloring of $G=G_0\cup G_1$ will be a path color
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
-  \node (y) at (1.75cm,-1.75cm) {$y'$};
-  \node (x) [fill=black!15] at (-1.75cm,-1.75cm) {$x'$};
-  \node (p1) [fill=black!15] at (-1.75cm,0.75cm) {$c_i$};
-  \node (p2) [fill=black!15] at (1.75cm,0.75cm) {$c_j$};
-  \node (y2) [fill=black!15] at (-1.75cm,2cm) {$y'$};
-  \node (x2) [fill=black!15] at (1.75cm,2cm) {$x'$};
+  \node (y) at (1.75cm,-1.75cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(315:0.5cm)]y.315) {$y'$};
+  
+  \node (x) at (-1.75cm,-1.75cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(225:0.5cm)]x.225) {$x'$};
+  
+  \node (ci) at (-1.75cm,0.75cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(150:0.5cm)]ci.180) {$c_i$};
+  
+  \node (cj) at (1.75cm,0.75cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(30:0.5cm)]cj.0) {$c_j$};
+  
+  
+  \node (y2) at (-1.75cm,2cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(135:0.5cm)]y2.135) {$y'$};
+  
+  \node (x2) at (1.75cm,2cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(45:0.5cm)]x2.45) {$x'$};
+  
   \draw (y) edge [bend left] (x) [dashed];
-  \draw (x) edge [bend left] (p1) [dashed];
+  \draw (x) edge [bend left] (ci) [dashed];
   \draw (y2) edge [bend left] (x2) [dashed];
-  \draw (p2) edge [bend left] (y) [dashed];
-  \draw (p1) edge (p2); \draw (x2) edge (y2);
+  \draw (cj) edge [bend left] (y) [dashed];
+  \draw (ci) edge (cj); \draw (x2) edge (y2);
 \end{tikzpicture}
 \hfill\\
 \hfill\\
@@ -288,12 +301,24 @@ denote the vertices of the outer face in clockwise order as $C=pc_1\ldots c_{n}$
 \begin{adjustwidth}{2em}{2em}
 \begin{center}
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
-  \node (y) at (1.75cm,-1.25cm) {$y$};
-  \node (x) at (-1.75cm,-1.25cm) {$x$};
-  \node (cn) at (-1.75cm,1.25cm) {$c_n$};
-  \node (p) [fill=black!15] at (0cm,2cm) {$p$};
-  \node (c1) at (1.75cm,1.25cm) {$c_1$};
-  \node (n) at (0cm, 0.25cm) {$n$};
+  \node (y) at (1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(315:0.5cm)]y.315) {$y$};
+  
+  \node (x) at (-1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(225:0.5cm)]x.225) {$x$};
+  
+  \node (cn) at (-1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(135:0.5cm)]cn.135) {$c_n$};
+  
+  \node (p) at (0cm,2.25cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]p.90) {$p$};
+  
+  \node (c1) at (1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(45:0.5cm)]c1.45) {$c_1$};
+  
+  \node (n) at (0cm, 0.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]n.90) {$n$};
+  
   \node (temp) [draw=none] at (0,-2cm) {};
   \draw (y) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (cn) [dashed];
@@ -304,11 +329,21 @@ denote the vertices of the outer face in clockwise order as $C=pc_1\ldots c_{n}$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
-  \node (y) at (1.75cm,-1.25cm) {$y'$};
-  \node (x) at (-1.75cm,-1.25cm) {$x'$};
-  \node (cn) at (-1.75cm,1.25cm) {$c_n$};
-  \node (c1) at (1.75cm,1.25cm) {$c_1$};
-  \node (n) at (0cm, 0.25cm) {$n$};
+  \node (y) at (1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(315:0.5cm)]y.315) {$y$};
+  
+  \node (x) at (-1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(225:0.5cm)]x.225) {$x$};
+  
+  \node (cn) at (-1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(120:0.5cm)]cn.120) {$c_n$};
+  
+  \node (c1) at (1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(60:0.5cm)]c1.60) {$c_1$};
+  
+  \node (n) at (0cm, 0.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]n.90) {$n$};
+  
   \node (temp) [draw=none] at (0,-2cm) {};
   \draw (y) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (cn) [dashed];
@@ -334,13 +369,24 @@ for all $n\in N_G(p)$ such that $n\in C[x,y]$, $|L'(n)|\ge2$. Furthermore, for $
 \hfill\\
 \begin{center}
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
-  \node (y) at (1.75cm,-1.25cm) {$y$};
-  \node (x) [draw=none,minimum size=0mm] at (-1.75cm,-1.25cm) {$$};
-  \node (cn) at (-1.75cm,1.25cm) {$c_n$};
-  \node (p) [fill=black!15] at (0cm,2cm) {$p$};
-  \node (c1) at (1.75cm,1.25cm) {$c_1$};
-  \node (n) at (0cm, 0.25cm) {$n$};
+  \node (y) at (1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(315:0.5cm)]y.315) {$y$};
+  
+  \node (cn) at (-1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(135:0.5cm)]cn.135) {$c_n$};
+  
+  \node (p) at (0cm,2.25cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]p.90) {$x,p$};
+  
+  \node (c1) at (1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(45:0.5cm)]c1.45) {$c_1$};
+  
+  \node (n) at (0cm, 0.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]n.90) {$n$};
+  
+  \node (x) [draw=none,minimum size=0mm] at (-1.75cm,-1.25cm) {};
   \node (temp) [draw=none] at (0,-2cm) {};
+  
   \draw (y) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (cn) [dashed];
   \draw (c1) edge [bend left] (y) [dashed];
@@ -350,27 +396,44 @@ for all $n\in N_G(p)$ such that $n\in C[x,y]$, $|L'(n)|\ge2$. Furthermore, for $
 \end{tikzpicture}
 $\quad$
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
-  \node (y) at (1.75cm,-1.25cm) {$y'$};
-  \node (x) [draw=none,minimum size=0mm] at (-1.75cm,-1.25cm) {$$};
-  \node (cn) at (-1.75cm,1.25cm) {$x'$};
-  \node (c1) at (1.75cm,1.25cm) {$c_1$};
-  \node (n) at (0cm, 0.25cm) {$n$};
+  \node (y) at (1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(315:0.5cm)]y.315) {$y$};
+  
+  \node (cn) at (-1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(120:0.5cm)]cn.120) {$x,c_n$};
+  
+  \node (c1) at (1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(60:0.5cm)]c1.60) {$c_1$};
+  
+  \node (n) at (0cm, 0.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]n.90) {$n$};
+  
+  \node (x) [draw=none,minimum size=0mm] at (-1.75cm,-1.25cm) {};
   \node (temp) [draw=none] at (0,-2cm) {};
+  
   \draw (y) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (cn) [dashed];
   \draw (c1) edge [bend left] (y) [dashed];
   \draw (c1) edge [bend left] (n) [dashed];
   \draw (n) edge [bend left] (cn) [dashed];
-\end{tikzpicture}
-$\qquad$
+\end{tikzpicture}\\
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
+  \node (cn) at (-1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(135:0.5cm)]cn.135) {$c_n$};
+  
+  \node (p) at (0cm,2.25cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]p.90) {$x,y,p$};
+  
+  \node (c1) at (1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(45:0.5cm)]c1.45) {$c_1$};
+  
+  \node (n) at (0cm, 0.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]n.90) {$n$};
+  
+  \node (x) [draw=none,minimum size=0mm] at (-1.75cm,-1.25cm) {};
   \node (y) [draw=none,minimum size=0mm] at (1.75cm,-1.25cm) {$$};
-  \node (x) [draw=none,minimum size=0mm] at (-1.75cm,-1.25cm) {$$};
-  \node (cn) at (-1.75cm,1.25cm) {$c_n$};
-  \node (p) [fill=black!15] at (0cm,2cm) {$p$};
-  \node (c1) at (1.75cm,1.25cm) {$c_1$};
-  \node (n) at (0cm, 0.25cm) {$n$};
   \node (temp) [draw=none] at (0,-2cm) {};
+  
   \draw (y) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (cn) [dashed];
   \draw (c1) edge [bend left] (y) [dashed];
@@ -380,12 +443,19 @@ $\qquad$
 \end{tikzpicture}
 $\quad$
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
+  \node (cn) at (-1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(120:0.5cm)]cn.120) {$y,c_n$};
+  
+  \node (c1) at (1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(60:0.5cm)]c1.60) {$x,c_1$};
+  
+  \node (n) at (0cm, 0.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]n.90) {$n$};
+  
+  \node (x) [draw=none,minimum size=0mm] at (-1.75cm,-1.25cm) {};
   \node (y) [draw=none,minimum size=0mm] at (1.75cm,-1.25cm) {$$};
-  \node (x) [draw=none,minimum size=0mm] at (-1.75cm,-1.25cm) {$$};
-  \node (cn) at (-1.75cm,1.25cm) {$y'$};
-  \node (c1) at (1.75cm,1.25cm) {$x'$};
-  \node (n) at (0cm, 0.25cm) {$n$};
   \node (temp) [draw=none] at (0,-2cm) {};
+  
   \draw (y) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (cn) [dashed];
   \draw (c1) edge [bend left] (y) [dashed];
@@ -409,12 +479,23 @@ $c_i\in N_C(p)$ and $c_i\in C(c_1,c_{n})$. Since $P$ is induced in $G$, $c_i\in 
 \begin{adjustwidth}{2em}{2em}
 \begin{center}
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
-  \node (y) at (1.75cm,-1.25cm) {$y$};
-  \node (x) at (-1.75cm,-1.25cm) {$x$};
-  \node (ci) at (-1.75cm,1.25cm) {$c_i$};
-  \node (cn) at (0cm,2.25cm) {$cn$};
-  \node (p) [fill=black!15] at (1.75cm,1.25cm) {$p$};
+  \node (y) at (1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(315:0.5cm)]y.315) {$y$};
+  
+  \node (x) at (-1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(225:0.5cm)]x.225) {$x$};
+  
+  \node (ci) at (-1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(135:0.5cm)]ci.135) {$c_i$};
+  
+  \node (cn) at (0cm,2.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]cn.90) {$c_n$};
+  
+  \node (p) at (1.75cm,1.25cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(45:0.5cm)]p.45) {$p$};
+  
   \node (temp) [draw=none] at (0,-2.25cm) {};
+  
   \draw (y) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (ci) [dashed];
   \draw (p) edge [bend left] (y) [dashed];
@@ -423,14 +504,27 @@ $c_i\in N_C(p)$ and $c_i\in C(c_1,c_{n})$. Since $P$ is induced in $G$, $c_i\in 
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[scale=.7, every node/.style={circle, draw, minimum size=8.5mm, scale=.7}]
-  \node (y) at (1.75cm,-1.25cm) {$y'$};
-  \node (x) at (-1.75cm,-1.25cm) {$x'$};
-  \node (ci) at (-1.75cm,1.25cm) {$c_i$};
-  \node (p) [fill=black!15] at (1.75cm,1.25cm) {$p$};
+  \node (y) at (1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(315:0.5cm)]y.315) {$y'$};
   
-  \node (y2) at (-1.75cm,2.5cm) {$y'$};
-  \node (cn) at (0cm,3.5cm) {$cn$};
-  \node (x2) [fill=black!15] at (1.75cm,2.5cm) {$x'$};
+  \node (x) at (-1.75cm,-1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(225:0.5cm)]x.225) {$x'$};
+  
+  \node (ci) at (-1.75cm,1.25cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(150:0.5cm)]ci.150) {$c_i$};
+  
+  \node (p) at (1.75cm,1.25cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(30:0.5cm)]p.30) {$p$};
+  
+  
+  \node (y2) at (-1.75cm,2.5cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(135:0.5cm)]y2.135) {$y'$};
+  
+  \node (cn) at (0cm,3.5cm) {};
+  \node [draw=none, scale=1.4] at ([shift=(90:0.5cm)]cn.90) {$c_n$};
+  
+  \node (x2) at (1.75cm,2.5cm) {$\alpha$};
+  \node [draw=none, scale=1.4] at ([shift=(45:0.5cm)]x2.45) {$x'$};
   
   \draw (y) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (ci) [dashed];
