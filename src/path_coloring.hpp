@@ -504,6 +504,7 @@ namespace boost {
 			// If a colored path doesn't exist, we must create one
 			if(markings.at(p) != Mark::colored)
 			{
+				// Start path at x and use the first (and possibly only) color in x's list
 				vertex_descriptor path_end, next_vertex = sgt.x;
 				color_type path_color = color_list[sgt.x].first();
 				
@@ -517,17 +518,11 @@ namespace boost {
 					coloring[next_vertex] = path_color;
 					markings[next_vertex] = Mark::colored;
 					
-					// Look through our current range of interior neighbors
+					// Look counterclockwise through our current range of interior neighbors
 					edge_iterator begin = neighbor_range[path_end].first, end = neighbor_range[path_end].second;
 					auto ordering = embedding[path_end];
-					for(auto edge_iter = begin; edge_iter != end; edge_iter++)
+					for(auto edge_iter = --end; edge_iter != begin; edge_iter--)
 					{
-						// Wrap if we hit the end of the incidence list
-						if(edge_iter == ordering.end())
-						{
-							edge_iter == ordering.begin();
-						}
-					
 						vertex_descriptor neighbor = get_incident_vertex(*q_iter, *edge_iter, graph);
 					
 						// Check if vertex is on the outer face between x and y
@@ -542,6 +537,12 @@ namespace boost {
 									break;
 								}
 							}
+						}
+						
+						// Wrap if we hit the start incidence list
+						if(edge_iter == ordering.begin())
+						{
+							edge_iter = ordering.end();
 						}
 					}
 				}
