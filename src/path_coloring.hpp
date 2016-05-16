@@ -291,398 +291,58 @@ namespace boost {
 	 * and each color class induces a disjoint union of cycles. Furthermore, x and
 	 * y have no more than one neighbor assigned the same color.
 	 */
-	/*template<typename Graph, typename Embedding, typename ColorList, typename Coloring,
-		typename VertexList>
-	void hartman_path_list_color_block(const Graph & graph, const Embedding & embedding,
-		VertexList & top, VertexList & bottom,
-		const ColorList & color_list, Coloring & coloring)
-	{
-		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
-		typedef typename property_traits<Coloring>::value_type color_type;
-		
-		// Select the first color in x's list
-		color_type path_color = *(color_list[*p_begin].begin());
-		
-		// Find and color path of outer face vertices between x and y
-		std::list<VertexIter> path;
-		{
-			std::unordered_map<vertex_descriptor, VertexIter> p_map;
-		
-			for(auto p_iter = p_begin; p_iter != p_end; p_iter++)
-			{
-				p_map[*p_iter] = p_iter;
-			}
-			
-			path.push_back(p_begin);
-			coloring[*p_begin] = path_color;
-			
-			bool done = false;
-			while(!done)
-			{
-				done = true;
-				
-				// Iterate through incidentedges of the end of the path
-				auto ordering = embedding[*(path.back())];
-				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
-				{
-					// Find neighbor vertex
-					vertex_descriptor neighbor = get_incident_vertex(*(path.back()), *edge_iter, graph);
-				
-					// If neighbor is on the outer face between p_0 and q_0
-					if(p_map.count(neighbor) != 0)
-					{
-						path.push_back(p_map.at(neighbor));
-						coloring[neighbor] = path_color;
-						done = false;
-					}
-				}
-			}
-		}
-		
-		// Determine lobes and center
-		{
-			for(std::size_t i = 0; i < path.size(); i++)
-			{
-				// Check to see if we take a chord
-				auto p_iter = path[i];
-				if(path[i+1] != p_iter++)
-				{
-					// Deal with the lobe that was chopped off by the chord
-					std::list<vertex_descriptor> new_path = { *path[i], *path[i+1] };
-					hartman_remove_path_vertex(graph, embedding, p_iter, path[i+1], p_iter, p_iter,
-						new_path.begin(), new_path.end(), color_list, coloring, path_color);
-				}
-			}
-		}
-		
-		// Remove path and deal with the interior
-		{
-			// Find path to remove
-			std::list<vertex_descriptor> new_path;
-			for(VertexIter p_iter : path)
-			{
-				new_path.push_back(*p_iter);
-			}
-			hartman_remove_path_vertex(graph, embedding, path.back(), p_end(), q_begin(), q_end(),
-				new_path.begin(), new_path.end(), color_list, coloring, path_color);
-		}
-	}*/
 	
-	/*template<typename Graph, typename Embedding, typename VertexList, typename VertexMap,
-		typename ColorList, typename Coloring>
-	void path_list_color(const Graph & graph, const Embedding & embedding,
-		VertexList & outer_face, VertexList & colored_path, VertexList::iterator p,
-		VertexList::iterator x, VertexList::iterator y, VertexMap & marked
-		ColorList & color_list, Coloring & coloring)
-	{
-		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
-		typedef typename property_traits<Coloring>::value_type color_type;
-		
-		// If path is null, create path
-		if(colored_path.size() == 0)
-		{
-			// Retrieve the first color in L(x)
-			color_type path_color = *(color_list[*x].begin());
-			
-			bool done = false;
-			while(!done)
-			{
-				done = true;
-				
-				// Iterate through incidentedges of the end of the path
-				auto ordering = embedding[*(path.back())];
-				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
-				{
-					// Find neighbor vertex
-					vertex_descriptor neighbor = get_incident_vertex(*(path.back()), *edge_iter, graph);
-				
-					// If neighbor is on the outer face between p_0 and q_0
-					if(p_map.count(neighbor) != 0)
-					{
-						path.push_back(p_map.at(neighbor));
-						coloring[neighbor] = path_color;
-						done = false;
-					}
-				}
-			}
-		}
-		
-		//
-	}*/
-	
-	/*
-	template<typename VertexDescriptor, typename EdgeIter>
-	struct SubgraphTraits
-	{
-		VertexDescriptor x, p, y;
-		std::size_t x_begin, x_end
-		EdgeIter y_begin, y_end;
-		unsigned int bp, by, bx;
-		
-		SubgraphTraits(VertexDescriptor x, EdgeIter x_begin, EdgeIter x_end, VertexDescriptor y,
-			EdgeIter y_begin, EdgeIter y_ends, VertexDescriptor p, unsigned int bp, unsigned int by,
-			unsigned int bx) : x(x), p(p), y(y), x_begin(x_begin), x_end(x_end), y_begin(y_begin),
-			y_end(y_end), bp(bp), by(by), bx(bx) {}
-	};
-	
-	template<typename Graph, typename Embedding, typename VertexList, typename ColorList, typename Coloring>
-	void path_list_color(const Graph & graph, const Embedding & embedding,
-		VertexList & outer_face, ColorList & color_list, Coloring & coloring)
-	{
-		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
-		typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
-		typedef typename property_traits<Coloring>::value_type color_type;
-		typedef typename boost::property_traits<Embedding>::value_type::const_iterator edge_iterator;
-		
-		enum State { interior = 0, on_face = 1, colored = 2 };
-		
-		// Tracks the range in which uncolored neighbors lie for the given vertex
-		std::unordered_map<vertex_descriptor, std::pair<edge_iterator, edge_iterator> > neighbor_range;
-		
-		// Tracks the current state of each vertex in the graph
-		std::unordered_map<vertex_descriptor, State> state;
-		std::unordered_map<vertex_descriptor, unsigned int> face_location;
-		
-		// Setup initial conditions for the outer face of the graph
-		for(auto face_iter = outer_face.begin(); face_iter != outer_face.end(); face_iter++)
-		{
-			vertex_iter vertex = *face_iter;
-			
-			// Mark vertex as between x and y
-			state[*face_iter] = Sate::on_face;
-			face_location[*face_iter] = 0;
-			
-			// Computer next and previous vertices on outer face
-			vertex_iter previous, next;
-			if(face_iter + 1 == outer_face.end())
-			{
-				next = outer_face.front();
-			}
-			else
-			{
-				next = *(face_iter + 1);
-			}
-			if(face_iter == outer_face.begin())
-			{
-				previous = outer_face.back();
-			}
-			else
-			{
-				previous = *(face_iter - 1);
-			}
-			
-			// Note the index of previous and next vertices on the outer face in incidence list
-			edge_iterator begin, end;
-			auto ordering = embedding[vertex];
-			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
-			{
-				vertex_descriptor neighbor = get_incident_vertex(*q_iter, *edge_iter, graph);
-				if(neighbor == previous)
-				{
-					begin = edge_iter; 
-				}
-				else if(neighbor == next)
-				{
-					end = edge_iter;
-					end++;
-				}
-			}
-			neighbor_range[vertex] = std::pair<edge_iterator, edge_iterator>(begin, end);
-		}
-		
-		// Tracks all remaining graphs to be colored
-		std::stack<SubgraphTraits<vertex_descriptor> > subgraphs;
-		
-		// Start with no path, outer face of graph, and set x and y to the start and end of the face
-		subgraphs.push(SubgraphTraits(outer_face.front(), neighbor_range[outer_face.front()].first,
-			neighbor_range[outer_face.front()].second, outer_face.back(),
-			neighbor_range[outer_face.back()].first, neighbor_range[outer_face.back()].second,
-			outer_face.front(), 2, 0, 1));
-		
-		// Loop until all subgraphs have been colored
-		while(!subgraphs.empty())
-		{
-			// Get current graph info
-			SubgraphTraits subgraph = subgraphs.front();
-			subgraphs.pop();
-			
-			// Update neighbor_range for this iteration
-			neighbor_range[subgraph.x] =
-				std::pair<edge_iterator, edge_iterator>(subgraph.x_begin, subgraph.x_end);
-			neighbor_range[subgraph.y] =
-				std::pair<edge_iterator, edge_iterator>(subgraph.y_begin, subgraph.y_end);
-			
-			// If a colored path doesn't exist, we must create one
-			if(state.at(subgraph.p) != State::colored)
-			{
-				// Start path at x and use the first (and possibly only) color in x's list
-				subgraph.p = x;
-				vertex_descriptor path_end = subgraph.x, next_vertex = subgraph.x;
-				color_type path_color = color_list[subgraph.x].first();
-				
-				// Color an induced path of vertices along the outer face between x and y with path color
-				do
-				{
-					// Update the path end
-					path_end = next_vertex;
-					
-					// Color and mark next vertex
-					coloring[next_vertex] = path_color;
-					state[next_vertex] = State::colored;
-					
-					// Look counterclockwise through our current range of interior neighbors
-					edge_iterator begin = neighbor_range[path_end].first, end = neighbor_range[path_end].second;
-					auto ordering = embedding[path_end];
-					for(auto edge_iter = begin; edge_iter != end; edge_iter++)
-					{
-						if(edge_iter == ordering.end()) edge_iter = ordering.begin();
-						vertex_descriptor neighbor = get_incident_vertex(path_end, *edge_iter, graph);
-						
-						// Check if we have hit previous vertex in the path
-						if(state.at(neighbor) == State::colored)
-						{
-							break;
-						}
-						// Check if vertex is on the outer face between x and y
-						else if(state.at(neighbor) == State::on_face &&
-							face_location.at(neighbor) == FaceLoc::before_y)
-						{
-							// Check if it may be colored path_color
-							for(auto color : color_list[neighbor])
-							{
-								if(color == path_color)
-								{
-									// Assign the next vertex in the path
-									next_vertex = neighbor;
-									
-									// Check if we took a chord
-									prev_edge_iter = neighbor_range.at(next_vertex).end;
-									vertex_descriptor prev_on_cycle =
-										get_incident_vertex(next_vertex, *(--prev_edge_iter), graph);
-									if(state.at(prev_on_cycle) != State::colored)
-									{
-										// Find cut point in incidence list
-										edge_iter n_begin = neighbor_range.at(next_vertex).first,
-											n_end = neighbor_range.at(next_vertex).second, n_mid;
-										for(n_mid = ++n_begin; n_mid != prev_on_cycle; n_mid++)
-										{
-											if(n_mid == ordering.end()) n_mid = ordering.begin();
-											vertex_descriptor n_neighbor =
-												get_incident_vertex(next_vertex, *n_mid, graph);
-											
-											// Find chord edge
-											if(prev_on_cycle == n_neighbor)	break;
-										}
-										
-										// Reassign range for end of chord
-										neighborhood[next_vertex].first = mid_edge;
-										
-										// Set up the lobe to be colored
-										subgraphs.push(Subgraph(next_vertex, n_begin, n_mid, path_end,
-											edge_iter, neighborhood.at(path_end).second, next_vertex,
-											subgraph.by, (subgraph.by + 1) % 3, (subgraph.by + 2) % 3));
-										
-										// Reassign range for  beginning of chord
-										neighborhood[path_end].second = edge_iter;
-									}
-									
-									break;
-								}
-							}
-						}
-					}
-				}
-				while(path_end != next_vertex);
-			}
-			
-			// Deal with removing p
-			{
-				edge_iterator begin = neighbor_range.at(subgraph.p).first,
-					end = neighbor_range.at(subgraph.p).second;
-				
-				// Complete graph on one vertex
-				if(begin == end)
-				{
-					break;
-				}
-				// Complete graph on two vertices
-				else if(begin == --end)
-				{
-					vertex_descriptor neighbor = get_incident_vertex(subgraph.p, *begin, graph);
-					
-					// Color the second vertex if uncolored
-					if(state.at(neighbor) != State::colored)
-					{
-						coloring[neighbor] = color_list[neighbor].first();
-					}
-				}
-				// Graph on 3 or more vertices
-				{
-					auto ordering = embedding[subgraph.p];
-					for(auto edge_iter = --end; edge_iter != ++begin; edge_iter--)
-					{
-						vertex_descriptor neighbor = get_incident_vertex(subgraph.p, *edge_iter, graph);
-				
-						if(state.at(neighbor) == State::interior)
-						{
-							state[neighbor] = State::before_p;
-						}
-						else if(state.at(neighbor) == State::on_face)
-						{
-					
-						}
-				
-						if(edge_iter == ordering.begin()) edge_iter = ordering.end();
-					}
-				}
-			}
-		}
-	}*/
-	
-	template<typename Graph, typename Embedding,
+	template<typename Graph, typename Embedding, typename IteratorMap
 		typename edge_iterator = typename property_traits<Embedding>::value_type::const_iterator,
 		typename vertex_descriptor = typename graph_traits<Graph>::vertex_descriptor>
-	edge_iterator find_edge(const Graph & graph, const Embedding & embedding, vertex_descriptor vertex,
-		const std::pair<edge_iterator, edge_iterator> & range,  vertex_descriptor goal_vertex)
+	edge_iterator find_edge(const Graph & graph, const Embedding & embedding, IteratorMap & iterator_map,
+		vertex_descriptor vertex, const std::pair<edge_iterator, edge_iterator> & range,
+		vertex_descriptor goal_vertex)
 	{
-		auto ordering = embedding[vertex];
-		for(auto edge_iter = range.first; edge_iter != range.end; edge_iter++)
+		// Dynamically save all lookups for future lookups
+		static std::unordered_map<vertex_descriptor,
+			std::unordered_map<vertex_descriptor, edge_iterator> > iterator_map;
+		
+		if(iterator_map.count(vertex) && iterator_map[vertex].count(goal_vertex))
 		{
-			if(edge_iter == ordering.end()) edge_iter = ordering.begin();
-			vertex_descriptor neighbor = get_incident_vertex(vertex, *edge_iter, graph);
+			auto ordering = embedding[vertex];
+			for(auto edge_iter = range.first; edge_iter != range.end; edge_iter++)
+			{
+				if(edge_iter == ordering.end()) edge_iter = ordering.begin();
+				vertex_descriptor neighbor = get_incident_vertex(vertex, *edge_iter, graph);
 			
-			// Done if we found last vertex on path
-			if(neighbor == goal_vertex) return edge_iter;
+				// Done if we found last vertex on path
+				iterator_map[vertex][neighbor] = edge_iter;
+			}
 		}
 		
-		throw std::runtime_error("find_edge: vertex not found in incidence list.");
-		return begin;
+		return iterator_map[vertex][goal_vertex];
 	}
 	
-	template<typename Graph, typename Embedding, typename ColorList, typename Coloring,
-		typename edge_iterator = typename property_traits<Embedding>::value_type::const_iterator,
-		typename vertex_descriptor = typename graph_traits<Graph>::vertex_descriptor,
-		typename color_type = typename property_traits<Coloring>::value_type,
-		typename state_map = typename std::unordered_map<vertex_descriptor, bool>,
-		typename face_location_map = typename std::unordered_map<vertex_descriptor, bool>,
-		typename incidence_range_map =
-			typename std::unordered_map<vertex_descriptor, std::pair<edge_iterator, edge_iterator> > >
+	template<typename Graph, typename Embedding, typename ColorList, typename Coloring, typename IteratorMap
+			typename edge_iterator = typename property_traits<Embedding>::value_type::const_iterator,
+			typename vertex_descriptor = typename graph_traits<Graph>::vertex_descriptor,
+			typename color_type = typename property_traits<Coloring>::value_type,
+			typename state_map = typename std::unordered_map<vertex_descriptor, bool>,
+			typename face_location_map = typename std::unordered_map<vertex_descriptor, bool>,
+			typename edge_iterator_pair = typename std::pair<edge_iterator, edge_iterator>,
+			typename incidence_range_map = typename std::unordered_map<vertex_descriptor, edge_iterator_pair>
+		>
 	void path_list_color_recursive(const Graph & graph, const Embedding & embedding, ColorList & color_list,
 		Coloring & coloring, state_map & state, face_location_map & face_location,
-		incidence_range_map & neighbor_range, vertex_descriptor x, edge_iterator x_begin, edge_iterator x_end,
-		vertex_descriptor y, edge_iterator y_begin, edge_iterator y_end, vertex_descriptor p, int before_p,
-		int before_x, int before_y)
+		incidence_range_map & neighbor_range, vertex_descriptor x, edge_iterator_pair x_range,
+		vertex_descriptor y, edge_iterator_pair y_range, vertex_descriptor p, int before_p, int before_y,
+		int before_x)
 	{
-		typedef std::pair<edge_iterator, edge_iterator> edge_iterator_pair 
 		// Update neighbor_range for this subgraph
-		neighbor_range[x] = edge_iterator_pair(x_begin, x_end);
-		neighbor_range[y] = edge_iterator_pair(y_begin, y_end);
+		neighbor_range[x] = x_range;
+		neighbor_range[y] = y_range;
 		
 		// Base Case 1: K_1
 		if(x_begin == x_end)
 		{
 			// Color x if not colored
-			if(!state.at(x)) color[x] = color_list.at(x).first();
+			if(!state[x]) color[x] = color_list[x].first();
 			
 			return;
 		}
@@ -691,14 +351,14 @@ namespace boost {
 		if(++x_begin == x_end)
 		{
 			// Color x and/or y if not colored
-			if(!state.at(x)) color[x] = color_list.at(x).first();
-			if(!state.at(y)) color[y] = color_list.at(y).first();
+			if(!state[x]) color[x] = color_list[x].first();
+			if(!state[y]) color[y] = color_list[y].first();
 			
 			return;
 		}
 		
 		// If colored path doesn't exist, we create one
-		if(!state.at(p))
+		if(!state[p])
 		{
 			vertex_descriptor path_end = x, next_vertex = x;
 			
@@ -720,10 +380,10 @@ namespace boost {
 					vertex_descriptor neighbor = get_incident_vertex(path_end, *edge_iter, graph);
 					
 					// Check if vertex is on the outer face between x and y
-					if(state.count(neighbor) == 1 && face_location.at(neighbor) == before_y)
+					if(state.count(neighbor) == 1 && face_location[neighbor] == before_y)
 					{
 						// Should never find a colored vertex while making path
-						if(state.at(neighbor)) throw std::runtime_error("Colored vertex found on face.");
+						if(state[neighbor]) throw std::runtime_error("Colored vertex found on face.");
 						
 						// Check if it may be colored path_color
 						for(auto color : color_list[neighbor])
@@ -734,23 +394,27 @@ namespace boost {
 								next_vertex = neighbor;
 								
 								// Check if we took a chord
-								prev_edge_iter = neighbor_range.at(next_vertex).first;
+								prev_edge_iter = neighbor_range[next_vertex].first;
 								vertex_descriptor prev_on_cycle =
 									get_incident_vertex(next_vertex, *(--prev_edge_iter), graph);
-								if(state.at(prev_on_cycle) != COLORED)
+								if(state[prev_on_cycle] != COLORED)
 								{
 									// Find cut point in incidence list
 									edge_iterator n_mid = find_edge(graph, embedding, next_vertex,
-										neighbor_range.at(next_vertex), p);
+										neighbor_range[next_vertex], p);
+									
+									// Setup ranges for lobe x and y
+									edge_iterator_pair new_x_range(n_begin, ++n_mid)
+										new_y_range(edge_iter, neibhorhood[path_end].second);
 									
 									// Color lobe
 									path_list_color_recursive(graph, embedding, color_list, coloring, state,
-										face_location, neighbor_range, next_vertex, n_begin, n_mid, path_end,
-										edge_iter, neibhorhood.at(path_end).second, next_vertex,
+										face_location, neighbor_range, next_vertex, new_x_range,
+										path_end, new_y_range, next_vertex,
 										(before_y + 1) % 3, (before_y + 2) % 3, before_y);
 									
 									// Reassign range for end of chord
-									neighborhood[next_vertex].first = mid_edge;
+									neighborhood[next_vertex].first = --n_mid;
 									
 									// Correction to make sure list wraps correctly
 									if(edge_iter == ordering.begin()) edge_iter = ordering.end();
@@ -787,6 +451,9 @@ namespace boost {
 			
 			vertex_descriptor neighbor = get_incident_vertex(p, *edge_iter, graph);
 			
+			// Remove p's color from the list of all adjacent neighbors
+			std::remove(color_list[neighbor].begin(), color_list[neighbor].end(), color[p]);
+			
 			// Interior vertex
 			if(state.count(neighbor) == 0)
 			{
@@ -795,8 +462,8 @@ namespace boost {
 				face_location[neighbor] = before_p;
 				
 				// Find edge to p in adjacency list
-				edge_iterator n_begin = find_edge(graph, embedding, neighbor,
-					neighbor_range.at(neighbor), p), n_end = n_begin;
+				edge_iterator n_begin = find_edge(graph, embedding, neighbor, neighbor_range[neighbor], p),
+					n_end = n_begin;
 				
 				// Assign adjacency list to new face vertex
 				auto n_ordering = embedding[neighbor];
@@ -809,6 +476,12 @@ namespace boost {
 				// Vertex prior to p on the outer face
 				if(edge_iter == begin)
 				{
+					// Reassign x if it is being removed
+					if(new_x == p)
+					{
+						new_x = neighbor;
+					}
+					
 					// Reassign neighbor range
 					if(neighbor_range[neighbor].second != embedding[neighbor].end())
 					{
@@ -822,6 +495,12 @@ namespace boost {
 				// Vertex following p on the outer face
 				else if(edge_iter == pre_end)
 				{
+					// Reassign y if it is being removed
+					if(y == p)
+					{
+						new_y = neighbor;
+					}
+					
 					// Set new_p to the next vertex along the face
 					new_p = neighbor;
 					
@@ -832,24 +511,62 @@ namespace boost {
 						neighbor_range[neighbor].first = embedding[neighbor].begin();
 					}
 				}
-				
-				// Case 1: C[x,p) Cutvertex between x and p inclusive
-				else if(face_location[neighbor] == before_p)
+				// Cutvertex
+				else
 				{
+					// Find edge to p in adjacency list
+					edge_iterator p_edge_iter =
+						find_edge(graph, embedding, neighbor, neighbor_range[neighbor], p);
 					
-				}
-				// Case 2: C(p,y] Cutvertex between p and y inclusive
-				else if(face_location[neighbor] == before_y)
-				{
-				
-				}
-				//Case 3: C(y,x) Cutvertex between y and x exclusive
-				else if(face_location[neighbor] == before_x)
-				{
-				
+					// Find midpoint iterator
+					edge_iterator new_y_begin = p_edge_iter;
+					if(++new_y_begin == embedding[neighbor].end()) new_y_begin == embedding[neighbor].begin();
+					
+					// Find range for new y in the block
+					edge_iterator_pair new_y_range(new_y_begin, neighbor_range[neighbor].second);
+					
+					// Case 1: C[x,p) Cutvertex between x and p inclusive
+					if(face_location[neighbor] == before_p)
+					{
+						path_list_color_recursive(graph, embedding, color_list, coloring, state, face_location,
+							neighbor_range, neighbor, new_y_range, neighbor, new_y_range, neighbor,
+							(before_p + 1) % 3, (before_p + 2) % 3, before_p);
+					}
+					// Case 2: C(p,y] Cutvertex between p and y inclusive
+					else if(face_location[neighbor] == before_y)
+					{
+						path_list_color_recursive(graph, embedding, color_list, coloring, state, face_location,
+							neighbor_range, new_x, neighbor_range[new_x], new_y, new_y_range, new_x,
+							before_p, before_y, before_x);
+					}
+					//Case 3: C(y,x) Cutvertex between y and x exclusive
+					else
+					{
+						// Must explicitly assing range to cutvertex since it won't be x or y in this call
+						neighbor_range[neighbor] = new_y_range;
+						
+						path_list_color_recursive(graph, embedding, color_list, coloring, state, face_location,
+							neighbor_range, new_x, neighbor_range[new_x], new_y,  neighbor_range[new_y],
+							new_x, before_p, before_y, before_x);
+						
+						// Reassign y since it is no longer in the subgraph
+						new_y = neighbor;
+					}
+					
+					// Reassign neighbor ranges for remaining graph to color
+					neighbor_range[neighbor].second = ++p_edge_iter;
+					neighbor_range[p].first = edge_iter;
+					
+					// Reassign new_x as we have colored everything to the "left"
+					new_x = neighbor;
 				}
 			}
 		}
+		
+		// Color what is left
+		path_list_color_recursive(graph, embedding, color_list, coloring, state, face_location,
+			neighbor_range, new_x, neighbor_range[new_x], new_y,  neighbor_range[new_y],
+			new_p, before_p, before_y, before_x);
 	}
 }
 
