@@ -408,6 +408,68 @@ void test_poh_color()
 	}
 }
 
+void test_list_path_color()
+{
+	std::cout<<"List path coloring"<<std::endl;
+	
+	{
+		// Define graph properties
+		typedef adjacency_list
+			<	vecS,
+				vecS,
+				undirectedS,
+				property<vertex_index_t, int>,
+				property<edge_index_t, int>
+			> Graph;
+		
+		typedef erdos_renyi_iterator<minstd_rand, Graph> ERGen;
+		
+		boost::minstd_rand gen;
+		
+		for(std::size_t order = 10; order < 25; order++)
+		{
+			bool found_planar = false;
+			while(!found_planar)
+			{
+				try
+				{
+					// Construct a random trriangulated graph
+					//std::cout << "Generating graph.\n";
+					Graph graph(ERGen(gen, order, 2 * order - 4), ERGen(), order);
+					
+					//std::cout << "Triangulating graph.\n";
+					make_triangulated(graph);
+					
+					found_planar = true;
+					
+					//draw_graph_no_color(graph);
+					
+					//std::cout << "Testing planarity.\n";
+					poh_color_test(graph);
+					
+					#ifdef SHOW_PASSES
+						std::cout<<"    PASS " << order << " vertex list path color."<<std::endl;
+					#endif
+				}
+				catch(std::logic_error error)
+				{
+					// Generated a non-planar graph, ignore this case
+				}
+				catch(std::exception& error)
+				{
+					std::cout<<"    FAIL " << order << " vertex list path color ("<<error.what()<<")."<<std::endl;
+					failed=true;
+				}
+				catch(...)
+				{
+					std::cout<<"    FAIL " << order << " vertex list path color (unknown error)."<<std::endl;
+					failed=true;
+				}
+			}
+		}
+	}
+}
+
 int main()
 {
 	test_poh_color();
