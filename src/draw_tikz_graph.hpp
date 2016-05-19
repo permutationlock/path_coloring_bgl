@@ -50,7 +50,7 @@ std::string draw_tikz_graph(const Graph & graph, const Coloring & coloring,
 			}
 			if(color_map.count(curr_color) == 0)
 			{
-				color_map[curr_color] = color_strings[color_map.size()];
+				color_map[curr_color] = color_strings[curr_color];
 			}
 		}
 	}
