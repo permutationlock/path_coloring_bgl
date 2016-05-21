@@ -22,7 +22,7 @@
 
 #include "draw_tikz_graph.hpp"
 
-#define PLC_SHOW_ANNOTATIONS
+//#define PLC_SHOW_ANNOTATIONS
 
 namespace boost {
 	
@@ -316,7 +316,7 @@ namespace boost {
 				iterator_map[vertex][neighbor] = edge_iter;
 			}
 			
-			if(iterator_map.count(vertex) == 0)
+			if(iterator_map.count(vertex) == 0 || iterator_map[vertex].count(goal_vertex) == 0)
 			{
 				std::string error = "Find edge called for nonexistant neighbor " + std::to_string(goal_vertex);
 				throw std::runtime_error(error);
@@ -455,7 +455,7 @@ namespace boost {
 				// Look counterclockwise through our current range of interior neighbors
 				edge_iterator begin = neighbor_range[path_end].first, end = neighbor_range[path_end].second;
 				auto ordering = embedding[path_end];
-				for(auto edge_iter = begin; edge_iter != end; edge_iter++)
+				for(auto edge_iter = begin; edge_iter != end; ++edge_iter)
 				{
 					if(edge_iter == ordering.end()) edge_iter = ordering.begin();
 					vertex_descriptor neighbor = get_incident_vertex(path_end, *edge_iter, graph);
@@ -585,7 +585,7 @@ namespace boost {
 		
 		// Iterate counterclockwise through interior neighbors of p
 		auto ordering = embedding[p];
-		for(auto edge_iter = begin; edge_iter != end; edge_iter++)
+		for(auto edge_iter = begin; edge_iter != end; ++edge_iter)
 		{
 			if(edge_iter == ordering.end()) edge_iter = ordering.begin();
 			vertex_descriptor neighbor = get_incident_vertex(p, *edge_iter, graph);
@@ -609,14 +609,14 @@ namespace boost {
 				face_location[neighbor] = before_p;
 				
 				// Find edge to p in adjacency list
+				auto n_ordering = embedding[neighbor];
 				edge_iterator n_begin = find_edge(graph, embedding, iterator_map, neighbor,
-					edge_iterator_pair(embedding[neighbor].begin(), embedding[neighbor].end()), p);
+					edge_iterator_pair(n_ordering.begin(), n_ordering.end()), p);
 				edge_iterator n_end = n_begin;
 				
 				// Assign adjacency list to new face vertex
-				auto n_ordering = embedding[neighbor];
-				if(++n_begin == ordering.end()) n_begin = ordering.begin();
-				if(n_end == ordering.begin()) n_end = ordering.end();
+				if(++n_begin == n_ordering.end()) n_begin = n_ordering.begin();
+				if(n_end == n_ordering.begin()) n_end = n_ordering.end();
 				neighbor_range[neighbor] = edge_iterator_pair(n_begin, n_end);
 			}
 			else
@@ -682,7 +682,8 @@ namespace boost {
 					
 						// Find midpoint iterator
 						edge_iterator new_y_begin = p_edge_iter;
-						if(++new_y_begin == embedding[neighbor].end()) new_y_begin == embedding[neighbor].begin();
+						if(++new_y_begin == embedding[neighbor].end())
+							new_y_begin == embedding[neighbor].begin();
 						
 						// Find range for new y in the block
 						neighbor_range[neighbor] =
