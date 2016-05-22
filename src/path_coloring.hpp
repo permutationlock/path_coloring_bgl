@@ -22,7 +22,7 @@
 
 #include "draw_tikz_graph.hpp"
 
-//#define PLC_SHOW_ANNOTATIONS
+#define PLC_SHOW_ANNOTATIONS
 
 namespace boost {
 	
@@ -433,7 +433,15 @@ namespace boost {
 		
 		// Update neighbor_range for this subgraph
 		neighbor_range[x] = x_range;
+		#ifdef PLC_SHOW_ANNOTATIONS
+			std::cout << "\t";
+			print_incidence_range(x, graph, embedding, neighbor_range);
+		#endif
 		neighbor_range[y] = y_range;
+		#ifdef PLC_SHOW_ANNOTATIONS
+			std::cout << "\t";
+			print_incidence_range(y, graph, embedding, neighbor_range);
+		#endif
 		
 		// If colored path doesn't exist, we create one
 		if(state[p] != COLORED)
@@ -461,7 +469,7 @@ namespace boost {
 					vertex_descriptor neighbor = get_incident_vertex(path_end, *edge_iter, graph);
 					
 					#ifdef PLC_SHOW_ANNOTATIONS
-						std::cout << "\t\t\tchecking state of vertex " << neighbor << "\n";
+						std::cout << "\t\tchecking state of vertex " << neighbor << "\n";
 					#endif
 					
 					// Check if vertex is on the outer face between x and y
@@ -478,7 +486,7 @@ namespace boost {
 								state[next_vertex] = COLORED;
 								
 								#ifdef PLC_SHOW_ANNOTATIONS
-									std::cout << "\t\tcolored " << next_vertex << "\n";
+									std::cout << "\t\t\tcolored " << next_vertex << "\n";
 								#endif
 								
 								// Check if we took a chord
@@ -487,6 +495,10 @@ namespace boost {
 									get_incident_vertex(next_vertex, *prev_edge_iter, graph);
 								if(state[prev_on_face] != COLORED)
 								{
+									#ifdef PLC_SHOW_ANNOTATIONS
+										std::cout << "\t\t\tlobe made by edge " << path_end
+											<< "-" << next_vertex << "\n";
+									#endif
 									// Find chord edge in incidence list
 									edge_iterator n_mid = find_edge(graph, embedding, iterator_map, next_vertex,
 										neighbor_range[next_vertex], p);
@@ -496,7 +508,7 @@ namespace boost {
 										lobe_y_range(edge_iter, neighbor_range[path_end].second);
 									
 									// Set end of range iterator one past chord edge
-									edge_iterator new_pe_end = edge_iter;
+									edge_iterator new_pe_end(edge_iter);
 									++new_pe_end;
 									
 									// Setup ranges for x and y in remaining subgraph
@@ -511,7 +523,15 @@ namespace boost {
 									
 									// Reassign ranges
 									neighbor_range[next_vertex] = new_n_range;
+									#ifdef PLC_SHOW_ANNOTATIONS
+										std::cout << "\t\t\t";
+										print_incidence_range(next_vertex, graph, embedding, neighbor_range);
+									#endif
 									neighbor_range[path_end] = new_pe_range;
+									#ifdef PLC_SHOW_ANNOTATIONS
+										std::cout << "\t\t\t";
+										print_incidence_range(path_end, graph, embedding, neighbor_range);
+									#endif
 								}
 								
 								break;
@@ -540,6 +560,9 @@ namespace boost {
 			// Color x if not colored
 			if(state[x] != COLORED)
 			{
+				#ifdef PLC_SHOW_ANNOTATIONS
+					std::cout << "\t\tcolored " << x << "\n";
+				#endif
 				state[x] = COLORED;
 				coloring[x] = color_list[x].front();
 			}
@@ -557,6 +580,9 @@ namespace boost {
 			// Color x if not colored
 			if(state[x] != COLORED)
 			{
+				#ifdef PLC_SHOW_ANNOTATIONS
+					std::cout << "\t\tcolored " << x << "\n";
+				#endif
 				state[x] = COLORED;
 				coloring[x] = color_list[x].front();
 			}
@@ -565,6 +591,9 @@ namespace boost {
 			vertex_descriptor neighbor = get_incident_vertex(x, *x_range.first, graph);
 			if(state[neighbor] != COLORED)
 			{
+				#ifdef PLC_SHOW_ANNOTATIONS
+					std::cout << "\t\tcolored " << neighbor << "\n";
+				#endif
 				state[neighbor] = COLORED;
 				coloring[neighbor] = color_list[neighbor].front();
 			}
@@ -576,7 +605,8 @@ namespace boost {
 		vertex_descriptor new_x = x, new_y = y, new_p = x;
 		
 		// Grab important positions in p's incidence list
-		edge_iterator begin = neighbor_range[p].first, end = neighbor_range[p].second, pre_end = end;
+		edge_iterator begin = neighbor_range[p].first, end = neighbor_range[p].second;
+		edge_iterator pre_end = end;
 		pre_end--; 
 		
 		#ifdef PLC_SHOW_ANNOTATIONS
@@ -618,6 +648,10 @@ namespace boost {
 				if(++n_begin == n_ordering.end()) n_begin = n_ordering.begin();
 				if(n_end == n_ordering.begin()) n_end = n_ordering.end();
 				neighbor_range[neighbor] = edge_iterator_pair(n_begin, n_end);
+				#ifdef PLC_SHOW_ANNOTATIONS
+					std::cout << "\t\t\t\t";
+					print_incidence_range(neighbor, graph, embedding, neighbor_range);
+				#endif
 			}
 			else
 			{
@@ -634,13 +668,19 @@ namespace boost {
 						if(y == p) new_y = neighbor;
 						else new_x = neighbor;
 					}
-					
+					#ifdef PLC_SHOW_ANNOTATIONS
+						std::cout << "\t\t\t\t TEST ";
+						print_incidence_range(neighbor, graph, embedding, neighbor_range);
+					#endif
 					// Reassign neighbor range
-					neighbor_range[neighbor].second--;
-					if(neighbor_range[neighbor].second == embedding[neighbor].begin())
+					if(--neighbor_range[neighbor].second == embedding[neighbor].begin())
 					{
 						neighbor_range[neighbor].second = embedding[neighbor].end();
 					}
+					#ifdef PLC_SHOW_ANNOTATIONS
+						std::cout << "\t\t\t\t";
+						print_incidence_range(neighbor, graph, embedding, neighbor_range);
+					#endif
 				}
 				else
 				{
@@ -666,6 +706,10 @@ namespace boost {
 						{
 							neighbor_range[neighbor].first = embedding[neighbor].begin();
 						}
+						#ifdef PLC_SHOW_ANNOTATIONS
+							std::cout << "\t\t\t\t";
+							print_incidence_range(neighbor, graph, embedding, neighbor_range);
+						#endif
 					}
 					else
 					{
@@ -688,6 +732,10 @@ namespace boost {
 						// Find range for new y in the block
 						neighbor_range[neighbor] =
 							edge_iterator_pair(new_y_begin, neighbor_range[neighbor].second);
+						#ifdef PLC_SHOW_ANNOTATIONS
+							std::cout << "\t\t\t\t";
+							print_incidence_range(neighbor, graph, embedding, neighbor_range);
+						#endif
 					
 						// Case 1: C[x,p) Cutvertex between x and p inclusive
 						if(face_location[neighbor] == before_p)
@@ -736,7 +784,15 @@ namespace boost {
 						// Reassign neighbor ranges for remaining graph to color
 						neighbor_range[neighbor] = old_neighbor_range;
 						neighbor_range[neighbor].second = ++p_edge_iter;
+						#ifdef PLC_SHOW_ANNOTATIONS
+							std::cout << "\t\t\t";
+							print_incidence_range(neighbor, graph, embedding, neighbor_range);
+						#endif
 						neighbor_range[p].first = edge_iter;
+						#ifdef PLC_SHOW_ANNOTATIONS
+							std::cout << "\t\t\t";
+							print_incidence_range(p, graph, embedding, neighbor_range);
+						#endif
 					
 						break;
 					}
@@ -810,6 +866,20 @@ namespace boost {
 			);
 	
 		std::cout << draw_tikz_graph(graph, state, straight_line_drawing) << "\n";
+	}
+	
+	template<typename Graph, typename Embedding, typename IncidenceRangeMap,
+		typename edge_iterator = typename property_traits<Embedding>::value_type::const_iterator,
+		typename vertex_descriptor = typename graph_traits<Graph>::vertex_descriptor,
+		typename edge_iterator_pair = typename std::pair<edge_iterator, edge_iterator> >
+	void print_incidence_range(vertex_descriptor vert, const Graph & graph, const Embedding & embedding,
+		const IncidenceRangeMap & neighbor_range)
+	{
+		edge_iterator begin = neighbor_range[vert].first;
+		edge_iterator end = neighbor_range[vert].second;
+		vertex_descriptor begin_vert = get_incident_vertex(vert, *begin, graph);
+		vertex_descriptor end_vert = get_incident_vertex(vert, *(--end), graph);
+		std::cout << "setting neighbor_range[" << vert << "] = (" << begin_vert << "," << end_vert << ")\n";
 	}
 }
 
