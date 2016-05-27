@@ -85,7 +85,7 @@ namespace boost {
 			
 			// Iterate q_0's incident edges in counterclockwise order
 			auto ordering = embedding[q_0];
-			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
+			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter)
 			{
 				// Find p_0 for orientation
 				if(get_incident_vertex(q_0, *edge_iter, graph) == p_0)
@@ -126,7 +126,7 @@ namespace boost {
 			
 			// Iterate p_1's incident edges in counterclockwise order
 			auto ordering = embedding[p_1];
-			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
+			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter)
 			{
 				// Find q_1 for orientation
 				if(get_incident_vertex(p_1, *edge_iter, graph) == q_1)
@@ -170,17 +170,17 @@ namespace boost {
 			std::unordered_map<vertex_descriptor, VertexIter> p_map;
 			
 			// Mark all vertices in path p
-			for(auto p_iter = p_begin; p_iter != p_end; p_iter++)
+			for(auto p_iter = p_begin; p_iter != p_end; ++p_iter)
 			{
 				p_map[*p_iter] = p_iter;
 			}
 			
 			// Check vertices in path q for neighbors in p
-			for(auto q_iter = q_begin; q_iter != q_end; q_iter++)
+			for(auto q_iter = q_begin; q_iter != q_end; ++q_iter)
 			{
 				// Look at each neighbor
 				auto ordering = embedding[*q_iter];
-				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
+				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter)
 				{
 					vertex_descriptor neighbor = get_incident_vertex(*q_iter, *edge_iter, graph);
 					
@@ -215,13 +215,13 @@ namespace boost {
 			std::unordered_map<vertex_descriptor, vertex_descriptor> parent_map;
 			
 			// Mark vertices in path p
-			for(auto p_iter = p_begin; p_iter != p_end; p_iter++)
+			for(auto p_iter = p_begin; p_iter != p_end; ++p_iter)
 			{
 				parent_map[*p_iter] = *p_iter;
 			}
 			
 			// Mark vertices in path q
-			for(auto q_iter = q_begin; q_iter != q_end; q_iter++)
+			for(auto q_iter = q_begin; q_iter != q_end; ++q_iter)
 			{
 				parent_map[*q_iter] = *q_iter;
 			}
@@ -244,7 +244,7 @@ namespace boost {
 				
 				// Add all unmarked neighbors of curr_vertex to bfs_queue
 				auto ordering = embedding[curr_vertex];
-				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); edge_iter++)
+				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter)
 				{
 					vertex_descriptor neighbor = get_incident_vertex(curr_vertex, *edge_iter, graph);
 					
@@ -307,7 +307,7 @@ namespace boost {
 		if(iterator_map.count(vertex) == 0 || iterator_map[vertex].count(goal_vertex) == 0)
 		{
 			auto ordering = embedding[vertex];
-			for(auto edge_iter = range.first; edge_iter != range.second; edge_iter++)
+			for(auto edge_iter = range.first; edge_iter != range.second; ++edge_iter)
 			{
 				if(edge_iter == ordering.end()) edge_iter = ordering.begin();
 				vertex_descriptor neighbor = get_incident_vertex(vertex, *edge_iter, graph);
@@ -381,18 +381,18 @@ namespace boost {
 		 const int ON_FACE = 1;
 		 const int BEFORE_P = 0, BEFORE_Y = 1, BEFORE_X = 2;
 		 
-		 for(auto vertex_iter = begin; vertex_iter != end; vertex_iter++)
+		 for(auto vertex_iter = begin; vertex_iter != end; ++vertex_iter)
 		 {
 		 	auto previous = vertex_iter, next = vertex_iter;
 		 	
 		 	if(vertex_iter == begin)
 		 	{
 		 		previous = end;
-		 		previous--;
+		 		--previous;
 		 	}
-		 	else previous--;
+		 	else --previous;
 		 	
-		 	next++;
+		 	++next;
 		 	if(next == end) next = begin;
 		 	
 		 	std::pair<edge_iterator, edge_iterator> iterator_range(embedding[*vertex_iter].begin(),
@@ -508,7 +508,7 @@ namespace boost {
 										lobe_y_range(edge_iter, neighbor_range[path_end].second);
 									
 									// Set end of range iterator one past chord edge
-									edge_iterator new_pe_end(edge_iter);
+									edge_iterator new_pe_end = edge_iter;
 									++new_pe_end;
 									
 									// Setup ranges for x and y in remaining subgraph
@@ -607,7 +607,7 @@ namespace boost {
 		// Grab important positions in p's incidence list
 		edge_iterator begin = neighbor_range[p].first, end = neighbor_range[p].second;
 		edge_iterator pre_end = end;
-		pre_end--; 
+		--pre_end; 
 		
 		#ifdef PLC_SHOW_ANNOTATIONS
 			std::cout << "\tremoving p = " << p << "\n";
@@ -701,7 +701,7 @@ namespace boost {
 						new_p = neighbor;
 					
 						// Reassign neighbor range
-						neighbor_range[neighbor].first++;
+						++neighbor_range[neighbor].first;
 						if(neighbor_range[neighbor].first == embedding[neighbor].end())
 						{
 							neighbor_range[neighbor].first = embedding[neighbor].begin();
