@@ -316,10 +316,10 @@ namespace boost {
  				
  				// Set up incidence list
  				range.first = embedding[vertex].begin();
- 				range.end = embedding[vertex].end();
+ 				range.second = embedding[vertex].end();
  				
  				// Loop through all neighbors
- 				for(edge_iterator edge_iter = range.first; edge_iter != range.end(); ++edge_iter)
+ 				for(edge_iterator edge_iter = range.first; edge_iter != range.second; ++edge_iter)
  				{
  					vertex_descriptor neighbor = get_incident_vertex(vertex, *edge_iter, graph);
  					
@@ -327,11 +327,11 @@ namespace boost {
  					{
  						// Orient our incidence list to start at the adding vertex
  						current_range.first = edge_iter;
- 						current_range.end = edge_iter;
+ 						current_range.second = edge_iter;
  						
  						// Correction to make sure list wraps correctly
- 						if(current_range.end == range.begin)
- 							current_range.end = range.end;
+ 						if(current_range.second == range.first)
+ 							current_range.second = range.second;
  					}
  					
  					// Remember incidence list location of each neighbor
@@ -350,9 +350,9 @@ namespace boost {
 	 		{
 	 			face_location = new_face_location % 3;
 	 		}
-	 		unsigned int get_face_location() const
+	 		bool is_face_location(unsigned int new_face_location) const
 	 		{
-	 			return face_location;
+	 			return (face_location - new_face_location) % 3 == 0;
 	 		}
 	 		void set_current_range(const edge_iterator_pair & new_range)
 	 		{
@@ -361,22 +361,56 @@ namespace boost {
 	 		void remove_begin()
 	 		{
 	 			++current_range.first;
-	 			if(current_range.first == range.end)
-	 				current_range.end = range.first;
+	 			if(current_range.first == range.second && current_range.first != current_range.second)
+	 				current_range.first = range.first;
 	 		}
 	 		void remove_end()
 	 		{
 	 			--current_range.second;
-	 			if(current_range.second == range.first)
-	 				current_range.second = range.end;
+	 			if(current_range.second == range.first && current_range.first != current_range.second)
+	 				current_range.second = range.second;
 	 		}
-	 		const edge_iterator_pair & get_range() const
+	 		std::pair<edge_iterator_pair, edge_iterator_pair> split_range_at(vertex_descriptor neighbor) const
+	 		{
+	 			edge_iterator split_iter = neighbor_iterator.at(neighbor);
+	 			
+	 			// Range after split edge
+	 			edge_iterator_pair second_range(split_iter, current_range.second);
+	 			
+	 			// Correction to ensure list wraps correctly
+	 			if(split_iter == range.first) split_iter = range.second;
+	 			edge_iterator_pair first_range(current_range.first, split_iter);
+	 			
+	 			return std::pair<edge_iterator_pair, edge_iterator_pair>(first_range, second_range);
+	 		}
+	 		edge_iterator_pair get_range() const
 	 		{
 	 			return range;
 	 		}
-	 		const edge_iterator_pair & get_current_range() const
+	 		edge_iterator_pair get_current_range() const
 	 		{
 	 			return current_range;
+	 		}
+	 		bool no_neighbors() const
+	 		{
+	 			return current_range.first == current_range.second;
+	 		}
+	 		bool single_neighbor() const
+	 		{
+	 			edge_iterator temp_first = current_range.first;
+	 			return ++temp_first == current_range.second;
+	 		}
+	 		bool interior() const
+	 		{
+	 			return state == INTERIOR;
+	 		}
+	 		bool on_face() const
+	 		{
+	 			return state == ON_FACE;
+	 		}
+	 		bool colored() const
+	 		{
+	 			return state == COLORED;
 	 		}
 	 		
  		private:
@@ -444,7 +478,230 @@ namespace boost {
 		vertex_descriptor x, edge_iterator_pair x_range, vertex_descriptor y, edge_iterator_pair y_range,
 		vertex_descriptor p, unsigned int before_p, unsigned int before_y, unsigned int before_x)
 	{
-	
+		// Update potentially conditional ranges for x and y
+		properties[x].set_current_range(x_range);
+		properties[y].set_current_range(y_range);
+		
+		// If colored path doesn't exist, we create one
+		if(!properties[p].colored())
+		{
+			// Begin coloring path with first color in x's list
+			auto path_color = color_list[x].front();
+			
+			// Must track current path end and next path vertex starting with x
+			vertex_descriptor path_end = x, next_vertex = x;
+			coloring[x] = path_color;
+			properties[x].color();
+			
+			do
+			{
+				// Update the path end
+				path_end = next_vertex;
+				
+				// Look counterclockwise through our current range of interior neighbors
+				edge_iterator_pair range = properties[path_end].get_range();
+				edge_iterator_pair current_range = properties[path_end].get_current_range();
+				for(auto edge_iter = current_range.first; edge_iter != current_range.second; ++edge_iter)
+				{
+					if(edge_iter == range.second) edge_iter = range.first;
+					vertex_descriptor neighbor = get_incident_vertex(path_end, *edge_iter, graph);
+					
+					// Check if vertex is on the outer face between x and y
+					if(properties[neighbor].on_face() && properties[neighbor].is_face_location(before_y))
+					{
+						// Check if it may be colored path_color
+						for(auto color : color_list[neighbor])
+						{
+							if(color == path_color)
+							{
+								// Color and append the vertex to the path
+								next_vertex = neighbor;
+								coloring[next_vertex] = path_color;
+								properties[next_vertex].color();
+								
+								// Grab current range of new path vertex
+								edge_iterator_pair n_current_range = properties[path_end].get_current_range();
+								
+								// Check if we took a chord
+								vertex_descriptor prev_on_face =
+									get_incident_vertex(next_vertex, *(n_current_range.first), graph);
+								if(!properties[prev_on_face].colored())
+								{
+									// Split range at last path vertex
+									auto nv_ranges = properties[next_vertex].split_range_at(path_end);
+									auto pe_ranges = properties[path_end].split_range_at(next_vertex);
+									
+									// Color lobe
+									path_list_color_recursive(graph, embedding, color_list, properties,
+										coloring, next_vertex, nv_ranges.first,
+										path_end, pe_ranges.second, next_vertex,
+										before_y + 1, before_y + 2, before_y);
+									
+									properties[next_vertex].set_current_range(nv_ranges.second);
+									properties[path_end].set_current_range(pe_ranges.first);
+								}
+								
+								break;
+							}
+						}
+					}
+					
+					// If we have found a new end vertex, stop looking at neighbors
+					if(path_end != next_vertex) break;
+				}
+			}
+			while(path_end != next_vertex);
+		}
+		
+		// Base Case 1: K_1
+		if(properties[x].no_neighbors())
+		{
+			// Color x if not colored
+			if(!properties[x].colored())
+			{
+				properties[x].color();
+				coloring[x] = color_list[x].front();
+			}
+			return;
+		}
+		
+		// Base Case 2: K_2
+		if(properties[x].single_neighbor())
+		{
+			// Color x if not colored
+			if(!properties[x].colored())
+			{
+				properties[x].color();
+				coloring[x] = color_list[x].front();
+			}
+			// Color other vertex if not colored
+			vertex_descriptor neighbor =
+				get_incident_vertex(x, *properties[x].get_current_range().first, graph);
+			if(!properties[neighbor].colored())
+			{
+				properties[neighbor].color();
+				coloring[neighbor] = color_list[neighbor].front();
+			}
+			return;
+		}
+		
+		// New parameters for coloring the graph after removing p
+		vertex_descriptor new_x = x, new_y = y, new_p = x;
+		
+		// Remeber iterator to last edge in incidence list
+		edge_iterator pre_end = --properties[p].get_current_range().second;
+		
+		// Iterate counterclockwise through interior neighbors of p
+		edge_iterator_pair range = properties[p].get_range();
+		edge_iterator_pair current_range = properties[p].get_current_range();
+		for(auto edge_iter = current_range.first; edge_iter != current_range.second; ++edge_iter)
+		{
+			if(edge_iter == range.second) edge_iter = range.first;
+			vertex_descriptor neighbor = get_incident_vertex(p, *edge_iter, graph);
+			
+			// Remove p's color from the list of all adjacent neighbors
+			std::remove(color_list[neighbor].begin(), color_list[neighbor].end(), coloring[p]);
+			
+			// Interior vertex
+			if(properties[neighbor].interior())
+			{
+				// Add neighbor to the outer face with incidence list starting at p
+				properties[neighbor].initialize(neighbor, p, before_p, graph, embedding);
+				
+				// Remove p from incidence list
+				properties[neighbor].remove_begin();
+			}
+			// Face vertex
+			else
+			{
+				// Vertex prior to p on the outer face
+				if(edge_iter == current_range.first)
+				{
+					// Reassign x or y as needed
+					if(x == p)
+					{
+						if(y == p) new_y = neighbor;
+						else new_x = neighbor;
+					}
+					
+					// Remove p from incidence list
+					properties[neighbor].remove_end();
+				}
+				else
+				{
+					// Reassign x or y as needed
+					if(y == p)
+					{
+						if(x == p) new_x = neighbor;
+						else new_y = neighbor;
+					}
+					
+					if(edge_iter == pre_end)
+					{
+						// Set new_p to the next vertex along the face
+						new_p = neighbor;
+					
+						// Remove p from incidence list
+						properties[neighbor].remove_begin();
+					}
+					else
+					{
+						// Split ranges along edge
+						auto n_ranges = properties[neighbor].split_range_at(p);
+						auto p_ranges = properties[p].split_range_at(neighbor);
+						
+						// Set ranges for "left" half to color
+						properties[neighbor].set_current_range(n_ranges.second);
+						properties[p].set_current_range(p_ranges.first);
+						
+						// Remove p from incidence list
+						properties[neighbor].remove_begin();
+						properties[p].remove_end();
+					
+						// Case 1: C[x,p) Cutvertex between x and p inclusive
+						if(properties[neighbor].is_face_location(before_p))
+						{
+							path_list_color_recursive(graph, embedding, color_list, properties, coloring,
+								neighbor, properties[neighbor].get_current_range(),
+								neighbor, properties[neighbor].get_current_range(), neighbor,
+								before_p + 1, before_p + 2, before_p);
+						}
+						// Case 2: C(p,y] Cutvertex between p and y inclusive
+						else if(properties[neighbor].is_face_location(before_y))
+						{
+							path_list_color_recursive(graph, embedding, color_list, properties, coloring,
+								new_x, properties[new_x].get_current_range(), new_y,
+								properties[new_y].get_current_range(), new_x, before_p, before_y, before_x);
+								
+							// Reassign x and y for "right" half since original x and y were in "left"
+							new_y = neighbor;
+							new_x = neighbor;
+						}
+						//Case 3: C(y,x) Cutvertex between y and x exclusive
+						else
+						{
+							path_list_color_recursive(graph, embedding, color_list, properties, coloring,
+								new_x, properties[new_x].get_current_range(), new_y,
+								properties[new_y].get_current_range(), new_x, before_p, before_y, before_x);
+						
+							// Reassign x in "right" half as original x was colored in "left" half
+							new_x = neighbor;
+						}
+					
+						// Reassign neighbor ranges to color remaining "right" half
+						properties[neighbor].set_current_range(n_ranges.first);
+						properties[p].set_current_range(p_ranges.second);
+					
+						break;
+					}
+				}
+			}
+		}
+		
+		// Color remaining "right" half
+		path_list_color_recursive(graph, embedding, color_list, properties, coloring, new_x,
+			properties[new_x].get_current_range(), new_y, properties[new_y].get_current_range(),
+			new_p, before_p, before_y, before_x);
 	}
 	
 	/*template<typename Graph, typename Embedding, typename IteratorMap,

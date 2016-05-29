@@ -348,16 +348,16 @@ void poh_color_test(const AdjacencyGraph & graph)
 	poh_path_color(graph, embedding, p.begin(), p.end(), q.begin(), q.end(),
 		color_property_map, color);
 	
-	// Test correctness of path coloring
-	test_path_coloring(graph, color_property_map);
-	
 	#ifdef SHOW_VISUALIZATION
 		draw_graph_color(graph, color_property_map);
 	#endif
+	
+	// Test correctness of path coloring
+	test_path_coloring(graph, color_property_map);
 }
 
 // Apply Poh algorithm to given graph and verify it works
-/*template<typename AdjacencyGraph>
+template<typename AdjacencyGraph>
 void path_list_color_test(const AdjacencyGraph & graph)
 {
 	typedef typename graph_traits<AdjacencyGraph>::vertex_descriptor vertex_descriptor;
@@ -409,13 +409,13 @@ void path_list_color_test(const AdjacencyGraph & graph)
 	// Call Poh algorithm
 	path_list_color(graph, embedding, color_list, coloring, outer_face.begin(), outer_face.end());
 	
-	// Test correctness of path coloring
-	test_path_coloring(graph, coloring);
-	
 	#ifdef SHOW_VISUALIZATION
 		draw_graph_color(graph, coloring);
 	#endif
-}*/
+	
+	// Test correctness of path coloring
+	test_path_coloring(graph, coloring);
+}
 
 void test_poh_color()
 {
@@ -479,7 +479,7 @@ void test_poh_color()
 	}
 }
 
-/*void test_list_path_color()
+void test_list_path_color()
 {
 	std::cout<<"List path coloring"<<std::endl;
 	
@@ -497,7 +497,7 @@ void test_poh_color()
 		{
 			// Construct a random trriangulated graph
 			//std::cout << "Generating graph.\n";
-			Graph graph(10);
+			Graph graph(5);
 	
 			//std::cout << "Triangulating graph.\n";
 			make_triangulated(graph);
@@ -526,11 +526,11 @@ void test_poh_color()
 			failed=true;
 		}
 	}
-}*/
+}
 
 int main()
 {
-	//test_list_path_color();
+	test_list_path_color();
 
 	if(failed)
 		std::cout<<"THERE ARE FAILING TESTS"<<std::endl;
