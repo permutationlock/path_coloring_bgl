@@ -295,8 +295,100 @@ namespace boost {
 	 * and each color class induces a disjoint union of cycles. Furthermore, x and
 	 * y have no more than one neighbor assigned the same color.
 	 */
+	 
+	 // Stores all vertex propreties for 
+	 template<typename vertex_descriptor, typename edge_iterator>
+	 class list_color_properties
+	 {
+	 	public:
+	 		enum vertex_state { INTERIOR, ON_FACE, COLORED };
+	 		
+	 		list_color_properties() : state(INTERIOR) {}
+	 		
+	 		template<typename index_graph, typename planar_embedding>
+	 		void initialize(vertex_descriptor vertex, vertex_descriptor adding_vertex,
+	 			unsigned int new_face_location, const index_graph & graph, const planar_embedding & embedding)
+ 			{
+ 				// Vertices are initialized as they are added to the outer face
+ 				state = ON_FACE;
+ 				set_face_location(new_face_location);
+ 				
+ 				// Set up incidence list
+ 				range.first = embedding[vertex].begin();
+ 				range.end = embedding[vertex].end();
+ 				
+ 				// Loop through all neighbors
+ 				for(edge_iterator edge_iter = range.first; edge_iter != range.end(); ++edge_iter)
+ 				{
+ 					vertex_descriptor neighbor = get_incident_vertex(vertex, *edge_iter, graph);
+ 					
+ 					if(neighbor == adding_vertex)
+ 					{
+ 						// Orient our incidence list to start at the adding vertex
+ 						current_range.first = edge_iter;
+ 						current_range.end = edge_iter;
+ 						
+ 						// Correction to make sure list wraps correctly
+ 						if(current_range.end == range.begin)
+ 							current_range.end = range.end;
+ 					}
+ 					
+ 					// Remember incidence list location of each neighbor
+ 					neighbor_iterator[neighbor] = edge_iter;
+ 				}
+ 			}
+	 		void color()
+	 		{
+	 			state = COLORED;
+	 		}
+	 		unsigned int get_state()
+	 		{
+	 			return state;
+	 		}
+	 		void set_face_location(unsigned int new_face_location)
+	 		{
+	 			face_location = new_face_location % 3;
+	 		}
+	 		unsigned int get_face_location()
+	 		{
+	 			return face_location;
+	 		}
+	 		void set_current_range(const std::pair<edge_iterator, edge_iterator> & new_range)
+	 		{
+	 			current_range = new_range;
+	 		}
+	 		void remove_begin()
+	 		{
+	 			++current_range.first;
+	 			if(current_range.first == range.end)
+	 				current_range.end = range.first;
+	 		}
+	 		void remove_end()
+	 		{
+	 			--current_range.second;
+	 			if(current_range.second == range.first)
+	 				current_range.second = range.end;
+	 		}
+	 		const std::pair<edge_iterator, edge_iterator> & get_range()
+	 		{
+	 			return range;
+	 		}
+	 		const std::pair<edge_iterator, edge_iterator> & get_current_range()
+	 		{
+	 			return current_range;
+	 		}
+	 		
+ 		private:
+ 			vertex_state state;
+ 			unsigned int face_location;	// In {0,1,2} and only valid when vertex is on the outer_face
+ 			std::pair<edge_iterator, edge_iterator> range;	// Incidence range from embedding
+ 			std::pair<edge_iterator, edge_iterator> current_range;	// Current incidence range in embedding
+ 			
+ 			// Maps each neighbor to its corresponding edge in embedding
+ 			std::unordered_map<vertex_descriptor, edge_iterator> neighbor_iterator;
+	 };
 	
-	template<typename Graph, typename Embedding, typename IteratorMap,
+	/*template<typename Graph, typename Embedding, typename IteratorMap,
 		typename edge_iterator = typename property_traits<Embedding>::value_type::const_iterator,
 		typename vertex_descriptor = typename graph_traits<Graph>::vertex_descriptor>
 	edge_iterator find_edge(const Graph & graph, const Embedding & embedding, IteratorMap & iterator_map,
@@ -324,19 +416,19 @@ namespace boost {
 		}
 		
 		return iterator_map[vertex][goal_vertex];
-	}
+	}*/
 	
-	template<typename Graph, typename Embedding, typename ColorList, typename Coloring, typename VertexIter>
+	/*template<typename Graph, typename Embedding, typename ColorList, typename Coloring, typename VertexIter>
 	void path_list_color(const Graph & graph, const Embedding & embedding,  ColorList & color_list,
 		Coloring & coloring, VertexIter begin, VertexIter end)
-	{
+	{*/
 		/*
 		 * In this section we construct iterator property maps for the properties that must be tracked
 		 * throghout the path 3-list-coloring algorithm. Property maps are used to allow essentially
 		 * 'fast as possible' lookup alongside abstraction. For example if the graph has integer vertices
 		 * then the vertex name may be used to directly lookup the property in a vector.
 		 */
-		 
+ /*
 		// Define the storage type for integer property maps
 		typedef iterator_property_map<
 				std::vector<int>::iterator,
@@ -368,7 +460,7 @@ namespace boost {
 		std::unordered_map<
 				vertex_descriptor,
 				std::unordered_map<vertex_descriptor, edge_iterator>
-			> iterator_map;
+			> iterator_map; */
 		
 		/*
 		 * Here we set up the initial conditions for the graph based by iterating through the given
@@ -377,7 +469,7 @@ namespace boost {
 		 * Neighbor ranges are initialized by finding neighboring face vertices in the incidence list. After
 		 * these initializations, the recursive algorithm is applied to the graph to produce a path coloring.
 		 */
-		 
+/*	 
 		 const int ON_FACE = 1;
 		 const int BEFORE_P = 0, BEFORE_Y = 1, BEFORE_X = 2;
 		 
@@ -881,6 +973,7 @@ namespace boost {
 		vertex_descriptor end_vert = get_incident_vertex(vert, *(--end), graph);
 		std::cout << "setting neighbor_range[" << vert << "] = (" << begin_vert << "," << end_vert << ")\n";
 	}
+*/
 }
 
 #endif

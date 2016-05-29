@@ -43,11 +43,11 @@ using namespace boost;
 bool failed=false;
 
 // A class to hold the coordinates of the straight line embedding
-//struct coord_t
-//{
-//  std::size_t x;
-//  std::size_t y;
-//};
+struct coord_t
+{
+  std::size_t x;
+  std::size_t y;
+};
 
 template<typename Graph>
 void make_triangulated(Graph & graph)
@@ -357,7 +357,7 @@ void poh_color_test(const AdjacencyGraph & graph)
 }
 
 // Apply Poh algorithm to given graph and verify it works
-template<typename AdjacencyGraph>
+/*template<typename AdjacencyGraph>
 void path_list_color_test(const AdjacencyGraph & graph)
 {
 	typedef typename graph_traits<AdjacencyGraph>::vertex_descriptor vertex_descriptor;
@@ -415,7 +415,7 @@ void path_list_color_test(const AdjacencyGraph & graph)
 	#ifdef SHOW_VISUALIZATION
 		draw_graph_color(graph, coloring);
 	#endif
-}
+}*/
 
 void test_poh_color()
 {
@@ -479,7 +479,7 @@ void test_poh_color()
 	}
 }
 
-void test_list_path_color()
+/*void test_list_path_color()
 {
 	std::cout<<"List path coloring"<<std::endl;
 	
@@ -526,11 +526,11 @@ void test_list_path_color()
 			failed=true;
 		}
 	}
-}
+}*/
 
 int main()
 {
-	test_list_path_color();
+	//test_list_path_color();
 
 	if(failed)
 		std::cout<<"THERE ARE FAILING TESTS"<<std::endl;
