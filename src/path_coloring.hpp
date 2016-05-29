@@ -301,6 +301,7 @@ namespace boost {
 	 class list_color_properties
 	 {
 	 	public:
+	 		typedef typename std::pair<edge_iterator, edge_iterator> edge_iterator_pair;
 	 		enum vertex_state { INTERIOR, ON_FACE, COLORED };
 	 		
 	 		list_color_properties() : state(INTERIOR) {}
@@ -341,7 +342,7 @@ namespace boost {
 	 		{
 	 			state = COLORED;
 	 		}
-	 		unsigned int get_state()
+	 		unsigned int get_state() const
 	 		{
 	 			return state;
 	 		}
@@ -349,11 +350,11 @@ namespace boost {
 	 		{
 	 			face_location = new_face_location % 3;
 	 		}
-	 		unsigned int get_face_location()
+	 		unsigned int get_face_location() const
 	 		{
 	 			return face_location;
 	 		}
-	 		void set_current_range(const std::pair<edge_iterator, edge_iterator> & new_range)
+	 		void set_current_range(const edge_iterator_pair & new_range)
 	 		{
 	 			current_range = new_range;
 	 		}
@@ -369,11 +370,11 @@ namespace boost {
 	 			if(current_range.second == range.first)
 	 				current_range.second = range.end;
 	 		}
-	 		const std::pair<edge_iterator, edge_iterator> & get_range()
+	 		const edge_iterator_pair & get_range() const
 	 		{
 	 			return range;
 	 		}
-	 		const std::pair<edge_iterator, edge_iterator> & get_current_range()
+	 		const edge_iterator_pair & get_current_range() const
 	 		{
 	 			return current_range;
 	 		}
@@ -381,12 +382,70 @@ namespace boost {
  		private:
  			vertex_state state;
  			unsigned int face_location;	// In {0,1,2} and only valid when vertex is on the outer_face
- 			std::pair<edge_iterator, edge_iterator> range;	// Incidence range from embedding
- 			std::pair<edge_iterator, edge_iterator> current_range;	// Current incidence range in embedding
+ 			edge_iterator_pair range;	// Incidence range from embedding
+ 			edge_iterator_pair current_range;	// Current incidence range in embedding
  			
  			// Maps each neighbor to its corresponding edge in embedding
  			std::unordered_map<vertex_descriptor, edge_iterator> neighbor_iterator;
 	 };
+	 
+	 template<typename index_graph, typename planar_embedding, typename color_list_map, typename color_map,
+	 	typename vertex_iterator>
+	void path_list_color(const index_graph & graph, const planar_embedding & embedding,
+		color_list_map & color_list, color_map & coloring, vertex_iterator face_begin,
+		vertex_iterator face_end)
+	{
+		typedef typename property_traits<planar_embedding>::value_type::const_iterator edge_iterator;
+		typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+		
+		// Define the type for our property map
+		typedef iterator_property_map<
+				typename std::vector<list_color_properties<vertex_descriptor, edge_iterator> >::iterator,
+				typename property_map<index_graph, vertex_index_t>::type
+			> list_color_property_map;
+		
+		// Make property map to store all properties
+		std::vector<list_color_properties<vertex_descriptor, edge_iterator> >
+			property_storage(num_vertices(graph));
+		list_color_property_map properties(property_storage.begin(), get(vertex_index, graph));
+		
+		// Initial values for face locations (arbitrarily decided, simply must be in this order)
+		const unsigned int BEFORE_P = 0, BEFORE_Y = 1, BEFORE_X = 2;
+		
+		// Initialize all vertices on the given outer face
+		for(auto vertex_iter = face_begin; vertex_iter != face_end; ++vertex_iter)
+		{
+			// Grab next vertex on outer face
+			auto next = vertex_iter;
+			if(++next == face_end) next == face_begin;
+			
+			// Initialize properties of the next vertex on the face using the current face edge
+			properties[*next].initialize(*next, *vertex_iter, BEFORE_Y, graph, embedding);
+		}
+		
+		// Star with x and y as the beginning and end of the outer face list given
+		vertex_descriptor x = *face_begin, y = *(--face_end);
+		
+		// Recursively list color the graph
+		path_list_color_recursive(graph, embedding, color_list, properties, coloring,
+			x, properties[x].get_current_range(), y, properties[y].get_current_range(), x,
+			BEFORE_P, BEFORE_Y, BEFORE_X);
+	}
+	
+	template<
+		typename index_graph, typename planar_embedding, typename color_list_map,
+		typename color_map, typename list_color_property_map,
+		typename edge_iterator = typename property_traits<planar_embedding>::value_type::const_iterator,
+		typename vertex_descriptor = typename graph_traits<index_graph>::vertex_descriptor,
+		typename edge_iterator_pair = typename std::pair<edge_iterator, edge_iterator>
+	>
+	void path_list_color_recursive(const index_graph & graph, const planar_embedding & embedding, 
+		color_list_map & color_list, list_color_property_map & properties, color_map & coloring,
+		vertex_descriptor x, edge_iterator_pair x_range, vertex_descriptor y, edge_iterator_pair y_range,
+		vertex_descriptor p, unsigned int before_p, unsigned int before_y, unsigned int before_x)
+	{
+	
+	}
 	
 	/*template<typename Graph, typename Embedding, typename IteratorMap,
 		typename edge_iterator = typename property_traits<Embedding>::value_type::const_iterator,
