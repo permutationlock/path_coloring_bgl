@@ -21,8 +21,9 @@
 #include <boost/property_map/property_map.hpp>
 
 #include "draw_tikz_graph.hpp"
+#include "disjoint_set.hpp"
 
-#define PLC_SHOW_ANNOTATIONS
+//#define PLC_SHOW_ANNOTATIONS
 
 namespace boost {
 	
@@ -296,132 +297,138 @@ namespace boost {
 	 * y have no more than one neighbor assigned the same color.
 	 */
 	 
-	 // Stores all vertex propreties for 
-	 template<typename vertex_descriptor, typename edge_iterator>
-	 class list_color_properties
-	 {
-	 	public:
-	 		typedef typename std::pair<edge_iterator, edge_iterator> edge_iterator_pair;
-	 		enum vertex_state { INTERIOR, ON_FACE, COLORED };
-	 		
-	 		list_color_properties() : state(INTERIOR) {}
-	 		
-	 		template<typename index_graph, typename planar_embedding>
-	 		void initialize(vertex_descriptor vertex, vertex_descriptor adding_vertex,
-	 			unsigned int new_face_location, const index_graph & graph, const planar_embedding & embedding)
- 			{
- 				// Vertices are initialized as they are added to the outer face
- 				state = ON_FACE;
- 				set_face_location(new_face_location);
- 				
- 				// Set up incidence list
- 				range.first = embedding[vertex].begin();
- 				range.second = embedding[vertex].end();
- 				
- 				// Loop through all neighbors
- 				for(edge_iterator edge_iter = range.first; edge_iter != range.second; ++edge_iter)
- 				{
- 					vertex_descriptor neighbor = get_incident_vertex(vertex, *edge_iter, graph);
- 					
- 					if(neighbor == adding_vertex)
- 					{
- 						// Orient our incidence list to start at the adding vertex
- 						current_range.first = edge_iter;
- 						current_range.second = edge_iter;
- 						
- 						// Correction to make sure list wraps correctly
- 						if(current_range.second == range.first)
- 							current_range.second = range.second;
- 					}
- 					
- 					// Remember incidence list location of each neighbor
- 					neighbor_iterator[neighbor] = edge_iter;
- 				}
- 			}
-	 		void color()
-	 		{
-	 			state = COLORED;
-	 		}
-	 		unsigned int get_state() const
-	 		{
-	 			return state;
-	 		}
-	 		void set_face_location(unsigned int new_face_location)
-	 		{
-	 			face_location = new_face_location % 3;
-	 		}
-	 		bool is_face_location(unsigned int new_face_location) const
-	 		{
-	 			return (face_location - new_face_location) % 3 == 0;
-	 		}
-	 		void set_current_range(const edge_iterator_pair & new_range)
-	 		{
-	 			current_range = new_range;
-	 		}
-	 		void remove_begin()
-	 		{
-	 			++current_range.first;
-	 			if(current_range.first == range.second && current_range.first != current_range.second)
-	 				current_range.first = range.first;
-	 		}
-	 		void remove_end()
-	 		{
-	 			--current_range.second;
-	 			if(current_range.second == range.first && current_range.first != current_range.second)
-	 				current_range.second = range.second;
-	 		}
-	 		std::pair<edge_iterator_pair, edge_iterator_pair> split_range_at(vertex_descriptor neighbor) const
-	 		{
-	 			edge_iterator split_iter = neighbor_iterator.at(neighbor);
-	 			
-	 			// Range after split edge
-	 			edge_iterator_pair second_range(split_iter, current_range.second);
-	 			
-	 			// Correction to ensure list wraps correctly
-	 			if(split_iter == range.first) split_iter = range.second;
-	 			edge_iterator_pair first_range(current_range.first, split_iter);
-	 			
-	 			return std::pair<edge_iterator_pair, edge_iterator_pair>(first_range, second_range);
-	 		}
-	 		edge_iterator_pair get_range() const
-	 		{
-	 			return range;
-	 		}
-	 		edge_iterator_pair get_current_range() const
-	 		{
-	 			return current_range;
-	 		}
-	 		bool no_neighbors() const
-	 		{
-	 			return current_range.first == current_range.second;
-	 		}
-	 		bool single_neighbor() const
-	 		{
-	 			edge_iterator temp_first = current_range.first;
-	 			return ++temp_first == current_range.second;
-	 		}
-	 		bool interior() const
-	 		{
-	 			return state == INTERIOR;
-	 		}
-	 		bool on_face() const
-	 		{
-	 			return state == ON_FACE;
-	 		}
-	 		bool colored() const
-	 		{
-	 			return state == COLORED;
-	 		}
-	 		
- 		private:
- 			vertex_state state;
- 			unsigned int face_location;	// In {0,1,2} and only valid when vertex is on the outer_face
- 			edge_iterator_pair range;	// Incidence range from embedding
- 			edge_iterator_pair current_range;	// Current incidence range in embedding
- 			
- 			// Maps each neighbor to its corresponding edge in embedding
- 			std::unordered_map<vertex_descriptor, edge_iterator> neighbor_iterator;
-	 };
+	// Stores all vertex propreties for path 3-list-coloring algorithm
+	template<typename vertex_descriptor, typename edge_iterator>
+	class list_color_properties
+	{
+	public:
+		typedef typename std::pair<edge_iterator, edge_iterator> edge_iterator_pair;
+		enum vertex_state { INTERIOR, ON_FACE, COLORED };
+
+		list_color_properties() : state(INTERIOR) {}
+
+		template<typename index_graph, typename planar_embedding>
+		int initialize(vertex_descriptor vertex, vertex_descriptor adding_vertex,
+			int new_face_location, const index_graph & graph, const planar_embedding & embedding,
+			disjoint_set & face_location_sets)
+		{
+			// Vertices are initialized as they are added to the outer face
+			state = ON_FACE;
+			set_face_location(new_face_location, face_location_sets);
+	
+			// Set up incidence list
+			range.first = embedding[vertex].begin();
+			range.second = embedding[vertex].end();
+	
+			// Loop through all neighbors
+			for(edge_iterator edge_iter = range.first; edge_iter != range.second; ++edge_iter)
+			{
+				vertex_descriptor neighbor = get_incident_vertex(vertex, *edge_iter, graph);
+		
+				if(neighbor == adding_vertex)
+				{
+					// Orient our incidence list to start at the adding vertex
+					current_range.first = edge_iter;
+					current_range.second = edge_iter;
+			
+					// Correction to make sure list wraps correctly
+					if(current_range.second == range.first)
+						current_range.second = range.second;
+				}
+		
+				// Remember incidence list location of each neighbor
+				neighbor_iterator[neighbor] = edge_iter;
+			}
+			
+			return face_location;
+		}
+		void color()
+		{
+			state = COLORED;
+		}
+		vertex_state get_state() const
+		{
+			return state;
+		}
+		int set_face_location(int new_face_location, disjoint_set & face_location_sets)
+		{
+			if(!face_location_sets.exists(new_face_location)) face_location = face_location_sets.make_next();
+			else face_location = face_location_sets.find(new_face_location);
+			return face_location;
+		}
+		int get_face_location()
+		{
+			return face_location;
+		}
+		void set_current_range(const edge_iterator_pair & new_range)
+		{
+			current_range = new_range;
+		}
+		void remove_begin()
+		{
+			++current_range.first;
+			if(current_range.first == range.second && current_range.first != current_range.second)
+				current_range.first = range.first;
+		}
+		void remove_end()
+		{
+			--current_range.second;
+			if(current_range.second == range.first && current_range.first != current_range.second)
+				current_range.second = range.second;
+		}
+		std::pair<edge_iterator_pair, edge_iterator_pair> split_range_at(vertex_descriptor neighbor) const
+		{
+			edge_iterator split_iter = neighbor_iterator.at(neighbor);
+	
+			// Range after split edge
+			edge_iterator_pair second_range(split_iter, current_range.second);
+	
+			// Range before split edge
+			edge_iterator_pair first_range(current_range.first, ++split_iter);
+	
+			return std::pair<edge_iterator_pair, edge_iterator_pair>(first_range, second_range);
+		}
+		edge_iterator_pair get_range() const
+		{
+			return range;
+		}
+		edge_iterator_pair get_current_range() const
+		{
+			return current_range;
+		}
+		bool no_neighbors() const
+		{
+			return current_range.first == current_range.second;
+		}
+		bool single_neighbor() const
+		{
+			edge_iterator temp_first = current_range.first;
+			return ++temp_first == current_range.second;
+		}
+		bool interior() const
+		{
+			return state == INTERIOR;
+		}
+		bool on_face() const
+		{
+			return state == ON_FACE;
+		}
+		bool colored() const
+		{
+			return state == COLORED;
+		}
+
+	private:
+		// Face location union find data
+		int face_location;
+		
+		vertex_state state;
+		edge_iterator_pair range;	// Incidence range from embedding
+		edge_iterator_pair current_range;	// Current incidence range in embedding
+
+		// Maps each neighbor to its corresponding edge in embedding
+		std::unordered_map<vertex_descriptor, edge_iterator> neighbor_iterator;
+	};
 	 
 	 template<typename index_graph, typename planar_embedding, typename color_list_map, typename color_map,
 	 	typename vertex_iterator>
@@ -443,27 +450,39 @@ namespace boost {
 			property_storage(num_vertices(graph));
 		list_color_property_map properties(property_storage.begin(), get(vertex_index, graph));
 		
-		// Initial values for face locations (arbitrarily decided, simply must be in this order)
-		const unsigned int BEFORE_P = 0, BEFORE_Y = 1, BEFORE_X = 2;
+		// Initialize face locations
+		disjoint_set face_location_sets;
+		int before_y = -1;
 		
 		// Initialize all vertices on the given outer face
 		for(auto vertex_iter = face_begin; vertex_iter != face_end; ++vertex_iter)
 		{
 			// Grab next vertex on outer face
 			auto next = vertex_iter;
-			if(++next == face_end) next == face_begin;
+			if(++next == face_end) next = face_begin;
 			
 			// Initialize properties of the next vertex on the face using the current face edge
-			properties[*next].initialize(*next, *vertex_iter, BEFORE_Y, graph, embedding);
+			before_y = properties[*next].initialize(*next, *vertex_iter, before_y, graph, embedding,
+				face_location_sets);
+			#ifdef PLC_SHOW_ANNOTATIONS
+				std::cout << "INTIALIZE: ";
+				print_incidence_range(*next, graph, embedding, properties);
+			#endif
 		}
 		
 		// Star with x and y as the beginning and end of the outer face list given
 		vertex_descriptor x = *face_begin, y = *(--face_end);
 		
 		// Recursively list color the graph
-		path_list_color_recursive(graph, embedding, color_list, properties, coloring,
+		path_list_color_recursive(graph, embedding, color_list, properties, face_location_sets, coloring,
 			x, properties[x].get_current_range(), y, properties[y].get_current_range(), x,
-			BEFORE_P, BEFORE_Y, BEFORE_X);
+			-1, before_y, -1);
+	}
+	
+	bool compare_face_locations(int first_location, int second_location, disjoint_set & face_location_sets)
+	{
+		if(!face_location_sets.exists(second_location)) return false;
+		return (face_location_sets.find(first_location) == face_location_sets.find(second_location));
 	}
 	
 	template<
@@ -474,13 +493,61 @@ namespace boost {
 		typename edge_iterator_pair = typename std::pair<edge_iterator, edge_iterator>
 	>
 	void path_list_color_recursive(const index_graph & graph, const planar_embedding & embedding, 
-		color_list_map & color_list, list_color_property_map & properties, color_map & coloring,
-		vertex_descriptor x, edge_iterator_pair x_range, vertex_descriptor y, edge_iterator_pair y_range,
-		vertex_descriptor p, unsigned int before_p, unsigned int before_y, unsigned int before_x)
+		color_list_map & color_list, list_color_property_map & properties, disjoint_set & face_location_sets,
+		color_map & coloring, vertex_descriptor x, edge_iterator_pair x_range, vertex_descriptor y,
+		edge_iterator_pair y_range, vertex_descriptor p, int before_p, int before_y, int before_x)
 	{
+		#ifdef PLC_SHOW_ANNOTATIONS
+			std::cout << "x = " << x << ", y = " << y << ", p = " << p << "\n";
+			std::cout << "before_p = " << before_p << ", before_y = " << before_y << ", before_x = "
+				<< before_x << "\n";
+		#endif
+		
 		// Update potentially conditional ranges for x and y
 		properties[x].set_current_range(x_range);
+		
+		#ifdef PLC_SHOW_ANNOTATIONS
+			std::cout << "\t";
+			print_incidence_range(x, graph, embedding, properties);
+		#endif
+		
 		properties[y].set_current_range(y_range);
+		
+		#ifdef PLC_SHOW_ANNOTATIONS
+			std::cout << "\t";
+			print_incidence_range(y, graph, embedding, properties);
+		#endif
+		
+		// Base Case 2: K_2
+		if(properties[x].single_neighbor())
+		{
+			#ifdef PLC_SHOW_ANNOTATIONS
+				std::cout << "\tbase_case K_2\n";
+			#endif
+			
+			// Color x if not colored
+			if(!properties[x].colored())
+			{
+				properties[x].color();
+				coloring[x] = color_list[x].front();
+			}
+			
+			// Color other vertex if not colored
+			vertex_descriptor neighbor =
+				get_incident_vertex(x, *properties[x].get_current_range().first, graph);
+			
+			if(!properties[neighbor].colored())
+			{
+				// If neighbor is not a not a special vertex, ensure it recieves a different color
+				if(x == y)
+				{
+					std::remove(color_list[neighbor].begin(), color_list[neighbor].end(), coloring[x]);
+				}
+				properties[neighbor].color();
+				coloring[neighbor] = color_list[neighbor].front();
+			}
+			return;
+		}
 		
 		// If colored path doesn't exist, we create one
 		if(!properties[p].colored())
@@ -493,103 +560,123 @@ namespace boost {
 			coloring[x] = path_color;
 			properties[x].color();
 			
-			do
+			// Reassign p to our new path start
+			p = x;
+			
+			#ifdef PLC_SHOW_ANNOTATIONS
+				std::cout << "\tcoloring path with path_color = " << path_color << "\n";
+			#endif
+			
+			#ifdef PLC_SHOW_ANNOTATIONS
+				std::cout << "\t\t\tcolored vertex = " << x << "\n";
+			#endif
+			
+			if(x != y)
 			{
-				// Update the path end
-				path_end = next_vertex;
-				
-				// Look counterclockwise through our current range of interior neighbors
-				edge_iterator_pair range = properties[path_end].get_range();
-				edge_iterator_pair current_range = properties[path_end].get_current_range();
-				for(auto edge_iter = current_range.first; edge_iter != current_range.second; ++edge_iter)
+				do
 				{
-					if(edge_iter == range.second) edge_iter = range.first;
-					vertex_descriptor neighbor = get_incident_vertex(path_end, *edge_iter, graph);
-					
-					// Check if vertex is on the outer face between x and y
-					if(properties[neighbor].on_face() && properties[neighbor].is_face_location(before_y))
+					// Update the path end
+					path_end = next_vertex;
+				
+					// Look counterclockwise through our current range of interior neighbors
+					edge_iterator_pair range = properties[path_end].get_range();
+					edge_iterator_pair current_range = properties[path_end].get_current_range();
+					for(auto edge_iter = current_range.first; edge_iter != current_range.second; ++edge_iter)
 					{
-						// Check if it may be colored path_color
-						for(auto color : color_list[neighbor])
+						if(edge_iter == range.second) edge_iter = range.first;
+						vertex_descriptor neighbor = get_incident_vertex(path_end, *edge_iter, graph);
+					
+						#ifdef PLC_SHOW_ANNOTATIONS
+							std::cout << "\t\tchecking state of vertex " << neighbor << "\n";
+						#endif
+					
+						// Check if vertex is on the outer face between x and y
+						if(neighbor == y || (properties[neighbor].on_face() &&
+							compare_face_locations(properties[neighbor].get_face_location(),
+								before_y, face_location_sets)))
 						{
-							if(color == path_color)
+							// Check if it may be colored path_color
+							for(auto color : color_list[neighbor])
 							{
-								// Color and append the vertex to the path
-								next_vertex = neighbor;
-								coloring[next_vertex] = path_color;
-								properties[next_vertex].color();
-								
-								// Grab current range of new path vertex
-								edge_iterator_pair n_current_range = properties[path_end].get_current_range();
-								
-								// Check if we took a chord
-								vertex_descriptor prev_on_face =
-									get_incident_vertex(next_vertex, *(n_current_range.first), graph);
-								if(!properties[prev_on_face].colored())
+								if(color == path_color)
 								{
-									// Split range at last path vertex
-									auto nv_ranges = properties[next_vertex].split_range_at(path_end);
-									auto pe_ranges = properties[path_end].split_range_at(next_vertex);
-									
-									// Color lobe
-									path_list_color_recursive(graph, embedding, color_list, properties,
-										coloring, next_vertex, nv_ranges.first,
-										path_end, pe_ranges.second, next_vertex,
-										before_y + 1, before_y + 2, before_y);
-									
-									properties[next_vertex].set_current_range(nv_ranges.second);
-									properties[path_end].set_current_range(pe_ranges.first);
-								}
+									// Color and append the vertex to the path
+									next_vertex = neighbor;
+									coloring[next_vertex] = path_color;
+									properties[next_vertex].color();
 								
-								break;
+									#ifdef PLC_SHOW_ANNOTATIONS
+										std::cout << "\t\t\tcolored vertex = " << next_vertex << "\n";
+									#endif
+								
+									// Grab current range of new path vertex
+									edge_iterator_pair n_current_range = properties[next_vertex].get_current_range();
+								
+									// Check if we took a chord
+									vertex_descriptor prev_on_face =
+										get_incident_vertex(next_vertex, *(n_current_range.first), graph);
+									if(!properties[prev_on_face].colored())
+									{
+										// Split range at last path vertex
+										auto nv_ranges = properties[next_vertex].split_range_at(path_end);
+										auto pe_ranges = properties[path_end].split_range_at(next_vertex);
+										
+										#ifdef PLC_SHOW_ANNOTATIONS
+											std::cout << "\t\t\t\tcoloring lobe\n";
+										#endif
+										
+										// Color lobe
+										path_list_color_recursive(graph, embedding, color_list, properties,
+											face_location_sets, coloring, next_vertex, nv_ranges.first,
+											path_end, pe_ranges.second, next_vertex, -1, -1, before_y);
+									
+										properties[next_vertex].set_current_range(nv_ranges.second);
+									
+										#ifdef PLC_SHOW_ANNOTATIONS
+											std::cout << "\t\t\t\t";
+											print_incidence_range(next_vertex, graph, embedding, properties);
+										#endif
+									
+										properties[path_end].set_current_range(pe_ranges.first);
+									
+										#ifdef PLC_SHOW_ANNOTATIONS
+											std::cout << "\t\t\t\t";
+											print_incidence_range(path_end, graph, embedding, properties);
+										#endif
+									}
+								
+									break;
+								}
 							}
 						}
-					}
 					
-					// If we have found a new end vertex, stop looking at neighbors
-					if(path_end != next_vertex) break;
+						// If we have found a new end vertex, stop looking at neighbors
+						if(path_end != next_vertex || neighbor == y) break;
+					}
 				}
+				while(path_end != next_vertex && next_vertex);
 			}
-			while(path_end != next_vertex);
-		}
-		
-		// Base Case 1: K_1
-		if(properties[x].no_neighbors())
-		{
-			// Color x if not colored
-			if(!properties[x].colored())
-			{
-				properties[x].color();
-				coloring[x] = color_list[x].front();
-			}
-			return;
-		}
-		
-		// Base Case 2: K_2
-		if(properties[x].single_neighbor())
-		{
-			// Color x if not colored
-			if(!properties[x].colored())
-			{
-				properties[x].color();
-				coloring[x] = color_list[x].front();
-			}
-			// Color other vertex if not colored
-			vertex_descriptor neighbor =
-				get_incident_vertex(x, *properties[x].get_current_range().first, graph);
-			if(!properties[neighbor].colored())
-			{
-				properties[neighbor].color();
-				coloring[neighbor] = color_list[neighbor].front();
-			}
+			
+			#ifdef PLC_SHOW_ANNOTATIONS
+				std::cout << "\tcoloring remaining graph\n";
+			#endif
+			
+			path_list_color_recursive(graph, embedding, color_list, properties, face_location_sets,
+				coloring, x, properties[x].get_current_range(), y,
+				properties[y].get_current_range(), p, -1, before_y, before_x);
+			
 			return;
 		}
 		
 		// New parameters for coloring the graph after removing p
-		vertex_descriptor new_x = x, new_y = y, new_p = x;
+		vertex_descriptor new_x = x, new_y = y;
 		
-		// Remeber iterator to last edge in incidence list
-		edge_iterator pre_end = --properties[p].get_current_range().second;
+		// Remeber iterator to the last edge in incidence range
+		edge_iterator pre_end = --(properties[p].get_current_range().second);
+		
+		#ifdef PLC_SHOW_ANNOTATIONS
+			std::cout << "\tremoving p = " << p << "\n";
+		#endif
 		
 		// Iterate counterclockwise through interior neighbors of p
 		edge_iterator_pair range = properties[p].get_range();
@@ -599,17 +686,38 @@ namespace boost {
 			if(edge_iter == range.second) edge_iter = range.first;
 			vertex_descriptor neighbor = get_incident_vertex(p, *edge_iter, graph);
 			
+			#ifdef PLC_SHOW_ANNOTATIONS
+				std::cout << "\t\tlooking at vertex " << neighbor << "\n";
+			#endif
+			
 			// Remove p's color from the list of all adjacent neighbors
 			std::remove(color_list[neighbor].begin(), color_list[neighbor].end(), coloring[p]);
 			
 			// Interior vertex
 			if(properties[neighbor].interior())
 			{
+				#ifdef PLC_SHOW_ANNOTATIONS
+					std::cout << "\t\t\tinterior\n";
+				#endif
+				
 				// Add neighbor to the outer face with incidence list starting at p
-				properties[neighbor].initialize(neighbor, p, before_p, graph, embedding);
+				before_p = properties[neighbor].initialize(neighbor, p, before_p, graph, embedding,
+					face_location_sets);
+				
+				#ifdef PLC_SHOW_ANNOTATIONS
+					std::cout << "\t\t\t\t";
+					std::cout << "before_p = " << before_p << "\n";
+					std::cout << "\t\t\t\t";
+					std::cout << "mark[" << neighbor << "] = " << properties[neighbor].get_face_location() << "\n";
+				#endif
 				
 				// Remove p from incidence list
 				properties[neighbor].remove_begin();
+				
+				#ifdef PLC_SHOW_ANNOTATIONS
+					std::cout << "\t\t\t\tINITIALIZE: ";
+					print_incidence_range(neighbor, graph, embedding, properties);
+				#endif
 			}
 			// Face vertex
 			else
@@ -617,91 +725,374 @@ namespace boost {
 				// Vertex prior to p on the outer face
 				if(edge_iter == current_range.first)
 				{
+					#ifdef PLC_SHOW_ANNOTATIONS
+						std::cout << "\t\t\tbegin\n";
+					#endif
 					// Reassign x or y as needed
 					if(x == p)
 					{
-						if(y == p) new_y = neighbor;
-						else new_x = neighbor;
+						if(y == p)
+						{
+							before_y = properties[neighbor].set_face_location(before_y, face_location_sets);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "before_y = " << before_y << "\n";
+							#endif
+							new_y = neighbor;
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "mark[" << new_y << "] = "
+									<< properties[new_y].get_face_location() << "\n";
+							#endif
+						}
+						else
+						{
+							before_p = properties[neighbor].set_face_location(before_p, face_location_sets);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "before_p = " << before_p << "\n";
+							#endif
+							new_x = neighbor;
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "mark[" << new_x << "] = "
+									<< properties[new_x].get_face_location() << "\n";
+							#endif
+						}
 					}
 					
 					// Remove p from incidence list
 					properties[neighbor].remove_end();
+					#ifdef PLC_SHOW_ANNOTATIONS
+						std::cout << "\t\t\t\t";
+						print_incidence_range(neighbor, graph, embedding, properties);
+					#endif
 				}
 				else
 				{
+					int neighbor_face_location = properties[neighbor].get_face_location();
+					
+					before_p = properties[neighbor].set_face_location(before_p, face_location_sets);
+					#ifdef PLC_SHOW_ANNOTATIONS
+						std::cout << "\t\t\t\t";
+						std::cout << "before_p = " << before_p << "\n";
+					#endif
+					#ifdef PLC_SHOW_ANNOTATIONS
+						std::cout << "\t\t\t\t";
+						std::cout << "mark[" << neighbor << "] = "
+							<< properties[neighbor].get_face_location() << "\n";
+					#endif
+					
 					// Reassign x or y as needed
 					if(y == p)
 					{
-						if(x == p) new_x = neighbor;
-						else new_y = neighbor;
+						if(x == p)
+						{
+							new_x = neighbor;
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "mark[" << new_x << "] = "
+									<< properties[new_x].get_face_location() << "\n";
+							#endif
+						}
+						else
+						{
+							before_y = properties[neighbor].set_face_location(before_y, face_location_sets);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "before_y = " << before_y << "\n";
+							#endif
+							new_y = neighbor;
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "mark[" << new_y << "] = "
+									<< properties[new_y].get_face_location() << "\n";
+							#endif
+						}
 					}
 					
 					if(edge_iter == pre_end)
 					{
-						// Set new_p to the next vertex along the face
-						new_p = neighbor;
+						#ifdef PLC_SHOW_ANNOTATIONS
+							std::cout << "\t\t\tend\n";
+						#endif
 					
 						// Remove p from incidence list
 						properties[neighbor].remove_begin();
+						#ifdef PLC_SHOW_ANNOTATIONS
+							std::cout << "\t\t\t\t";
+							print_incidence_range(neighbor, graph, embedding, properties);
+						#endif
+						
+						vertex_descriptor new_p = neighbor;
+						
+						// Correction for weird case where x = y = p
+						if(x == y)
+						{
+							before_x = before_p;
+							before_p = -1;
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "before_x = before_p U before_y = " << before_x << "\n";
+							#endif
+						}
+						// If we are removing the last path vertex, we must merge before_p and before_y
+						else if(!properties[neighbor].colored())
+						{
+							before_y = face_location_sets.take_union(before_p, before_y);
+							before_p = -1;
+							new_p = new_x;
+							
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "before_y = before_y U before_p = " << before_y << "\n";
+							#endif
+						}
+						
+						// Color graph with p removed
+						path_list_color_recursive(graph, embedding, color_list, properties, face_location_sets,
+							coloring, new_x, properties[new_x].get_current_range(), new_y,
+							properties[new_y].get_current_range(), new_p, before_p, before_y, before_x);
 					}
 					else
 					{
 						// Split ranges along edge
 						auto n_ranges = properties[neighbor].split_range_at(p);
 						auto p_ranges = properties[p].split_range_at(neighbor);
-						
-						// Set ranges for "left" half to color
-						properties[neighbor].set_current_range(n_ranges.second);
-						properties[p].set_current_range(p_ranges.first);
-						
-						// Remove p from incidence list
-						properties[neighbor].remove_begin();
-						properties[p].remove_end();
 					
 						// Case 1: C[x,p) Cutvertex between x and p inclusive
-						if(properties[neighbor].is_face_location(before_p))
+						if(x == y)
 						{
-							path_list_color_recursive(graph, embedding, color_list, properties, coloring,
-								neighbor, properties[neighbor].get_current_range(),
-								neighbor, properties[neighbor].get_current_range(), neighbor,
-								before_p + 1, before_p + 2, before_p);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\tx == y\n";
+							#endif
+							
+							// Set ranges for "left" half to color
+							properties[neighbor].set_current_range(n_ranges.second);
+						
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(neighbor, graph, embedding, properties);
+							#endif
+						
+							properties[p].set_current_range(p_ranges.first);
+						
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(p, graph, embedding, properties);
+							#endif
+							
+							// Remove p from incidence list
+							properties[neighbor].remove_begin();
+							properties[p].remove_end();
+							
+							// Color "left" subgraph with p removed
+							path_list_color_recursive(graph, embedding, color_list, properties,
+								face_location_sets, coloring, new_x,
+								properties[new_x].get_current_range(), new_y,
+								properties[new_y].get_current_range(), new_x, -1, before_y, before_p);
+							
+							// Reassign ranges for remaining "right" subgraph
+							properties[p].set_current_range(p_ranges.second);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(p, graph, embedding, properties);
+							#endif
+							properties[neighbor].set_current_range(n_ranges.first);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(neighbor, graph, embedding, properties);
+							#endif
+							
+							// Color remaining "right" subgraph
+							path_list_color_recursive(graph, embedding, color_list, properties,
+								face_location_sets, coloring, x,
+								properties[x].get_current_range(), y, properties[y].get_current_range(), p,
+								-1, before_y, -1);
+						}
+						else if(compare_face_locations(neighbor_face_location, before_p, face_location_sets))
+						{
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\tbefore_p\n";
+							#endif
+							
+							// Set ranges for "right" subgraph
+							properties[p].set_current_range(p_ranges.second);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(p, graph, embedding, properties);
+							#endif
+							properties[neighbor].set_current_range(n_ranges.first);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(neighbor, graph, embedding, properties);
+							#endif
+							
+							// Color "right" subgraph
+							path_list_color_recursive(graph, embedding, color_list, properties,
+								face_location_sets, coloring, x,
+								properties[x].get_current_range(), y, properties[y].get_current_range(), p,
+								before_p, before_y, before_x);
+							
+							// Set ranges for "left" half to color
+							properties[neighbor].set_current_range(n_ranges.second);
+						
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(neighbor, graph, embedding, properties);
+							#endif
+						
+							properties[p].set_current_range(p_ranges.first);
+						
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(p, graph, embedding, properties);
+							#endif
+							
+							// Remove p from incidence list
+							properties[neighbor].remove_begin();
+							properties[p].remove_end();
+							
+							// Color "left" subgraph with p removed
+							path_list_color_recursive(graph, embedding, color_list, properties,
+								face_location_sets, coloring, neighbor,
+								properties[neighbor].get_current_range(), neighbor,
+								properties[neighbor].get_current_range(), neighbor, -1, before_p, -1);
 						}
 						// Case 2: C(p,y] Cutvertex between p and y inclusive
-						else if(properties[neighbor].is_face_location(before_y))
+						else if(compare_face_locations(neighbor_face_location, before_y, face_location_sets))
 						{
-							path_list_color_recursive(graph, embedding, color_list, properties, coloring,
-								new_x, properties[new_x].get_current_range(), new_y,
-								properties[new_y].get_current_range(), new_x, before_p, before_y, before_x);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\tbefore_y\n";
+							#endif
+							
+							// Set ranges for "left" half to color
+							properties[neighbor].set_current_range(n_ranges.second);
+						
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(neighbor, graph, embedding, properties);
+							#endif
+						
+							properties[p].set_current_range(p_ranges.first);
+						
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(p, graph, embedding, properties);
+							#endif
+							
+							// Remove p from incidence list
+							properties[neighbor].remove_begin();
+							properties[p].remove_end();
+							
+							// Intersect face sections we are joining
+							before_y = face_location_sets.take_union(before_p, before_y);
+							before_p = -1;
+							
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								std::cout << "union before_y and before_p = " << before_y << "\n";
+							#endif
+							
+							// Color "left" subgraph with p removed
+							path_list_color_recursive(graph, embedding, color_list, properties,
+								face_location_sets, coloring, new_x, properties[new_x].get_current_range(),
+								new_y, properties[new_y].get_current_range(), new_x, -1, before_y, before_x);
 								
-							// Reassign x and y for "right" half since original x and y were in "left"
-							new_y = neighbor;
-							new_x = neighbor;
+							// Reassign ranges for remaining "right" subgraph
+							properties[p].set_current_range(p_ranges.second);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(p, graph, embedding, properties);
+							#endif
+							properties[neighbor].set_current_range(n_ranges.first);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(neighbor, graph, embedding, properties);
+							#endif
+							
+							// Color remaining "right" subgraph
+							path_list_color_recursive(graph, embedding, color_list, properties,
+								face_location_sets, coloring, neighbor,
+								properties[neighbor].get_current_range(), neighbor,
+								properties[neighbor].get_current_range(), neighbor, -1, before_y, -1);
 						}
 						//Case 3: C(y,x) Cutvertex between y and x exclusive
 						else
 						{
-							path_list_color_recursive(graph, embedding, color_list, properties, coloring,
-								new_x, properties[new_x].get_current_range(), new_y,
-								properties[new_y].get_current_range(), new_x, before_p, before_y, before_x);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\tbefore_x\n";
+							#endif
+							
+							// Reassign ranges for remaining "right" subgraph
+							properties[p].set_current_range(p_ranges.second);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(p, graph, embedding, properties);
+							#endif
+							properties[neighbor].set_current_range(n_ranges.first);
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(neighbor, graph, embedding, properties);
+							#endif
+							
+							// Color remaining "right" subgraph
+							path_list_color_recursive(graph, embedding, color_list, properties,
+								face_location_sets, coloring, neighbor,
+								properties[neighbor].get_current_range(), y, properties[y].get_current_range(),
+								p, -1, before_y, before_x);
+							
+							// Set ranges for "left" half to color
+							properties[neighbor].set_current_range(n_ranges.second);
 						
-							// Reassign x in "right" half as original x was colored in "left" half
-							new_x = neighbor;
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(neighbor, graph, embedding, properties);
+							#endif
+						
+							properties[p].set_current_range(p_ranges.first);
+						
+							#ifdef PLC_SHOW_ANNOTATIONS
+								std::cout << "\t\t\t\t";
+								print_incidence_range(p, graph, embedding, properties);
+							#endif
+							
+							// Remove p from incidence list
+							properties[neighbor].remove_begin();
+							properties[p].remove_end();
+							
+							// Color "left" subgraph with p removed
+							path_list_color_recursive(graph, embedding, color_list, properties,
+								face_location_sets, coloring, new_x, properties[new_x].get_current_range(),
+								neighbor, properties[neighbor].get_current_range(), new_x, -1, before_p,
+								before_x);
 						}
-					
-						// Reassign neighbor ranges to color remaining "right" half
-						properties[neighbor].set_current_range(n_ranges.first);
-						properties[p].set_current_range(p_ranges.second);
-					
-						break;
 					}
+					
+					break;
 				}
 			}
 		}
+	}
+	
+	template<
+		typename index_graph, typename planar_embedding, typename list_color_property_map,
+		typename edge_iterator = typename property_traits<planar_embedding>::value_type::const_iterator,
+		typename vertex_descriptor = typename graph_traits<index_graph>::vertex_descriptor,
+		typename edge_iterator_pair = typename std::pair<edge_iterator, edge_iterator>
+	>
+	void print_incidence_range(vertex_descriptor vert, const index_graph & graph,
+		const planar_embedding & embedding, const list_color_property_map & properties)
+	{
+		edge_iterator_pair current_range = properties[vert].get_current_range();
+		vertex_descriptor begin_vert = get_incident_vertex(vert, *(current_range.first), graph);
+		vertex_descriptor end_vert = get_incident_vertex(vert, *(--current_range.second), graph);
 		
-		// Color remaining "right" half
-		path_list_color_recursive(graph, embedding, color_list, properties, coloring, new_x,
-			properties[new_x].get_current_range(), new_y, properties[new_y].get_current_range(),
-			new_p, before_p, before_y, before_x);
+		edge_iterator_pair range = properties[vert].get_range();
+		vertex_descriptor r_begin_vert = get_incident_vertex(vert, *(range.first), graph);
+		vertex_descriptor r_end_vert = get_incident_vertex(vert, *(--range.second), graph);
+		std::cout << "setting neighbor_range[" << vert << "] = (" << begin_vert << "," << end_vert
+			<< ") (" << r_begin_vert << "," << r_end_vert << ")\n";
 	}
 	
 	/*template<typename Graph, typename Embedding, typename IteratorMap,

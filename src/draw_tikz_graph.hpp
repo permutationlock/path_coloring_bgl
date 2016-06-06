@@ -22,7 +22,8 @@
 
 #include <boost/tuple/tuple.hpp>
 
-const std::vector<std::string> color_strings = {"red", "blue","yellow"};
+const std::vector<std::string> color_strings =
+	{"red", "blue","yellow", "green", "cyan", "magenta", "white", "black"};
 
 // Produce a dot language string to draw the given graph that has been three colored
 template<typename Graph, typename Coloring, typename Drawing>
@@ -44,14 +45,7 @@ std::string draw_tikz_graph(const Graph & graph, const Coloring & coloring,
 		
 		if(color_map.count(curr_color) == 0)
 		{
-			if(color_map.size() == 3)
-			{
-				throw std::logic_error("More than 3 colors in coloring");
-			}
-			if(color_map.count(curr_color) == 0)
-			{
-				color_map[curr_color] = color_strings[curr_color];
-			}
+			color_map[curr_color] = color_strings[curr_color];
 		}
 	}
 	

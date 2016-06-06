@@ -8,6 +8,8 @@
 #include <cmath>
 #include <unordered_map>
 #include <set>
+#include <chrono>
+#include <random>
 
 // Basic graph headers
 #include <boost/graph/adjacency_list.hpp>
@@ -35,10 +37,13 @@
 using namespace boost;
 
 // Comment line below to hide passing tests.
-#define SHOW_PASSES
+//#define SHOW_PASSES
 
 // Comment line below to hide tikz drawing printouts
-#define SHOW_VISUALIZATION
+//#define SHOW_VISUALIZATION
+
+// Comment line below to hide test timings.
+//#define SHOW_TIMINGS
 
 bool failed=false;
 
@@ -48,6 +53,8 @@ struct coord_t
   std::size_t x;
   std::size_t y;
 };
+
+typedef std::chrono::high_resolution_clock Timer;
 
 template<typename Graph>
 void make_triangulated(Graph & graph)
@@ -152,8 +159,6 @@ void draw_graph_no_color(Graph & graph)
 			get(vertex_index, graph)
 		);
 
-
-
 	// Compute the straight line drawing
 	chrobak_payne_straight_line_drawing(graph, 
 			embedding, 
@@ -206,8 +211,6 @@ void draw_graph_color(const Graph & graph, const Coloring & coloring)
 			get(vertex_index, graph)
 		);
 
-
-
 	// Compute the straight line drawing
 	chrobak_payne_straight_line_drawing(graph, 
 			embedding, 
@@ -219,14 +222,13 @@ void draw_graph_color(const Graph & graph, const Coloring & coloring)
 	std::cout << draw_tikz_graph(graph, coloring, straight_line_drawing) << "\n";
 }
 
-template<typename AdjacencyGraph, typename Coloring>
-void test_path_coloring(const AdjacencyGraph & graph, const Coloring & coloring)
+template<typename index_graph, typename color_map>
+void test_path_coloring(const index_graph & graph, const color_map & coloring)
 {
-	typedef graph_traits<AdjacencyGraph> GraphTraits;
-	typedef typename GraphTraits::vertex_descriptor vertex_descriptor;
-	typedef typename GraphTraits::vertex_iterator vertex_iterator;
-	typedef typename GraphTraits::adjacency_iterator adjacency_iterator;
-	typedef typename boost::property_traits<Coloring>::value_type color_type;
+	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	typedef typename graph_traits<index_graph>::vertex_iterator vertex_iterator;
+	typedef typename graph_traits<index_graph>::adjacency_iterator adjacency_iterator;
+	typedef typename property_traits<color_map>::value_type color_type;
 	
 	std::set<vertex_descriptor> visited;
 	
@@ -250,13 +252,12 @@ void test_path_coloring(const AdjacencyGraph & graph, const Coloring & coloring)
 				vertex_descriptor v = bfs_queue.front();
 				bfs_queue.pop();
 				
-				if(visited.count(curr_vertex) == 0)
+				if(visited.count(v) == 0)
 				{
 					std::size_t new_neighbor_count = 0, old_neighbor_count = 0;
 					
 					adjacency_iterator n_iter, n_end;
-					for(tie(n_iter,n_end) = adjacent_vertices(curr_vertex, graph);
-						n_iter != n_end; n_iter++)
+					for(tie(n_iter, n_end) = adjacent_vertices(v, graph); n_iter != n_end; n_iter++)
 					{
 						vertex_descriptor n = *n_iter;
 						
@@ -264,7 +265,6 @@ void test_path_coloring(const AdjacencyGraph & graph, const Coloring & coloring)
 						if(visited.count(n) == 0 && coloring[n] == curr_color)
 						{
 							new_neighbor_count++;
-							visited.insert(n);
 							bfs_queue.push(n);
 						}
 						else if(coloring[n] == curr_color)
@@ -288,6 +288,8 @@ void test_path_coloring(const AdjacencyGraph & graph, const Coloring & coloring)
 						throw std::runtime_error(error);
 					}
 					extra = 0;
+					
+					visited.insert(v);
 				}
 			}
 		}
@@ -295,11 +297,11 @@ void test_path_coloring(const AdjacencyGraph & graph, const Coloring & coloring)
 }
 
 // Apply Poh algorithm to given graph and verify it works
-template<typename AdjacencyGraph>
-void poh_color_test(const AdjacencyGraph & graph)
+template<typename index_graph>
+void poh_color_test(const index_graph & graph)
 {
-	typedef typename graph_traits<AdjacencyGraph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<AdjacencyGraph>::edge_descriptor edge_descriptor;
+	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
 	
 	// Define the storage type for the planar embedding
 	typedef std::vector<
@@ -308,7 +310,7 @@ void poh_color_test(const AdjacencyGraph & graph)
 
 	typedef iterator_property_map
 		< typename embedding_storage_t::iterator, 
-			typename property_map<AdjacencyGraph, vertex_index_t>::type
+			typename property_map<index_graph, vertex_index_t>::type
 		> embedding_t;
 	
 	// Create the planar embedding
@@ -357,12 +359,12 @@ void poh_color_test(const AdjacencyGraph & graph)
 }
 
 // Apply Poh algorithm to given graph and verify it works
-template<typename AdjacencyGraph>
-void path_list_color_test(const AdjacencyGraph & graph)
+template<typename index_graph>
+void path_list_color_test(const index_graph & graph)
 {
-	typedef typename graph_traits<AdjacencyGraph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<AdjacencyGraph>::vertex_iterator vertex_iterator;
-	typedef typename graph_traits<AdjacencyGraph>::edge_descriptor edge_descriptor;
+	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	typedef typename graph_traits<index_graph>::vertex_iterator vertex_iterator;
+	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
 	
 	// Define the storage type for the planar embedding
 	typedef std::vector<
@@ -371,7 +373,7 @@ void path_list_color_test(const AdjacencyGraph & graph)
 
 	typedef iterator_property_map
 		< typename embedding_storage_t::iterator, 
-			typename property_map<AdjacencyGraph, vertex_index_t>::type
+			typename property_map<index_graph, vertex_index_t>::type
 		> embedding_t;
 	
 	// Create the planar embedding
@@ -386,28 +388,61 @@ void path_list_color_test(const AdjacencyGraph & graph)
 	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
 	
 	// Create property map to hold the coloring
-	std::map<vertex_descriptor, int> color_map;
-	associative_property_map< std::map<vertex_descriptor, int> >
-		coloring(color_map);
+	typedef iterator_property_map<
+			typename std::vector<int>::iterator,
+			typename property_map<index_graph, vertex_index_t>::type
+		> color_property_map;
+	std::vector<int> color_storage(num_vertices(graph));
+	color_property_map coloring(color_storage.begin(), get(vertex_index, graph));
 	
-	// Create vectors to hold chordless paths
+	// Create vectors to hold ordered outer face
 	std::vector<vertex_descriptor> outer_face;
 	
 	outer_face.push_back(ordering[1]);
 	outer_face.push_back(ordering[0]);
 	outer_face.push_back(ordering.back());
 	
-	std::unordered_map<vertex_descriptor, std::list<int> > color_list;
+	// Create property map to hold the coloring
+	typedef iterator_property_map<
+			typename std::vector<std::list<int> >::iterator,
+			typename property_map<index_graph, vertex_index_t>::type
+		> color_list_property_map;
+	std::vector<std::list<int> > color_list_storage(num_vertices(graph));
+	color_list_property_map color_list(color_list_storage.begin(), get(vertex_index, graph));
+	
+	std::mt19937 generator;
+	std::uniform_int_distribution<int> distribution(0,7);
 	
 	// Iterate over each vertex
 	vertex_iterator v_iter, v_end;
 	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++)
 	{
-		color_list[*v_iter] = {0, 1, 2};
+		std::vector<int> random_colors(3);
+		while(random_colors[0] == random_colors[1] || random_colors[0] == random_colors[2] ||
+			random_colors[1] == random_colors[2])
+		{
+			for(std::size_t i = 0; i < 3; ++i)
+			{
+				random_colors[i] = distribution(generator);
+			}
+		}
+		 std::copy(random_colors.begin(), random_colors.end(), std::back_inserter(color_list[*v_iter]));
 	}
 	
-	// Call Poh algorithm
+	#ifdef SHOW_TIMINGS
+		auto start = Timer::now();
+	#endif
+	
+	// Call path 3-list-color algorithm
 	path_list_color(graph, embedding, color_list, coloring, outer_face.begin(), outer_face.end());
+	
+	#ifdef SHOW_TIMINGS
+		auto end = Timer::now();
+	#endif
+	
+	#ifdef SHOW_TIMINGS
+		std::cout << "Time = " << (end - start).count() << "\n";
+	#endif
 	
 	#ifdef SHOW_VISUALIZATION
 		draw_graph_color(graph, coloring);
@@ -424,7 +459,7 @@ void test_poh_color()
 	{
 		// Define graph properties
 		typedef adjacency_list
-			<	vecS,
+			<	setS,
 				vecS,
 				undirectedS,
 				property<vertex_index_t, int>,
@@ -481,55 +516,70 @@ void test_poh_color()
 
 void test_list_path_color()
 {
-	std::cout<<"List path coloring"<<std::endl;
+	std::cout<<"Path 3-list-coloring"<<std::endl;
 	
 	{
 		// Define graph properties
 		typedef adjacency_list
-			<	vecS,
+			<	setS,
 				vecS,
 				undirectedS,
 				property<vertex_index_t, int>,
 				property<edge_index_t, int>
 			> Graph;
 	
-		try
+		typedef erdos_renyi_iterator<minstd_rand, Graph> ERGen;
+		
+		boost::minstd_rand gen;
+		gen.seed(751);
+		
+		for(std::size_t order = 3; order < 25; order++)
 		{
-			// Construct a random trriangulated graph
-			//std::cout << "Generating graph.\n";
-			Graph graph(5);
-	
-			//std::cout << "Triangulating graph.\n";
-			make_triangulated(graph);
-	
-			draw_graph_no_color(graph);
-	
-			//std::cout << "Testing planarity.\n";
-			path_list_color_test(graph);
-	
-			#ifdef SHOW_PASSES
-				std::cout<<"    PASS " << 3 << " vertex list path color."<<std::endl;
-			#endif
-		}
-		catch(std::logic_error error)
-		{
-			// Generated a non-planar graph, ignore this case
-		}
-		catch(std::exception& error)
-		{
-			std::cout<<"    FAIL " << 3 << " vertex list path color ("<<error.what()<<")."<<std::endl;
-			failed=true;
-		}
-		catch(...)
-		{
-			std::cout<<"    FAIL " << 3 << " vertex list path color (unknown error)."<<std::endl;
-			failed=true;
+			bool found_planar = false;
+			while(!found_planar)
+			{
+				try
+				{
+					// Construct a random trriangulated graph
+					//std::cout << "Generating graph.\n";
+					Graph graph(ERGen(gen, order, 2 * order - 4), ERGen(), order);
+					
+					//std::cout << "Triangulating graph.\n";
+					make_triangulated(graph);
+					
+					found_planar = true;
+					
+					//draw_graph_no_color(graph);
+					
+					//std::cout << "Testing planarity.\n";
+					path_list_color_test(graph);
+					
+					#ifdef SHOW_PASSES
+						std::cout<<"    PASS " << order << " vertex path 3-list-color."<<std::endl;
+					#endif
+				}
+				catch(std::logic_error error)
+				{
+					// Generated a non-planar graph, ignore this case
+				}
+				catch(std::exception& error)
+				{
+					std::cout<<"    FAIL " << order << " vertex path 3-list-color ("<<error.what()<<")."<<std::endl;
+					failed=true;
+				}
+				catch(...)
+				{
+					std::cout<<"    FAIL " << order << " vertex path 3-list-color (unknown error)."<<std::endl;
+					failed=true;
+				}
+			}
 		}
 	}
 }
 
 int main()
 {
+	test_poh_color();
 	test_list_path_color();
 
 	if(failed)
