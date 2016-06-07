@@ -360,7 +360,7 @@ void poh_color_test(const index_graph & graph)
 
 // Apply Poh algorithm to given graph and verify it works
 template<typename index_graph>
-void path_list_color_test(const index_graph & graph)
+void path_list_color_test(const index_graph & graph, std::size_t num_colors)
 {
 	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
 	typedef typename graph_traits<index_graph>::vertex_iterator vertex_iterator;
@@ -411,7 +411,7 @@ void path_list_color_test(const index_graph & graph)
 	color_list_property_map color_list(color_list_storage.begin(), get(vertex_index, graph));
 	
 	std::mt19937 generator;
-	std::uniform_int_distribution<int> distribution(0,7);
+	std::uniform_int_distribution<int> distribution(0, num_colors - 1);
 	
 	// Iterate over each vertex
 	vertex_iterator v_iter, v_end;
@@ -426,7 +426,14 @@ void path_list_color_test(const index_graph & graph)
 				random_colors[i] = distribution(generator);
 			}
 		}
-		 std::copy(random_colors.begin(), random_colors.end(), std::back_inserter(color_list[*v_iter]));
+		/*std::cout << "color_list[" << *v_iter << "] = { ";
+		for(std::size_t i = 0; i < 3; ++i)
+		{
+			std::cout << random_colors[i] << ((i != 2) ? ", " : "");
+		}
+		std::cout << "\n";*/
+		
+		std::copy(random_colors.begin(), random_colors.end(), std::back_inserter(color_list[*v_iter]));
 	}
 	
 	#ifdef SHOW_TIMINGS
@@ -438,9 +445,6 @@ void path_list_color_test(const index_graph & graph)
 	
 	#ifdef SHOW_TIMINGS
 		auto end = Timer::now();
-	#endif
-	
-	#ifdef SHOW_TIMINGS
 		std::cout << "Time = " << (end - start).count() << "\n";
 	#endif
 	
@@ -470,44 +474,51 @@ void test_poh_color()
 		
 		boost::minstd_rand gen;
 		
-		for(std::size_t order = 10; order < 25; order++)
+		for(std::size_t order = 7; order < 100; order++)
 		{
-			bool found_planar = false;
-			while(!found_planar)
+			for(std::size_t seed = 0; seed < 5; seed++)
 			{
-				try
+				gen.seed((7^seed)%997);
+				bool found_planar = false;
+				std::size_t count = 4;
+				while(!found_planar)
 				{
-					// Construct a random trriangulated graph
-					//std::cout << "Generating graph.\n";
-					Graph graph(ERGen(gen, order, 2 * order - 4), ERGen(), order);
-					
-					//std::cout << "Triangulating graph.\n";
-					make_triangulated(graph);
-					
-					found_planar = true;
-					
-					//draw_graph_no_color(graph);
-					
-					//std::cout << "Testing planarity.\n";
-					poh_color_test(graph);
-					
-					#ifdef SHOW_PASSES
-						std::cout<<"    PASS " << order << " vertex Poh path color."<<std::endl;
-					#endif
-				}
-				catch(std::logic_error error)
-				{
-					// Generated a non-planar graph, ignore this case
-				}
-				catch(std::exception& error)
-				{
-					std::cout<<"    FAIL " << order << " vertex Poh path color ("<<error.what()<<")."<<std::endl;
-					failed=true;
-				}
-				catch(...)
-				{
-					std::cout<<"    FAIL " << order << " vertex Poh path color (unknown error)."<<std::endl;
-					failed=true;
+					try
+					{
+						// Construct a random trriangulated graph
+						//std::cout << "Generating graph.\n";
+						Graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+				
+						++count;
+						
+						//std::cout << "Triangulating graph.\n";
+						make_triangulated(graph);
+				
+						found_planar = true;
+				
+						//draw_graph_no_color(graph);
+				
+						//std::cout << "Testing planarity.\n";
+						poh_color_test(graph);
+				
+						#ifdef SHOW_PASSES
+							std::cout<<"    PASS " << order << " vertex Poh path color."<<std::endl;
+						#endif
+					}
+					catch(std::logic_error error)
+					{
+						// Generated a non-planar graph, ignore this case
+					}
+					catch(std::exception& error)
+					{
+						std::cout<<"    FAIL " << order << " vertex Poh path color ("<<error.what()<<")."<<std::endl;
+						failed=true;
+					}
+					catch(...)
+					{
+						std::cout<<"    FAIL " << order << " vertex Poh path color (unknown error)."<<std::endl;
+						failed=true;
+					}
 				}
 			}
 		}
@@ -531,46 +542,59 @@ void test_list_path_color()
 		typedef erdos_renyi_iterator<minstd_rand, Graph> ERGen;
 		
 		boost::minstd_rand gen;
-		gen.seed(751);
+		//gen.seed(8573);
 		
-		for(std::size_t order = 3; order < 25; order++)
+		for(std::size_t order = 7; order < 100; order++)
 		{
-			bool found_planar = false;
-			while(!found_planar)
+			for(std::size_t colors = 3; colors < 9; ++colors)
 			{
-				try
+				for(std::size_t seed = 0; seed < 5; seed++)
 				{
-					// Construct a random trriangulated graph
-					//std::cout << "Generating graph.\n";
-					Graph graph(ERGen(gen, order, 2 * order - 4), ERGen(), order);
+					gen.seed((7^(5*colors+seed))%997);
+					bool found_planar = false;
+					std::size_t count = 4;
+					while(!found_planar)
+					{
+						try
+						{
+							// Construct a random trriangulated graph
+							//std::cout << "Generating graph.\n";
+							Graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+							
+							++count;
+							
+							//std::cout << "Triangulating graph.\n";
+							make_triangulated(graph);
 					
-					//std::cout << "Triangulating graph.\n";
-					make_triangulated(graph);
+							found_planar = true;
 					
-					found_planar = true;
+							//draw_graph_no_color(graph);
 					
-					//draw_graph_no_color(graph);
+							//std::cout << "Testing planarity.\n";
+							path_list_color_test(graph, colors);
 					
-					//std::cout << "Testing planarity.\n";
-					path_list_color_test(graph);
-					
-					#ifdef SHOW_PASSES
-						std::cout<<"    PASS " << order << " vertex path 3-list-color."<<std::endl;
-					#endif
-				}
-				catch(std::logic_error error)
-				{
-					// Generated a non-planar graph, ignore this case
-				}
-				catch(std::exception& error)
-				{
-					std::cout<<"    FAIL " << order << " vertex path 3-list-color ("<<error.what()<<")."<<std::endl;
-					failed=true;
-				}
-				catch(...)
-				{
-					std::cout<<"    FAIL " << order << " vertex path 3-list-color (unknown error)."<<std::endl;
-					failed=true;
+							#ifdef SHOW_PASSES
+								std::cout<<"    PASS " << order << " vertex, " << colors << " colors, test "
+									<< seed << " path 3-list-color."<<std::endl;
+							#endif
+						}
+						catch(std::logic_error error)
+						{
+							// Generated a non-planar graph, ignore this case
+						}
+						catch(std::exception& error)
+						{
+							std::cout<<"    FAIL " << order << " vertex, " << colors << " colors, test "
+									<< seed << " path 3-list-color ("<<error.what()<<")."<<std::endl;
+							failed=true;
+						}
+						catch(...)
+						{
+							std::cout<<"    FAIL " << order << " vertex, " << colors << " colors, test "
+									<< seed << " path 3-list-color (unknown error)."<<std::endl;
+							failed=true;
+						}
+					}
 				}
 			}
 		}

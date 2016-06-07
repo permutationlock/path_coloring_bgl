@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  6 JUN 2016 03:44
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  7 JUN 2016 20:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -595,20 +595,20 @@ LaTeX Font Info:    ... okay on input line 27.
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
 * modes: 
-* h-part:(L,W,R)=(90.3375pt, 433.62001pt, 90.3375pt)
-* v-part:(T,H,B)=(90.3375pt, 831.10501pt, 90.3375pt)
+* h-part:(L,W,R)=(36.135pt, 542.02501pt, 36.135pt)
+* v-part:(T,H,B)=(36.135pt, 939.51001pt, 36.135pt)
 * \paperwidth=614.295pt
 * \paperheight=1011.78pt
-* \textwidth=433.62001pt
-* \textheight=831.10501pt
-* \oddsidemargin=18.0675pt
-* \evensidemargin=18.0675pt
-* \topmargin=-18.9325pt
+* \textwidth=542.02501pt
+* \textheight=939.51001pt
+* \oddsidemargin=-36.135pt
+* \evensidemargin=-36.135pt
+* \topmargin=-73.135pt
 * \headheight=12.0pt
 * \headsep=25.0pt
 * \topskip=12.0pt
 * \footskip=30.0pt
-* \marginparwidth=35.0pt
+* \marginparwidth=44.0pt
 * \marginparsep=10.0pt
 * \columnsep=10.0pt
 * \skip\footins=10.8pt plus 4.0pt minus 2.0pt
@@ -680,37 +680,28 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 Package csquotes Info: Making character " active on input line 27.
-LaTeX Font Info:    Try loading font information for U+msa on input line 34.
+ [1
 
-(/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Try loading font information for U+msb on input line 34.
-
-(/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [1
-
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] (./path_list_color
-ing_examples.aux) )
+] [2]
+[3] [4] [5] [6] [7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18]
+[19] [20] [21] (./path_list_coloring_examples.aux) )
 (\end occurred inside a group at level 1)
 
 ### simple group (level 1) entered at line 1061 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 15810 strings out of 493054
- 292372 string characters out of 6140585
- 683285 words of memory out of 5000000
- 19025 multiletter control sequences out of 15000+600000
- 8285 words of font info for 32 fonts, out of 8000000 for 9000
+ 15869 strings out of 493054
+ 293010 string characters out of 6140585
+ 4931501 words of memory out of 5000000
+ 19104 multiletter control sequences out of 15000+600000
+ 3938 words of font info for 15 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 55i,7n,68p,834b,12219s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb
->
-Output written on path_list_coloring_examples.pdf (3 pages, 70685 bytes).
+ 55i,7n,68p,2257b,12207s stack positions out of 5000i,500n,10000p,200000b,80000s
+
+Output written on path_list_coloring_examples.pdf (21 pages, 731597 bytes).
 PDF statistics:
- 21 PDF objects out of 1000 (max. 8388607)
- 14 compressed objects within 1 object stream
+ 75 PDF objects out of 1000 (max. 8388607)
+ 51 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 
