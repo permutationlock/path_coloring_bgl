@@ -34,6 +34,13 @@ class disjoint_set
 			}
 			return sets[n].parent;
 		}
+		
+		bool compare(int n, int m)
+		{
+			if(!exists(n) || !exists(m)) return false;
+			
+			return find(n) == find(m);
+		}
 				
 		int take_union(int n, int m)
 		{

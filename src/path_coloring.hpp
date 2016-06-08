@@ -23,6 +23,7 @@
 #include "draw_tikz_graph.hpp"
 #include "disjoint_set.hpp"
 
+// Comment the line below to stop algorithm annotation printing
 //#define PLC_SHOW_ANNOTATIONS
 
 namespace boost {
@@ -479,12 +480,6 @@ namespace boost {
 			-1, before_y, -1);
 	}
 	
-	bool compare_face_locations(int first_location, int second_location, disjoint_set & face_location_sets)
-	{
-		if(!face_location_sets.exists(second_location)) return false;
-		return (face_location_sets.find(first_location) == face_location_sets.find(second_location));
-	}
-	
 	template<
 		typename index_graph, typename planar_embedding, typename color_list_map,
 		typename color_map, typename list_color_property_map,
@@ -515,11 +510,9 @@ namespace boost {
 		{
 			before_p = properties[x].set_face_location(before_p, face_location_sets);
 			#ifdef PLC_SHOW_ANNOTATIONS
-				std::cout << "\t\t\t\t";
+				std::cout << "\t";
 				std::cout << "before_p = " << before_p << "\n";
-			#endif
-			#ifdef PLC_SHOW_ANNOTATIONS
-				std::cout << "\t\t\t\t";
+				std::cout << "\t";
 				std::cout << "mark[" << x << "] = "
 					<< properties[x].get_face_location() << "\n";
 			#endif
@@ -529,16 +522,11 @@ namespace boost {
 		
 		before_x = properties[y].set_face_location(before_x, face_location_sets);
 		#ifdef PLC_SHOW_ANNOTATIONS
-			std::cout << "\t\t\t\t";
+			std::cout << "\t";
 			std::cout << "before_p = " << before_p << "\n";
-		#endif
-		#ifdef PLC_SHOW_ANNOTATIONS
-			std::cout << "\t\t\t\t";
+			std::cout << "\t";
 			std::cout << "mark[" << y << "] = "
 				<< properties[y].get_face_location() << "\n";
-		#endif
-		
-		#ifdef PLC_SHOW_ANNOTATIONS
 			std::cout << "\t";
 			print_incidence_range(y, graph, embedding, properties);
 		#endif
@@ -568,8 +556,9 @@ namespace boost {
 				{
 					properties[neighbor].color();
 					coloring[neighbor] = color_list[neighbor].front();
+					
 					#ifdef PLC_SHOW_ANNOTATIONS
-						std::cout << "\t\t\tcoloring[" << neighbor << "] = " << coloring[neighbor] << "\n";
+						std::cout << "\t\tcoloring[" << neighbor << "] = " << coloring[neighbor] << "\n";
 					#endif
 				}
 			}
@@ -591,7 +580,7 @@ namespace boost {
 				properties[neighbor].color();
 				coloring[neighbor] = color_list[neighbor].front();
 				#ifdef PLC_SHOW_ANNOTATIONS
-					std::cout << "\t\t\tcoloring[" << neighbor << "] = " << coloring[neighbor] << "\n";
+					std::cout << "\t\tcoloring[" << neighbor << "] = " << coloring[neighbor] << "\n";
 				#endif
 			}
 			return;
@@ -616,7 +605,7 @@ namespace boost {
 			#endif
 			
 			#ifdef PLC_SHOW_ANNOTATIONS
-				std::cout << "\t\t\tcoloring[" << x << "] = " << coloring[x] << "\n";
+				std::cout << "\t\tcoloring[" << x << "] = " << coloring[x] << "\n";
 			#endif
 			
 			if(x != y)
@@ -640,8 +629,7 @@ namespace boost {
 					
 						// Check if vertex is on the outer face between x and y
 						if(properties[neighbor].on_face() && (neighbor == y ||
-							compare_face_locations(properties[neighbor].get_face_location(),
-								before_y, face_location_sets)))
+							face_location_sets.compare(properties[neighbor].get_face_location(), before_y)))
 						{
 							// Check if it may be colored path_color
 							for(auto color : color_list[neighbor])
@@ -714,7 +702,7 @@ namespace boost {
 			}
 			
 			#ifdef PLC_SHOW_ANNOTATIONS
-				std::cout << "\tcoloring remaining graph\n";
+				std::cout << "\tcoloring remaining subgraph\n";
 			#endif
 			
 			path_list_color_recursive(graph, embedding, color_list, properties, face_location_sets,
@@ -795,17 +783,21 @@ namespace boost {
 					#ifdef PLC_SHOW_ANNOTATIONS
 						std::cout << "\t\t\tbegin\n";
 					#endif
+					
 					// Reassign x or y as needed
 					if(x == p)
 					{
 						if(y == p)
 						{
 							before_x = properties[neighbor].set_face_location(before_x, face_location_sets);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								std::cout << "before_x = " << before_x << "\n";
 							#endif
+							
 							new_y = neighbor;
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								std::cout << "mark[" << new_y << "] = "
@@ -815,11 +807,14 @@ namespace boost {
 						else
 						{
 							before_p = properties[neighbor].set_face_location(before_p, face_location_sets);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								std::cout << "before_p = " << before_p << "\n";
 							#endif
+							
 							new_x = neighbor;
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								std::cout << "mark[" << new_x << "] = "
@@ -830,6 +825,7 @@ namespace boost {
 					
 					// Remove p from incidence list
 					properties[neighbor].remove_end();
+					
 					#ifdef PLC_SHOW_ANNOTATIONS
 						std::cout << "\t\t\t\t";
 						print_incidence_range(neighbor, graph, embedding, properties);
@@ -841,11 +837,9 @@ namespace boost {
 					
 					before_p = properties[neighbor].set_face_location(before_p, face_location_sets);
 					#ifdef PLC_SHOW_ANNOTATIONS
-						std::cout << "\t\t\t\t";
+						std::cout << "\t\t\t";
 						std::cout << "before_p = " << before_p << "\n";
-					#endif
-					#ifdef PLC_SHOW_ANNOTATIONS
-						std::cout << "\t\t\t\t";
+						std::cout << "\t\t\t";
 						std::cout << "mark[" << neighbor << "] = "
 							<< properties[neighbor].get_face_location() << "\n";
 					#endif
@@ -871,6 +865,7 @@ namespace boost {
 					
 						// Remove p from incidence list
 						properties[neighbor].remove_begin();
+						
 						#ifdef PLC_SHOW_ANNOTATIONS
 							std::cout << "\t\t\t\t";
 							print_incidence_range(neighbor, graph, embedding, properties);
@@ -883,6 +878,7 @@ namespace boost {
 						{
 							before_x = before_p;
 							before_p = -1;
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								std::cout << "before_x = before_p U before_y = " << before_x << "\n";
@@ -946,11 +942,14 @@ namespace boost {
 							
 							// Reassign ranges for remaining "right" subgraph
 							properties[p].set_current_range(p_ranges.second);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								print_incidence_range(p, graph, embedding, properties);
 							#endif
+							
 							properties[neighbor].set_current_range(n_ranges.first);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								print_incidence_range(neighbor, graph, embedding, properties);
@@ -962,7 +961,7 @@ namespace boost {
 								properties[x].get_current_range(), y, properties[y].get_current_range(), p,
 								-1, before_y, -1);
 						}
-						else if(compare_face_locations(neighbor_face_location, before_p, face_location_sets))
+						else if(face_location_sets.compare(neighbor_face_location, before_p))
 						{
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\tbefore_p\n";
@@ -970,11 +969,14 @@ namespace boost {
 							
 							// Set ranges for "right" subgraph
 							properties[p].set_current_range(p_ranges.second);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								print_incidence_range(p, graph, embedding, properties);
 							#endif
+							
 							properties[neighbor].set_current_range(n_ranges.first);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								print_incidence_range(neighbor, graph, embedding, properties);
@@ -1012,7 +1014,7 @@ namespace boost {
 								properties[neighbor].get_current_range(), neighbor, -1, before_p, -1);
 						}
 						// Case 2: C(p,y] Cutvertex between p and y inclusive
-						else if(compare_face_locations(neighbor_face_location, before_y, face_location_sets))
+						else if(face_location_sets.compare(neighbor_face_location, before_y))
 						{
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\tbefore_y\n";
@@ -1053,11 +1055,14 @@ namespace boost {
 								
 							// Reassign ranges for remaining "right" subgraph
 							properties[p].set_current_range(p_ranges.second);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								print_incidence_range(p, graph, embedding, properties);
 							#endif
+							
 							properties[neighbor].set_current_range(n_ranges.first);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								print_incidence_range(neighbor, graph, embedding, properties);
@@ -1078,11 +1083,14 @@ namespace boost {
 							
 							// Reassign ranges for remaining "right" subgraph
 							properties[p].set_current_range(p_ranges.second);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								print_incidence_range(p, graph, embedding, properties);
 							#endif
+							
 							properties[neighbor].set_current_range(n_ranges.first);
+							
 							#ifdef PLC_SHOW_ANNOTATIONS
 								std::cout << "\t\t\t\t";
 								print_incidence_range(neighbor, graph, embedding, properties);
