@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  7 JUN 2016 19:27
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  9 JUN 2016 23:03
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -594,16 +594,16 @@ LaTeX Font Info:    ... okay on input line 27.
 * paper: legalpaper
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
-* modes: 
-* h-part:(L,W,R)=(90.3375pt, 433.62001pt, 90.3375pt)
-* v-part:(T,H,B)=(90.3375pt, 831.10501pt, 90.3375pt)
-* \paperwidth=614.295pt
-* \paperheight=1011.78pt
-* \textwidth=433.62001pt
-* \textheight=831.10501pt
-* \oddsidemargin=18.0675pt
-* \evensidemargin=18.0675pt
-* \topmargin=-18.9325pt
+* modes: landscape 
+* h-part:(L,W,R)=(36.135pt, 939.51001pt, 36.135pt)
+* v-part:(T,H,B)=(36.135pt, 542.02501pt, 36.135pt)
+* \paperwidth=1011.78pt
+* \paperheight=614.295pt
+* \textwidth=939.51001pt
+* \textheight=542.02501pt
+* \oddsidemargin=-36.135pt
+* \evensidemargin=-36.135pt
+* \topmargin=-73.135pt
 * \headheight=12.0pt
 * \headsep=25.0pt
 * \topskip=12.0pt
@@ -680,47 +680,27 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 Package csquotes Info: Making character " active on input line 27.
-LaTeX Font Info:    Try loading font information for U+msa on input line 34.
+ [1
 
-(/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Try loading font information for U+msb on input line 34.
-
-(/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-Overfull \hbox (37.39307pt too wide) in paragraph at lines 387--388
- [][] 
- []
-
-
-Overfull \hbox (37.39307pt too wide) in paragraph at lines 500--501
- [][] 
- []
-
-[1
-
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
+]
 (./more_examples_plc.aux) )
 (\end occurred inside a group at level 1)
 
 ### simple group (level 1) entered at line 1061 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 15810 strings out of 493054
- 292282 string characters out of 6140585
- 446798 words of memory out of 5000000
- 19025 multiletter control sequences out of 15000+600000
- 8285 words of font info for 32 fonts, out of 8000000 for 9000
+ 17393 strings out of 493054
+ 312405 string characters out of 6140585
+ 600594 words of memory out of 5000000
+ 20628 multiletter control sequences out of 15000+600000
+ 3938 words of font info for 15 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 55i,6n,68p,824b,12219s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb
->
-Output written on more_examples_plc.pdf (2 pages, 30441 bytes).
+ 55i,6n,68p,14744b,12219s stack positions out of 5000i,500n,10000p,200000b,80000s
+
+Output written on more_examples_plc.pdf (1 page, 44899 bytes).
 PDF statistics:
- 18 PDF objects out of 1000 (max. 8388607)
- 12 compressed objects within 1 object stream
+ 11 PDF objects out of 1000 (max. 8388607)
+ 7 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 

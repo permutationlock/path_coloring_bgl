@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -46,11 +45,13 @@ using namespace boost;
 // Comment line below to hide test timings.
 //#define SHOW_TIMINGS
 
+// Comment line below to hide color list assignment printouts
+//#define SHOW_COLOR_LISTS
+
 bool failed=false;
 
 // A class to hold the coordinates of the straight line embedding
-struct coord_t
-{
+struct coord_t {
   std::size_t x;
   std::size_t y;
 };
@@ -58,8 +59,7 @@ struct coord_t
 typedef std::chrono::high_resolution_clock Timer;
 
 template<typename Graph>
-void make_triangulated(Graph & graph)
-{
+void make_triangulated(Graph & graph) {
 	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
 	
 	// Define the storage type for the planar embedding
@@ -86,7 +86,7 @@ void make_triangulated(Graph & graph)
 	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
 
 	if(!boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-						   boyer_myrvold_params::embedding = embedding))
+		boyer_myrvold_params::embedding = embedding))
 	{
 		std::string error = "Non-planar graph.";
 		throw std::logic_error(error);
@@ -116,8 +116,7 @@ void make_triangulated(Graph & graph)
 }
 
 template<typename Graph>
-void draw_graph_no_color(Graph & graph)
-{
+void draw_graph_no_color(Graph & graph) {
 	typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
 	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
 	
@@ -172,8 +171,7 @@ void draw_graph_no_color(Graph & graph)
 }
 
 template<typename Graph, typename Coloring>
-void draw_graph_color(const Graph & graph, const Coloring & coloring)
-{
+void draw_graph_color(const Graph & graph, const Coloring & coloring) {
 	typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
 	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
 	
@@ -224,8 +222,7 @@ void draw_graph_color(const Graph & graph, const Coloring & coloring)
 }
 
 template<typename index_graph, typename color_map>
-void test_path_coloring(const index_graph & graph, const color_map & coloring)
-{
+void test_path_coloring(const index_graph & graph, const color_map & coloring) {
 	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
 	typedef typename graph_traits<index_graph>::vertex_iterator vertex_iterator;
 	typedef typename graph_traits<index_graph>::adjacency_iterator adjacency_iterator;
@@ -235,55 +232,46 @@ void test_path_coloring(const index_graph & graph, const color_map & coloring)
 	
 	// Iterate over each vertex
 	vertex_iterator v_iter, v_end;
-	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++)
-	{
+	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
 		vertex_descriptor curr_vertex = *v_iter;
 		color_type curr_color = coloring[curr_vertex];
 		
 		// If we have not yet visited this vertex, start bfs on same color vertices
-		if(visited.count(curr_vertex) == 0)
-		{
+		if(visited.count(curr_vertex) == 0) {
 			std::queue<vertex_descriptor> bfs_queue;
 			bfs_queue.push(curr_vertex);
 			
 			std::size_t extra = 1;
 			
-			while(!bfs_queue.empty())
-			{
+			while(!bfs_queue.empty()) {
 				vertex_descriptor v = bfs_queue.front();
 				bfs_queue.pop();
 				
-				if(visited.count(v) == 0)
-				{
+				if(visited.count(v) == 0) {
 					std::size_t new_neighbor_count = 0, old_neighbor_count = 0;
 					
 					adjacency_iterator n_iter, n_end;
-					for(tie(n_iter, n_end) = adjacent_vertices(v, graph); n_iter != n_end; n_iter++)
-					{
+					for(tie(n_iter, n_end) = adjacent_vertices(v, graph); n_iter != n_end; n_iter++) {
 						vertex_descriptor n = *n_iter;
 						
 						// If this vertex is unvisited
-						if(visited.count(n) == 0 && coloring[n] == curr_color)
-						{
+						if(visited.count(n) == 0 && coloring[n] == curr_color) {
 							new_neighbor_count++;
 							bfs_queue.push(n);
 						}
-						else if(coloring[n] == curr_color)
-						{
+						else if(coloring[n] == curr_color) {
 							old_neighbor_count++;
 						}
 					}
 					
 					// Find more than one unvisited neighbor, not a path
 					// First vertex may have two neighbors, so we use extra
-					if(new_neighbor_count > 1 + extra)
-					{
+					if(new_neighbor_count > 1 + extra) {
 						std::string error = "vertex " + std::to_string(v) + " forms a color "
 							+ std::to_string(curr_color) + " branch.";
 						throw std::runtime_error(error);
 					}
-					if(old_neighbor_count > 1)
-					{
+					if(old_neighbor_count > 1) {
 						std::string error = "vertex " + std::to_string(v) + " forms a color "
 							+ std::to_string(curr_color) + " cycle.";
 						throw std::runtime_error(error);
@@ -299,8 +287,7 @@ void test_path_coloring(const index_graph & graph, const color_map & coloring)
 
 // Apply Poh algorithm to given graph and verify it works
 template<typename index_graph>
-void poh_color_test(const index_graph & graph)
-{
+void poh_color_test(const index_graph & graph) {
 	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
 	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
 	
@@ -361,8 +348,7 @@ void poh_color_test(const index_graph & graph)
 
 // Apply Poh algorithm to given graph and verify it works
 template<typename index_graph>
-void path_list_color_test(const index_graph & graph, std::size_t num_colors)
-{
+void path_list_color_test(const index_graph & graph, std::size_t num_colors) {
 	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
 	typedef typename graph_traits<index_graph>::vertex_iterator vertex_iterator;
 	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
@@ -416,23 +402,23 @@ void path_list_color_test(const index_graph & graph, std::size_t num_colors)
 	
 	// Iterate over each vertex
 	vertex_iterator v_iter, v_end;
-	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++)
-	{
+	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
 		std::vector<int> random_colors(3);
 		while(random_colors[0] == random_colors[1] || random_colors[0] == random_colors[2] ||
 			random_colors[1] == random_colors[2])
 		{
-			for(std::size_t i = 0; i < 3; ++i)
-			{
+			for(std::size_t i = 0; i < 3; ++i) {
 				random_colors[i] = distribution(generator);
 			}
 		}
-		/*std::cout << "color_list[" << *v_iter << "] = { ";
-		for(std::size_t i = 0; i < 3; ++i)
-		{
-			std::cout << random_colors[i] << ((i != 2) ? ", " : "");
-		}
-		std::cout << "\n";*/
+		
+		#ifdef SHOW_COLOR_LISTS
+			std::cout << "color_list[" << *v_iter << "] = { ";
+			for(std::size_t i = 0; i < 3; ++i) {
+				std::cout << random_colors[i] << ((i != 2) ? ", " : "");
+			}
+			std::cout << "\n";
+		#endif
 		
 		std::copy(random_colors.begin(), random_colors.end(), std::back_inserter(color_list[*v_iter]));
 	}
@@ -457,9 +443,8 @@ void path_list_color_test(const index_graph & graph, std::size_t num_colors)
 	test_path_coloring(graph, coloring);
 }
 
-void test_poh_color()
-{
-	std::cout<<"Poh coloring"<<std::endl;
+void test_poh_color() {
+	std::cout<<"Path 3-coloring"<<std::endl;
 	
 	{
 		// Define graph properties
@@ -474,18 +459,15 @@ void test_poh_color()
 		typedef erdos_renyi_iterator<minstd_rand, Graph> ERGen;
 		
 		boost::minstd_rand gen;
+		gen.seed(8573);
 		
-		for(std::size_t order = 7; order < 100; order++)
-		{
-			for(std::size_t seed = 0; seed < 5; seed++)
-			{
-				gen.seed((7^seed)%997);
+		for(std::size_t order = 7; order < 100; order++) {
+			for(std::size_t seed = 0; seed < 5; seed++) {
 				bool found_planar = false;
 				std::size_t count = 4;
-				while(!found_planar)
-				{
-					try
-					{
+				
+				while(!found_planar) {
+					try {
 						// Construct a random trriangulated graph
 						//std::cout << "Generating graph.\n";
 						Graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
@@ -503,21 +485,18 @@ void test_poh_color()
 						poh_color_test(graph);
 				
 						#ifdef SHOW_PASSES
-							std::cout<<"    PASS " << order << " vertex Poh path color."<<std::endl;
+							std::cout<<"    PASS " << order << " vertex path 3-color."<<std::endl;
 						#endif
 					}
-					catch(std::logic_error error)
-					{
+					catch(std::logic_error error) {
 						// Generated a non-planar graph, ignore this case
 					}
-					catch(std::exception& error)
-					{
-						std::cout<<"    FAIL " << order << " vertex Poh path color ("<<error.what()<<")."<<std::endl;
+					catch(std::exception& error) {
+						std::cout<<"    FAIL " << order << " vertex path 3-color ("<<error.what()<<")."<<std::endl;
 						failed=true;
 					}
-					catch(...)
-					{
-						std::cout<<"    FAIL " << order << " vertex Poh path color (unknown error)."<<std::endl;
+					catch(...) {
+						std::cout<<"    FAIL " << order << " vertex path 3-color (unknown error)."<<std::endl;
 						failed=true;
 					}
 				}
@@ -543,21 +522,16 @@ void test_list_path_color()
 		typedef erdos_renyi_iterator<minstd_rand, Graph> ERGen;
 		
 		boost::minstd_rand gen;
-		//gen.seed(8573);
+		gen.seed(8573);
 		
-		for(std::size_t order = 7; order < 100; order++)
-		{
-			for(std::size_t colors = 3; colors < 9; ++colors)
-			{
-				for(std::size_t seed = 0; seed < 5; seed++)
-				{
-					gen.seed((7^(5*colors+seed))%997);
+		for(std::size_t order = 7; order < 100; order++) {
+			for(std::size_t colors = 3; colors < 9; ++colors) {
+				for(std::size_t seed = 0; seed < 1; seed++) {
 					bool found_planar = false;
 					std::size_t count = 4;
-					while(!found_planar)
-					{
-						try
-						{
+					
+					while(!found_planar) {
+						try {
 							// Construct a random trriangulated graph
 							//std::cout << "Generating graph.\n";
 							Graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
@@ -579,18 +553,15 @@ void test_list_path_color()
 									<< seed << " path 3-list-color."<<std::endl;
 							#endif
 						}
-						catch(std::logic_error error)
-						{
+						catch(std::logic_error error) {
 							// Generated a non-planar graph, ignore this case
 						}
-						catch(std::exception& error)
-						{
+						catch(std::exception& error) {
 							std::cout<<"    FAIL " << order << " vertex, " << colors << " colors, test "
 									<< seed << " path 3-list-color ("<<error.what()<<")."<<std::endl;
 							failed=true;
 						}
-						catch(...)
-						{
+						catch(...) {
 							std::cout<<"    FAIL " << order << " vertex, " << colors << " colors, test "
 									<< seed << " path 3-list-color (unknown error)."<<std::endl;
 							failed=true;
@@ -602,8 +573,7 @@ void test_list_path_color()
 	}
 }
 
-int main()
-{
+int main() {
 	test_poh_color();
 	test_list_path_color();
 
@@ -611,7 +581,6 @@ int main()
 		std::cout<<"THERE ARE FAILING TESTS"<<std::endl;
 	else
 		std::cout<<"ALL TESTS PASSED"<<std::endl;
-
-
+	
 	return 0;
 }
