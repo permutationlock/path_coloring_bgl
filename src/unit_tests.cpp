@@ -31,7 +31,8 @@
 #include <boost/graph/make_maximal_planar.hpp>
 
 // Local project headers
-#include "path_coloring.hpp"
+#include "poh_color.hpp"
+#include "hartman_skrekovski_color.hpp"
 #include "draw_tikz_graph.hpp"
 
 using namespace boost;
@@ -441,7 +442,7 @@ void path_list_color_test(const index_graph & graph, std::size_t num_colors)
 	#endif
 	
 	// Call path 3-list-color algorithm
-	path_list_color(graph, embedding, color_list, coloring, outer_face.begin(), outer_face.end());
+	hartman_path_list_color(graph, embedding, color_list, coloring, outer_face.begin(), outer_face.end());
 	
 	#ifdef SHOW_TIMINGS
 		auto end = Timer::now();
