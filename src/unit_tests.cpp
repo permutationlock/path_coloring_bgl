@@ -452,11 +452,11 @@ void test_poh_color() {
 			<	setS,
 				vecS,
 				undirectedS,
-				property<vertex_index_t, int>,
-				property<edge_index_t, int>
-			> Graph;
+				property<vertex_index_t, std::size_t>,
+				property<edge_index_t, std::size_t>
+			> index_graph;
 		
-		typedef erdos_renyi_iterator<minstd_rand, Graph> ERGen;
+		typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
 		
 		boost::minstd_rand gen;
 		gen.seed(8573);
@@ -470,7 +470,7 @@ void test_poh_color() {
 					try {
 						// Construct a random trriangulated graph
 						//std::cout << "Generating graph.\n";
-						Graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+						index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 				
 						++count;
 						
@@ -515,18 +515,18 @@ void test_list_path_color()
 			<	setS,
 				vecS,
 				undirectedS,
-				property<vertex_index_t, int>,
-				property<edge_index_t, int>
-			> Graph;
+				property<vertex_index_t, std::size_t>,
+				property<edge_index_t, std::size_t>
+			> index_graph;
 	
-		typedef erdos_renyi_iterator<minstd_rand, Graph> ERGen;
+		typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
 		
 		boost::minstd_rand gen;
 		gen.seed(8573);
 		
 		for(std::size_t order = 7; order < 100; order++) {
 			for(std::size_t colors = 3; colors < 9; ++colors) {
-				for(std::size_t seed = 0; seed < 1; seed++) {
+				for(std::size_t seed = 0; seed < 5; seed++) {
 					bool found_planar = false;
 					std::size_t count = 4;
 					
@@ -534,7 +534,7 @@ void test_list_path_color()
 						try {
 							// Construct a random trriangulated graph
 							//std::cout << "Generating graph.\n";
-							Graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+							index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 							
 							++count;
 							
@@ -574,7 +574,7 @@ void test_list_path_color()
 }
 
 int main() {
-	test_poh_color();
+	//test_poh_color();
 	test_list_path_color();
 
 	if(failed)

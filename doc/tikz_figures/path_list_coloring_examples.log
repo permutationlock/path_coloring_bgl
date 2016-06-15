@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  7 JUN 2016 20:05
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  10 JUN 2016 03:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -692,7 +692,7 @@ Package csquotes Info: Making character " active on input line 27.
 Here is how much of TeX's memory you used:
  15869 strings out of 493054
  293010 string characters out of 6140585
- 4931501 words of memory out of 5000000
+ 4931500 words of memory out of 5000000
  19104 multiletter control sequences out of 15000+600000
  3938 words of font info for 15 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191

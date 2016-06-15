@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  9 JUN 2016 23:03
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.23)  14 JUN 2016 23:52
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -680,27 +680,37 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 Package csquotes Info: Making character " active on input line 27.
- [1
+LaTeX Font Info:    Try loading font information for U+msa on input line 34.
 
-]
-(./more_examples_plc.aux) )
+(/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 34.
+
+(/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+) [1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./more_examples_plc.aux) 
+)
 (\end occurred inside a group at level 1)
 
 ### simple group (level 1) entered at line 1061 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 17393 strings out of 493054
- 312405 string characters out of 6140585
- 600594 words of memory out of 5000000
- 20628 multiletter control sequences out of 15000+600000
- 3938 words of font info for 15 fonts, out of 8000000 for 9000
+ 15688 strings out of 493054
+ 290796 string characters out of 6140585
+ 369075 words of memory out of 5000000
+ 18903 multiletter control sequences out of 15000+600000
+ 8285 words of font info for 32 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 55i,6n,68p,14744b,12219s stack positions out of 5000i,500n,10000p,200000b,80000s
-
-Output written on more_examples_plc.pdf (1 page, 44899 bytes).
+ 55i,6n,68p,824b,12223s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb
+>
+Output written on more_examples_plc.pdf (1 page, 11212 bytes).
 PDF statistics:
- 11 PDF objects out of 1000 (max. 8388607)
- 7 compressed objects within 1 object stream
+ 15 PDF objects out of 1000 (max. 8388607)
+ 10 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 
