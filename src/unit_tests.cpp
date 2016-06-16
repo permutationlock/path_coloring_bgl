@@ -334,9 +334,18 @@ void poh_color_test(const index_graph & graph) {
 	// Remaining color is 3
 	int color = 0;
 	
+	#ifdef SHOW_TIMINGS
+		auto start = Timer::now();
+	#endif
+	
 	// Call Poh algorithm
 	poh_path_color(graph, embedding, p.begin(), p.end(), q.begin(), q.end(),
 		color_property_map, color);
+
+	#ifdef SHOW_TIMINGS
+		auto end = Timer::now();
+		std::cout << "Time = " << (end - start).count() << "ns\n";
+	#endif
 	
 	#ifdef SHOW_VISUALIZATION
 		draw_graph_color(graph, color_property_map);
@@ -432,7 +441,7 @@ void path_list_color_test(const index_graph & graph, std::size_t num_colors) {
 	
 	#ifdef SHOW_TIMINGS
 		auto end = Timer::now();
-		std::cout << "Time = " << (end - start).count() << "\n";
+		std::cout << "Time = " << (end - start).count() << "ns\n";
 	#endif
 	
 	#ifdef SHOW_VISUALIZATION
@@ -574,7 +583,7 @@ void test_list_path_color()
 }
 
 int main() {
-	//test_poh_color();
+	test_poh_color();
 	test_list_path_color();
 
 	if(failed)

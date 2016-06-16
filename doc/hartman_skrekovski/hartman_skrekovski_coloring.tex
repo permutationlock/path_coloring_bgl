@@ -211,8 +211,8 @@ there exists color $\alpha$ such that for all $v\in P$, $\alpha\in L(v)$ and $v$
 for all $u\in C[x,y]-P$, $\alpha\not\in L(u)$. If $x=y=p$, with $p$ the first vertex of $P$,
 then $p$ may be colored $\beta\ne\alpha$.\\
 
-\noindent There exists a path list-coloring of $G$ from list assignment $L(v)$ such that $x$ and $y$ have at
-most one neighbor of the same color and no neighbors of $P$ recieve color $\alpha$.\\
+\noindent Then there exists a path list-coloring of $G$ from list assignment $L(v)$ such that $x$ and $y$ have
+at most one neighbor of the same color and no neighbors of $P$ recieve color $\alpha$.\\
 \end{adjustwidth}
 
 \begin{proof}
@@ -220,7 +220,7 @@ We proceed by induction on $|V(G)|$. If $|V(G)|\le3$ the statement is trivial. L
 statement holds for all graphs $G'$ with $|G'|<|G|$. Let $C=xc_1\ldots c_{n}$ be the outer face of $G$.\\
 
 \noindent Suppose $P$ is a null path. We will construct a new induced path $P$ starting with $x$ and
-satisfying the parameters of the Theorem statement. Let $\alpha$ be
+satisfying the parameters of the theorem. Let $\alpha$ be
 the first, and possibly only, color in $L(x)$.
 Initialize $P$ to be the singleton path $x$. Let $c_i\in C[x,y]$ be the current end of the path $P$.
 Let $c_j$ be the closest vertex to $y$ in $N_C(c_i)\cap C(c_i,y]$ such that $\alpha\in L(c_j)$. If such a
@@ -293,9 +293,9 @@ $\qquad$
 \end{center}
 \end{adjustwidth}
 
-\noindent Case 2: Suppose $P$ does not take any chords of $C$ (i.e. $P$ is a continuous section of the outer
-face). We will remove $p$, the first vertex in the the path
-$P$, and show the inductive hypothesis holds for each of the remaining blocks of $G-p$. Let
+\noindent Case 2: Suppose $P$ does not take any chords of $C$ (i.e. $P$ is a contiguous section of the outer
+face). We will proceed by removing $p$, the first vertex in the the path
+$P$, and displaying the inductive hypothesis holds for each of the remaining blocks of $G-p$. Let us
 denote the vertices of the outer face in clockwise order as $C=pc_1\ldots c_{n}$.\\
 
 \begin{adjustwidth}{2em}{2em}
@@ -359,9 +359,9 @@ $\qquad$
 \end{adjustwidth}
 
 \noindent Case 2.1: Suppose $N_C(p)=\{c_1,c_{n}\}$. Let $\alpha$ be the color of $p$. For each vertex
-$n\in N_G(p)-P$ assign $L'(n)=L(n)\setminus\{\alpha\}$, and set $L'(v)=L(v)$ for all other
+$n\in N_G(p)\setminus P$ assign $L'(n)=L(n)\setminus\{\alpha\}$, and set $L'(v)=L(v)$ for all other
 vertices $v$. After removing $p$, there may be
-vertices in $P'=P-p$ and it must be maintained that $P'$ is between $x'$ and $y'$ clockwise on the outer face.
+vertices in $P'=P\setminus{p}$ and it must be maintained that $P'$ is between $x'$ and $y'$ clockwise on the outer face.
 If $x=y=p$ ($x$ and $y$ are removed), set $x'=c_1$ and $y'=c_n$.
 If $p=x$, $p\ne y$ ($x$ is removed) we set $x'=c_{n}$, otherwise $x'=x$. Similarly, if $y=p$ set $y'=c_1$,
 and otherwise $y'=y$. Since for any $v\in C[x,y]$, $\alpha\not\in L(v)$,
@@ -469,7 +469,7 @@ $\quad$
 \end{center}
 
 \noindent If $p\ne x$ and $p\ne y$, then clearly all $n\in N_G(p)$ fit these the above critera. Thus, using Lemma 1 the inductive hypothesis
-holds for $G_0=G-p$, $x'$, $y'$, $P'$, and $L'(v)$. If $x=y=p$, we may have $|L'(c_n)|=1$ and
+holds for $G_0=G\setminus{p}$, $x'$, $y'$, $P'$, and $L'(v)$. If $x=y=p$, we may have $|L'(c_n)|=1$ and
 $|L'(c_1)|=1$, but we have $x'=c_1$ and $y'=c_n$ so the hypothesis holds. In the case $x=p$ (or $y=p$), we may have $|L'(c_n)|=1$
 (or $|L'(c_1)|=1$), but $x'=c_n$ (or $y'=c_1$) so the inductive hypothesis still holds.\\
 

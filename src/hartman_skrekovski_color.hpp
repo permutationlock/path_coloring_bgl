@@ -135,6 +135,7 @@ namespace boost {
 	{
 		typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
 		
+		// Construct our special embedded adjacency list with backwards lookup
 		augmented_embedding<index_graph> plane_graph(graph, embedding);
 		
 		// Define the type for our property map
@@ -144,9 +145,8 @@ namespace boost {
 			> list_color_property_map;
 		
 		// Make property map to store all properties
-		std::vector<list_color_properties<index_graph> >
-			property_storage(num_vertices(graph));
-		list_color_property_map properties(property_storage.begin(), get(vertex_index, graph));
+		std::vector<list_color_properties<index_graph> > list_color_property_storage(num_vertices(graph));
+		list_color_property_map properties(list_color_property_storage.begin(), get(vertex_index, graph));
 		
 		// Initialize face locations
 		disjoint_set face_locations;
@@ -209,21 +209,18 @@ namespace boost {
 	{
 		// Update potentially conditional ranges for x and y
 		properties[x].set_current_range(x_range);
+		if(x != y) properties[y].set_current_range(y_range);
 		
-		if(x != y) {
-			properties[y].set_current_range(y_range);
-		}
-		
+		// If there is a before_p section, add x to it
 		if(face_locations.exists(before_p)) {
 			before_p = properties[x].set_face_location(before_p, face_locations);
 		}
 		
 		// Base Case 2: K_2
 		if(properties[p].single_neighbor()) {
-			// Color other vertex if not colored
 			vertex_descriptor neighbor = properties[p].get_current_range().first->neighbor;
 			
-			// If there is no colored path, handle color both vertices from their remaining lists
+			// If there is no colored path, color both vertices from their remaining lists
 			if(!properties[p].colored()) {
 				properties[p].color();
 				coloring[p] = color_list[p].front();
@@ -280,7 +277,8 @@ namespace boost {
 					
 						// Check if vertex is on the outer face between x and y
 						if(properties[neighbor].on_face() && (neighbor == y ||
-							face_locations.compare(properties[neighbor].get_face_location(), before_y))) {
+							face_locations.compare(properties[neighbor].get_face_location(), before_y)))
+						{
 							// Check if it may be colored path_color
 							for(auto color : color_list[neighbor]) {
 								if(color == path_color) {
@@ -378,7 +376,7 @@ namespace boost {
 				properties[neighbor].remove_begin();
 			}
 			else {
-				// Vertex prior to p on the outer face
+				// Vertex directly prior to p on the outer face
 				if(ndata_iter == current_range.first) {
 					// Reassign x or y as needed
 					if(x == p) {
@@ -399,7 +397,7 @@ namespace boost {
 					int neighbor_face_location = properties[neighbor].get_face_location();
 					before_p = properties[neighbor].set_face_location(before_p, face_locations);
 					
-					// Reassign x or y as needed
+					// Reassign x or y as needed if they are being removed
 					if(y == p) {
 						if(x == p) {
 							new_x = neighbor;
@@ -409,6 +407,7 @@ namespace boost {
 						}
 					}
 					
+					// Vertex directly following p on the outer face
 					if(ndata_iter == pre_end) {
 						// Remove p from incidence list
 						properties[neighbor].remove_begin();
@@ -469,12 +468,12 @@ namespace boost {
 							// Color remaining "right" subgraph
 							hartman_path_list_color_recursive(
 									plane_graph,
-									properties,
-									face_locations,
+									properties, face_locations,
 									color_list, coloring,
 									p, p_ranges.second,
 									p, p_ranges.second,
-									p, -1, before_y, -1
+									p,
+									-1, before_y, -1
 								);
 						}
 						//Case 1: C[y,x) Cutvertex between y and x, including y
