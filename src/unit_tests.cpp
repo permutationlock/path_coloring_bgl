@@ -56,11 +56,11 @@ struct coord_t {
   std::size_t y;
 };
 
-typedef std::chrono::high_resolution_clock Timer;
+typedef std::chrono::high_resolution_clock nanosecond_timer;
 
-template<typename Graph>
-void make_triangulated(Graph & graph) {
-	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
+template<typename index_graph>
+void make_triangulated(index_graph & graph) {
+	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
 	
 	// Define the storage type for the planar embedding
 	typedef std::vector<
@@ -69,15 +69,15 @@ void make_triangulated(Graph & graph) {
 
 	typedef iterator_property_map
 		< typename embedding_storage_t::iterator, 
-			typename property_map<Graph, vertex_index_t>::type
+			typename property_map<index_graph, vertex_index_t>::type
 		> embedding_t;
 
 	make_connected(graph);
 
 	//Initialize the interior edge index
-	typename property_map<Graph, edge_index_t>::type e_index = get(edge_index, graph);
-	typename graph_traits<Graph>::edges_size_type edge_count = 0;
-	typename graph_traits<Graph>::edge_iterator ei, ei_end;
+	typename property_map<index_graph, edge_index_t>::type e_index = get(edge_index, graph);
+	typename graph_traits<index_graph>::edges_size_type edge_count = 0;
+	typename graph_traits<index_graph>::edge_iterator ei, ei_end;
 	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
 		put(e_index, *ei, edge_count++);
 
@@ -115,10 +115,10 @@ void make_triangulated(Graph & graph) {
 		put(e_index, *ei, edge_count++);
 }
 
-template<typename Graph>
-void draw_graph_no_color(Graph & graph) {
-	typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
+template<typename index_graph>
+void draw_graph_no_color(index_graph & graph) {
+	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
 	
 	// Define the storage type for the planar embedding
 	typedef std::vector<
@@ -127,7 +127,7 @@ void draw_graph_no_color(Graph & graph) {
 
 	typedef iterator_property_map
 		< typename embedding_storage_t::iterator, 
-			typename property_map<Graph, vertex_index_t>::type
+			typename property_map<index_graph, vertex_index_t>::type
 		> embedding_t;
 	
 	// Create the planar embedding
@@ -149,7 +149,7 @@ void draw_graph_no_color(Graph & graph) {
 	typedef std::vector< coord_t > straight_line_drawing_storage_t;
 	typedef boost::iterator_property_map
 		< straight_line_drawing_storage_t::iterator, 
-			typename property_map<Graph, vertex_index_t>::type 
+			typename property_map<index_graph, vertex_index_t>::type 
 		> straight_line_drawing_t;
 
 	straight_line_drawing_storage_t straight_line_drawing_storage
@@ -170,10 +170,10 @@ void draw_graph_no_color(Graph & graph) {
 	std::cout << draw_tikz_graph(graph, color_property_map, straight_line_drawing) << "\n";
 }
 
-template<typename Graph, typename Coloring>
-void draw_graph_color(const Graph & graph, const Coloring & coloring) {
-	typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
+template<typename index_graph, typename color_map>
+void draw_graph_color(const index_graph & graph, const color_map & coloring) {
+	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
 	
 	// Define the storage type for the planar embedding
 	typedef std::vector<
@@ -182,7 +182,7 @@ void draw_graph_color(const Graph & graph, const Coloring & coloring) {
 
 	typedef iterator_property_map
 		< typename embedding_storage_t::iterator, 
-			typename property_map<Graph, vertex_index_t>::type
+			typename property_map<index_graph, vertex_index_t>::type
 		> embedding_t;
 	
 	// Create the planar embedding
@@ -200,7 +200,7 @@ void draw_graph_color(const Graph & graph, const Coloring & coloring) {
 	typedef std::vector< coord_t > straight_line_drawing_storage_t;
 	typedef boost::iterator_property_map
 		< straight_line_drawing_storage_t::iterator, 
-			typename property_map<Graph, vertex_index_t>::type 
+			typename property_map<index_graph, vertex_index_t>::type 
 		> straight_line_drawing_t;
 
 	straight_line_drawing_storage_t straight_line_drawing_storage
@@ -335,7 +335,7 @@ void poh_color_test(const index_graph & graph) {
 	int color = 0;
 	
 	#ifdef SHOW_TIMINGS
-		auto start = Timer::now();
+		auto start = nanosecond_timer::now();
 	#endif
 	
 	// Call Poh algorithm
@@ -343,7 +343,7 @@ void poh_color_test(const index_graph & graph) {
 		color_property_map, color);
 
 	#ifdef SHOW_TIMINGS
-		auto end = Timer::now();
+		auto end = nanosecond_timer::now();
 		std::cout << "Time = " << (end - start).count() << "ns\n";
 	#endif
 	
@@ -355,7 +355,7 @@ void poh_color_test(const index_graph & graph) {
 	test_path_coloring(graph, color_property_map);
 }
 
-// Apply Poh algorithm to given graph and verify it works
+// Apply Hartman-Skrekovski algorithm to given graph and verify it works
 template<typename index_graph>
 void path_list_color_test(const index_graph & graph, std::size_t num_colors) {
 	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
@@ -433,14 +433,14 @@ void path_list_color_test(const index_graph & graph, std::size_t num_colors) {
 	}
 	
 	#ifdef SHOW_TIMINGS
-		auto start = Timer::now();
+		auto start = nanosecond_timer::now();
 	#endif
 	
 	// Call path 3-list-color algorithm
 	hartman_path_list_color(graph, embedding, color_list, coloring, outer_face.begin(), outer_face.end());
 	
 	#ifdef SHOW_TIMINGS
-		auto end = Timer::now();
+		auto end = nanosecond_timer::now();
 		std::cout << "Time = " << (end - start).count() << "ns\n";
 	#endif
 	
