@@ -28,29 +28,21 @@ namespace boost {
 	class list_color_properties {
 		public:
 			typedef typename augmented_embedding<index_graph>::vertex_descriptor vertex_descriptor;
-			typedef typename augmented_embedding<index_graph>::neighbor_data_iterator neighbor_data_iterator;
-			typedef typename std::pair<neighbor_data_iterator, neighbor_data_iterator> neighbor_range;
+			typedef typename std::pair<std::size_t, std::size_t> neighbor_range;
 			
 			list_color_properties() : state(INTERIOR) {}
 			
-			int initialize(vertex_descriptor vertex, neighbor_data_iterator start_iter, int new_face_location,
-				disjoint_set & face_locations, const augmented_embedding<index_graph> & plane_graph)
+			int initialize(std::size_t start_index, std::size_t num_neighbors,
+			    int new_face_location, disjoint_set & face_locations)
 			{
 				// Vertices are initialized as they are added to the outer face
 				state = ON_FACE;
 				set_face_location(new_face_location, face_locations);
 				
-				// Remember start and end iterators
-				range.first = plane_graph[vertex].begin();
-				range.second = plane_graph[vertex].end();
-				
 				// Set up current neighbor range
-				current_range.first = start_iter;
-				current_range.second = start_iter;
-				
-				// Correct range end if necessary
-				if(current_range.second == range.first)
-					current_range.second = range.second;
+				degree = num_neighbors;
+				range.first = start_index;
+				range.second = (start_index + degree - 1) % degree;
 				
 				return face_location;
 			}
@@ -69,34 +61,24 @@ namespace boost {
 			int get_face_location() {
 				return face_location;
 			}
-			void set_current_range(const neighbor_range & new_range) {
-				current_range = new_range;
+			void set_range(const neighbor_range & new_range) {
+				range = new_range;
 			}
 			const neighbor_range & get_range() const {
 				return range;
 			}
-			const neighbor_range & get_current_range() const {
-				return current_range;
-			}
 			bool single_neighbor() const {
-				neighbor_data_iterator temp_first = current_range.first;
-				return ++temp_first == current_range.second;
+				return range.first == range.second;
 			}
 			void remove_begin() {
-				++current_range.first;
-				if(current_range.first == range.second && current_range.first != current_range.second) {
-					current_range.first = range.first;
-				}
+				range.first = (range.first + 1) % degree;
 			}
 			void remove_end() {
-				--current_range.second;
-				if(current_range.second == range.first && current_range.first != current_range.second) {
-					current_range.second = range.second;
-				}
+				range.second = (range.second + degree - 1) % degree;
 			}
-			std::pair<neighbor_range, neighbor_range> split_range(neighbor_data_iterator mid_iter) const {
-				neighbor_range second_range(mid_iter, current_range.second);
-				neighbor_range first_range(current_range.first, ++mid_iter);
+			std::pair<neighbor_range, neighbor_range> split_range(std::size_t mid_index) const {
+				neighbor_range second_range(mid_index, range.second);
+				neighbor_range first_range(range.first, mid_index);
 	
 				return std::pair<neighbor_range, neighbor_range>(first_range, second_range);
 			}
@@ -116,7 +98,7 @@ namespace boost {
 			int face_location;	// Face location union find data
 			vertex_state state;
 			neighbor_range range;	// Current incidence range in embedding
-			neighbor_range current_range;	// Current incidence range in embedding
+			std::size_t degree;
 	};
 	 
 	template<
@@ -161,16 +143,15 @@ namespace boost {
 			vertex_descriptor last_vertex = *vertex_iter;
 			vertex_descriptor vertex = *next;
 			
-			for(auto ndata_iter = plane_graph[vertex].begin(); ndata_iter != plane_graph[vertex].end();
-				++ndata_iter)
+			for(std::size_t i = 0; i < plane_graph[vertex].size(); ++i)
 			{
-				vertex_descriptor neighbor = ndata_iter->neighbor;
+				vertex_descriptor neighbor = plane_graph[vertex][i].neighbor;
 				if(neighbor == last_vertex) {
+				    std::cout << "initializing " << vertex << " from " << last_vertex << "\n";
 					// Initialize properties of the next vertex on the face using the current face edge
 					before_y = properties[vertex].initialize(
-							vertex, ndata_iter,
-							before_y, face_locations,
-							plane_graph
+							i, plane_graph[vertex].size(),
+							before_y, face_locations
 						);
 				}
 			}
@@ -184,8 +165,8 @@ namespace boost {
 				plane_graph,
 				properties, face_locations,
 				color_list, coloring,
-				x, properties[x].get_current_range(),
-				y, properties[y].get_current_range(),
+				x, properties[x].get_range(),
+				y, properties[y].get_range(),
 				x,
 				-1, before_y, -1
 			);
@@ -194,8 +175,8 @@ namespace boost {
 	template<
 			typename index_graph, typename list_color_property_map,
 			typename color_list_map, typename color_map,
-			typename vertex_descriptor = typename augmented_embedding<index_graph>::vertex_descriptor,
-			typename neighbor_range = typename augmented_embedding<index_graph>::neighbor_range
+			typename neighbor_range,
+			typename vertex_descriptor = typename augmented_embedding<index_graph>::vertex_descriptor
 		>
 	void hartman_path_list_color_recursive(
 			const augmented_embedding<index_graph> & plane_graph,
@@ -207,9 +188,15 @@ namespace boost {
 			int before_p, int before_y, int before_x
 		)
 	{
+	    std::cout << "x = " << x << ", y = " << y << ", p = " << p << "\n";
 		// Update potentially conditional ranges for x and y
-		properties[x].set_current_range(x_range);
-		if(x != y) properties[y].set_current_range(y_range);
+		properties[x].set_range(x_range);
+		if(x != y) properties[y].set_range(y_range);
+		
+		std::cout << "x_range = (" << plane_graph[x][properties[x].get_range().first].neighbor
+		    << ", " << plane_graph[x][properties[x].get_range().second].neighbor << ")\n";
+	    std::cout << "y_range = (" << plane_graph[y][properties[y].get_range().first].neighbor
+		    << ", " << plane_graph[y][properties[y].get_range().second].neighbor << ")\n";
 		
 		// If there is a before_p section, add x to it
 		if(face_locations.exists(before_p)) {
@@ -218,7 +205,7 @@ namespace boost {
 		
 		// Base Case 2: K_2
 		if(properties[p].single_neighbor()) {
-			vertex_descriptor neighbor = properties[p].get_current_range().first->neighbor;
+			vertex_descriptor neighbor = plane_graph[p][properties[p].get_range().first].neighbor;
 			
 			// If there is no colored path, color both vertices from their remaining lists
 			if(!properties[p].colored()) {
@@ -246,6 +233,7 @@ namespace boost {
 		
 		// If colored path doesn't exist, we create one
 		if(!properties[p].colored()) {
+		    std::cout << "coloring path\n";
 			// Begin coloring path with first color in x's list
 			auto path_color = color_list[x].front();
 			
@@ -263,18 +251,15 @@ namespace boost {
 					path_end = next_vertex;
 				
 					// Look counterclockwise through our current range of interior neighbors
-					neighbor_range range = properties[path_end].get_range();
-					neighbor_range current_range = properties[path_end].get_current_range();
-					bool first_neighbor = true;
-					for(auto ndata_iter = current_range.first;
-						ndata_iter != current_range.second || first_neighbor; ++ndata_iter)
-					{
-						first_neighbor = false;
-						if(ndata_iter == range.second) ndata_iter = range.first;
-						
-						vertex_descriptor neighbor = ndata_iter->neighbor;
-						auto back_iterator = ndata_iter->back_iterator;
+					neighbor_range range(properties[path_end].get_range());
+					std::size_t current_index = range.first;
+					do {
+					    current_index %= plane_graph[path_end].size();
+						vertex_descriptor neighbor = plane_graph[path_end][current_index].neighbor;
+						std::size_t back_index = plane_graph[path_end][current_index].back_index;
 					
+					    std::cout << "looking at " << neighbor << "\n";
+					    
 						// Check if vertex is on the outer face between x and y
 						if(properties[neighbor].on_face() && (neighbor == y ||
 							face_locations.compare(properties[neighbor].get_face_location(), before_y)))
@@ -282,6 +267,7 @@ namespace boost {
 							// Check if it may be colored path_color
 							for(auto color : color_list[neighbor]) {
 								if(color == path_color) {
+								    std::cout << "coloring " << neighbor << "\n";
 									// Color and append the vertex to the path
 									next_vertex = neighbor;
 									coloring[next_vertex] = path_color;
@@ -298,14 +284,14 @@ namespace boost {
 						// If we have found a new end vertex, stop looking and see if we made a lobe
 						if(path_end != next_vertex) {
 							// Grab current range of new path vertex
-							neighbor_range n_current_range = properties[next_vertex].get_current_range();
+							neighbor_range n_range(properties[next_vertex].get_range());
 					
 							// Check if we took a chord
-							vertex_descriptor prev_on_face = n_current_range.first->neighbor;
+							vertex_descriptor prev_on_face = plane_graph[next_vertex][n_range.first].neighbor;
 							if(!properties[prev_on_face].colored()) {
 								// Split range at last path vertex
-								auto pe_ranges = properties[path_end].split_range(ndata_iter);
-								auto nv_ranges = properties[next_vertex].split_range(back_iterator);
+								auto pe_ranges = properties[path_end].split_range(current_index);
+								auto nv_ranges = properties[next_vertex].split_range(back_index);
 								
 								// Color lobe
 								hartman_path_list_color_recursive(
@@ -318,13 +304,13 @@ namespace boost {
 										-1, -1, before_y
 									);
 						
-								properties[next_vertex].set_current_range(nv_ranges.second);
-								properties[path_end].set_current_range(pe_ranges.first);
+								properties[next_vertex].set_range(nv_ranges.second);
+								properties[path_end].set_range(pe_ranges.first);
 							}
 							
 							break;
 						}
-					}
+					} while(current_index++ != range.second);
 				} while(path_end != next_vertex && next_vertex != y);
 			}
 			
@@ -332,8 +318,8 @@ namespace boost {
 					plane_graph,
 					properties, face_locations,
 					color_list, coloring,
-					x, properties[x].get_current_range(),
-					y, properties[y].get_current_range(),
+					x, properties[x].get_range(),
+					y, properties[y].get_range(),
 					p,
 					-1, before_y, before_x
 				);
@@ -344,22 +330,17 @@ namespace boost {
 		// New parameters for coloring the graph after removing p
 		vertex_descriptor new_x = x, new_y = y;
 		
-		// Remeber iterator to the last edge in incidence range
-		auto pre_end = properties[p].get_current_range().second;
-		--pre_end;
+		std::cout << "removing " << p << "\n";
 		
 		// Iterate counterclockwise through interior neighbors of p
-		neighbor_range range = properties[p].get_range();
-		neighbor_range current_range = properties[p].get_current_range();
-		bool first_neighbor = true;
-		for(auto ndata_iter = current_range.first; ndata_iter != current_range.second || first_neighbor;
-			++ndata_iter)
-		{
-			first_neighbor = false;
-			if(ndata_iter == range.second) ndata_iter = range.first;
+		neighbor_range range(properties[p].get_range());
+		std::size_t current_index = range.first;
+		do {
+		    current_index %= plane_graph[p].size();
+			vertex_descriptor neighbor = plane_graph[p][current_index].neighbor;
+			std::size_t back_index = plane_graph[p][current_index].back_index;
 			
-			vertex_descriptor neighbor = ndata_iter->neighbor;
-			auto back_iterator = ndata_iter->back_iterator;
+			std::cout << "looking at " << neighbor << "\n";
 			
 			// Remove p's color from the list of all adjacent neighbors
 			color_list[neighbor].erase(
@@ -368,16 +349,20 @@ namespace boost {
 				);
 			
 			if(properties[neighbor].interior()) {
+			    std::cout << "interior\n";
 				// Add neighbor to the outer face with incidence list starting at p
-				before_p = properties[neighbor].initialize(neighbor, back_iterator, before_p,
-					face_locations, plane_graph);
+				before_p = properties[neighbor].initialize(
+				        back_index, plane_graph[neighbor].size(),
+				        before_p, face_locations
+			        );
 				
 				// Remove p from incidence list
 				properties[neighbor].remove_begin();
 			}
 			else {
 				// Vertex directly prior to p on the outer face
-				if(ndata_iter == current_range.first) {
+				if(current_index == range.first) {
+				    std::cout << "begin\n";
 					// Reassign x or y as needed
 					if(x == p) {
 						if(y == p) {
@@ -408,7 +393,8 @@ namespace boost {
 					}
 					
 					// Vertex directly following p on the outer face
-					if(ndata_iter == pre_end) {
+					if(current_index == range.second) {
+					    std::cout << "end\n";
 						// Remove p from incidence list
 						properties[neighbor].remove_begin();
 						vertex_descriptor new_p = neighbor;
@@ -430,22 +416,23 @@ namespace boost {
 								plane_graph,
 								properties, face_locations,
 								color_list, coloring,
-								new_x, properties[new_x].get_current_range(),
-								new_y, properties[new_y].get_current_range(),
+								new_x, properties[new_x].get_range(),
+								new_y, properties[new_y].get_range(),
 								new_p,
 								before_p, before_y, before_x
 							);
 					}
 					else {
 						// Split ranges along edge
-						auto p_ranges = properties[p].split_range(ndata_iter);
-						auto n_ranges = properties[neighbor].split_range(back_iterator);
+						auto p_ranges = properties[p].split_range(current_index);
+						auto n_ranges = properties[neighbor].split_range(back_index);
 					
 						// Special case for x = y = p
 						if(x == p && y == p) {
+						    std::cout << "x = y\n";
 							// Set ranges for "left" half to color
-							properties[neighbor].set_current_range(n_ranges.second);
-							properties[p].set_current_range(p_ranges.first);
+							properties[neighbor].set_range(n_ranges.second);
+							properties[p].set_range(p_ranges.first);
 							
 							// Remove p from incidence list
 							properties[neighbor].remove_begin();
@@ -456,14 +443,14 @@ namespace boost {
 									plane_graph,
 									properties, face_locations,
 									color_list, coloring,
-									new_x, properties[new_x].get_current_range(),
-									new_y, properties[new_y].get_current_range(),
+									new_x, properties[new_x].get_range(),
+									new_y, properties[new_y].get_range(),
 									new_x,
 									-1, before_y, before_p
 								);
 							
 							// Reassign ranges for remaining "right" subgraph
-							properties[neighbor].set_current_range(n_ranges.first);
+							properties[neighbor].set_range(n_ranges.first);
 							
 							// Color remaining "right" subgraph
 							hartman_path_list_color_recursive(
@@ -478,8 +465,10 @@ namespace boost {
 						}
 						//Case 1: C[y,x) Cutvertex between y and x, including y
 						else if(neighbor == y || face_locations.compare(neighbor_face_location, before_x)) {
+						    std::cout << "before_x\n";
+						    
 							// Reassign ranges for remaining "right" subgraph
-							properties[p].set_current_range(p_ranges.second);
+							properties[p].set_range(p_ranges.second);
 							
 							// Color remaining "right" subgraph
 							hartman_path_list_color_recursive(
@@ -487,14 +476,14 @@ namespace boost {
 									properties, face_locations,
 									color_list, coloring,
 									neighbor, n_ranges.first,
-									y, properties[y].get_current_range(),
+									y, properties[y].get_range(),
 									p,
 									-1, before_y, before_x
 								);
 							
 							// Set ranges for "left" half to color
-							properties[neighbor].set_current_range(n_ranges.second);
-							properties[p].set_current_range(p_ranges.first);
+							properties[neighbor].set_range(n_ranges.second);
+							properties[p].set_range(p_ranges.first);
 							
 							// Remove p from incidence list
 							properties[neighbor].remove_begin();
@@ -511,32 +500,33 @@ namespace boost {
 									plane_graph,
 									properties, face_locations,
 									color_list, coloring,
-									new_x, properties[new_x].get_current_range(),
-									neighbor, properties[neighbor].get_current_range(),
+									new_x, properties[new_x].get_range(),
+									neighbor, properties[neighbor].get_range(),
 									new_p,
 									-1, before_p, before_x
 								);
 						}
 						// Case 2: C[x,p) Cutvertex between x and p, including x
 						else if(face_locations.compare(neighbor_face_location, before_p)) {
+						    std::cout << "before_p\n";
 							// Set ranges for "right" subgraph
-							properties[p].set_current_range(p_ranges.second);
-							properties[neighbor].set_current_range(n_ranges.first);
+							properties[p].set_range(p_ranges.second);
+							properties[neighbor].set_range(n_ranges.first);
 							
 							// Color "right" subgraph
 							hartman_path_list_color_recursive(
 									plane_graph,
 									properties, face_locations,
 									color_list, coloring,
-									x, properties[x].get_current_range(),
-									y, properties[y].get_current_range(),
+									x, properties[x].get_range(),
+									y, properties[y].get_range(),
 									p,
 									before_p, before_y, before_x
 								);
 							
 							// Set ranges for "left" half to color
-							properties[neighbor].set_current_range(n_ranges.second);
-							properties[p].set_current_range(p_ranges.first);
+							properties[neighbor].set_range(n_ranges.second);
+							properties[p].set_range(p_ranges.first);
 							
 							// Remove p from incidence list
 							properties[neighbor].remove_begin();
@@ -547,17 +537,18 @@ namespace boost {
 									plane_graph,
 									properties, face_locations,
 									color_list,  coloring,
-									neighbor, properties[neighbor].get_current_range(),
-									neighbor, properties[neighbor].get_current_range(),
+									neighbor, properties[neighbor].get_range(),
+									neighbor, properties[neighbor].get_range(),
 									neighbor,
 									-1, before_p, -1
 								);
 						}
 						// Case 3: C(p,y) Cutvertex between p and y, exclusive
 						else {
+						    std::cout << "before_y\n";
 							// Set ranges for "left" half to color
-							properties[neighbor].set_current_range(n_ranges.second);
-							properties[p].set_current_range(p_ranges.first);
+							properties[neighbor].set_range(n_ranges.second);
+							properties[p].set_range(p_ranges.first);
 							
 							// Remove p from incidence list
 							properties[neighbor].remove_begin();
@@ -571,14 +562,14 @@ namespace boost {
 									plane_graph,
 									properties, face_locations,
 									color_list, coloring,
-									new_x, properties[new_x].get_current_range(),
-									new_y, properties[new_y].get_current_range(),
+									new_x, properties[new_x].get_range(),
+									new_y, properties[new_y].get_range(),
 									new_x,
 									-1, before_y, before_x
 								);
 								
 							// Reassign ranges for remaining "right" subgraph
-							properties[p].set_current_range(p_ranges.second);
+							properties[p].set_range(p_ranges.second);
 							
 							// Color remaining "right" subgraph
 							hartman_path_list_color_recursive(
@@ -596,7 +587,7 @@ namespace boost {
 					break;
 				}
 			}
-		}
+		} while(current_index++ != range.second);
 	}
 }
 

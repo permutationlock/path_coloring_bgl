@@ -28,7 +28,7 @@ namespace boost {
 				neighbor_data(vertex_descriptor neighbor) : neighbor(neighbor) {}
 				
 				vertex_descriptor neighbor;
-				typename std::vector<neighbor_data>::const_iterator back_iterator;
+				std::size_t back_index;
 			};
 			
 			typedef typename std::vector<neighbor_data>::const_iterator neighbor_data_iterator;
@@ -98,11 +98,15 @@ namespace boost {
 						source_vertex = temp;
 					}
 					
-					auto source_iter = ndata_map[source_vertex].begin() + source_index;
-					auto target_iter = ndata_map[target_vertex].begin() + target_index;
-					
-					source_iter->back_iterator = target_iter;
-					target_iter->back_iterator = source_iter;
+					ndata_map[source_vertex][source_index].back_index = target_index;
+					ndata_map[target_vertex][target_index].back_index = source_index;
+				}
+				
+				for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; ++v_iter) {
+					std::cout << *v_iter;
+					for(std::size_t i = 0; i < ndata_map[*v_iter].size(); ++i) {
+					    std::cout << "\t-> " << ndata_map[*v_iter][i].neighbor << "\n";
+					}
 				}
 			}
 			

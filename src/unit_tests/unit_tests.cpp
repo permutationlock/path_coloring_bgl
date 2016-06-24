@@ -534,8 +534,8 @@ void test_list_path_color()
 		gen.seed(8573);
 		
 		for(std::size_t order = 7; order < 100; order++) {
-			for(std::size_t colors = 3; colors < 9; ++colors) {
-				for(std::size_t seed = 0; seed < 5; seed++) {
+			for(std::size_t colors = 3; colors < 5; ++colors) {
+				for(std::size_t seed = 0; seed < 1; seed++) {
 					bool found_planar = false;
 					std::size_t count = 4;
 					
@@ -552,7 +552,7 @@ void test_list_path_color()
 					
 							found_planar = true;
 					
-							//draw_graph_no_color(graph);
+							draw_graph_no_color(graph);
 					
 							//std::cout << "Testing planarity.\n";
 							path_list_color_test(graph, colors);
@@ -583,7 +583,7 @@ void test_list_path_color()
 }
 
 int main() {
-	test_poh_color();
+	//test_poh_color();
 	test_list_path_color();
 
 	if(failed)
