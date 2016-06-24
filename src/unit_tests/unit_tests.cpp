@@ -30,9 +30,9 @@
 #include <boost/graph/make_maximal_planar.hpp>
 
 // Local project headers
-#include "poh_color.hpp"
-#include "hartman_skrekovski_color.hpp"
-#include "draw_tikz_graph.hpp"
+#include "../poh_color/poh_color.hpp"
+#include "../hartman_skrekovski_color/hartman_skrekovski_color.hpp"
+#include "../visualization/draw_tikz_graph.hpp"
 
 using namespace boost;
 
