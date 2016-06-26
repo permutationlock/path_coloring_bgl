@@ -40,7 +40,7 @@ using namespace boost;
 //#define SHOW_PASSES
 
 // Comment line below to hide tikz drawing printouts
-//#define SHOW_VISUALIZATION
+#define SHOW_VISUALIZATION
 
 // Comment line below to hide test timings.
 //#define SHOW_TIMINGS
@@ -534,8 +534,8 @@ void test_list_path_color()
 		gen.seed(8573);
 		
 		for(std::size_t order = 7; order < 100; order++) {
-			for(std::size_t colors = 3; colors < 5; ++colors) {
-				for(std::size_t seed = 0; seed < 1; seed++) {
+			for(std::size_t colors = 3; colors < 9; ++colors) {
+				for(std::size_t seed = 0; seed < 5; seed++) {
 					bool found_planar = false;
 					std::size_t count = 4;
 					

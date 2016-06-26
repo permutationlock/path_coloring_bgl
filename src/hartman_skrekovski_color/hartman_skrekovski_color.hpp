@@ -33,7 +33,7 @@ namespace boost {
 			list_color_properties() : state(INTERIOR) {}
 			
 			int initialize(std::size_t start_index, std::size_t num_neighbors,
-			    int new_face_location, disjoint_set & face_locations)
+				int new_face_location, disjoint_set & face_locations)
 			{
 				// Vertices are initialized as they are added to the outer face
 				state = ON_FACE;
@@ -66,9 +66,6 @@ namespace boost {
 			}
 			const neighbor_range & get_range() const {
 				return range;
-			}
-			bool single_neighbor() const {
-				return range.first == range.second;
 			}
 			void remove_begin() {
 				range.first = (range.first + 1) % degree;
@@ -147,7 +144,7 @@ namespace boost {
 			{
 				vertex_descriptor neighbor = plane_graph[vertex][i].neighbor;
 				if(neighbor == last_vertex) {
-				    std::cout << "initializing " << vertex << " from " << last_vertex << "\n";
+					std::cout << "initializing " << vertex << " from " << last_vertex << "\n";
 					// Initialize properties of the next vertex on the face using the current face edge
 					before_y = properties[vertex].initialize(
 							i, plane_graph[vertex].size(),
@@ -165,9 +162,7 @@ namespace boost {
 				plane_graph,
 				properties, face_locations,
 				color_list, coloring,
-				x, properties[x].get_range(),
-				y, properties[y].get_range(),
-				x,
+				x, y, x,
 				-1, before_y, -1
 			);
 	}
@@ -175,417 +170,290 @@ namespace boost {
 	template<
 			typename index_graph, typename list_color_property_map,
 			typename color_list_map, typename color_map,
-			typename neighbor_range,
 			typename vertex_descriptor = typename augmented_embedding<index_graph>::vertex_descriptor
 		>
 	void hartman_path_list_color_recursive(
 			const augmented_embedding<index_graph> & plane_graph,
 			list_color_property_map & properties, disjoint_set & face_locations,
 			color_list_map & color_list, color_map & coloring,
-			vertex_descriptor x, const neighbor_range & x_range,
-			vertex_descriptor y, const neighbor_range & y_range,
-			vertex_descriptor p,
+			vertex_descriptor x, vertex_descriptor y, vertex_descriptor p,
 			int before_p, int before_y, int before_x
 		)
 	{
-	    std::cout << "x = " << x << ", y = " << y << ", p = " << p << "\n";
-		// Update potentially conditional ranges for x and y
-		properties[x].set_range(x_range);
-		if(x != y) properties[y].set_range(y_range);
+		std::cout << "x = " << x << ", y = " << y << ", p = " << p << "\n";
+		std::cout << "before_p = " << before_p << ", before_y = " << before_y << ", before_x = " << before_x << "\n";
 		
 		std::cout << "x_range = (" << plane_graph[x][properties[x].get_range().first].neighbor
-		    << ", " << plane_graph[x][properties[x].get_range().second].neighbor << ")\n";
-	    std::cout << "y_range = (" << plane_graph[y][properties[y].get_range().first].neighbor
-		    << ", " << plane_graph[y][properties[y].get_range().second].neighbor << ")\n";
+			<< ", " << plane_graph[x][properties[x].get_range().second].neighbor << ")\n";
 		
-		// If there is a before_p section, add x to it
-		if(face_locations.exists(before_p)) {
-			before_p = properties[x].set_face_location(before_p, face_locations);
-		}
-		
-		// Base Case 2: K_2
-		if(properties[p].single_neighbor()) {
-			vertex_descriptor neighbor = plane_graph[p][properties[p].get_range().first].neighbor;
+		std::cout << "y_range = (" << plane_graph[y][properties[y].get_range().first].neighbor
+			<< ", " << plane_graph[y][properties[y].get_range().second].neighbor << ")\n";
 			
-			// If there is no colored path, color both vertices from their remaining lists
-			if(!properties[p].colored()) {
-				properties[p].color();
-				coloring[p] = color_list[p].front();
-				
-				if(!properties[neighbor].colored()) {
-					properties[neighbor].color();
-					coloring[neighbor] = color_list[neighbor].front();
-				}
-			}
-			// Else if the last vertex is not part of the path, ensure it recieves a different color
-			else if(!properties[neighbor].colored()) {
-				color_list[neighbor].erase(
-						std::remove(color_list[neighbor].begin(), color_list[neighbor].end(), coloring[p]),
-						color_list[neighbor].end()
-					);
-				
-				properties[neighbor].color();
-				coloring[neighbor] = color_list[neighbor].front();
-			}
-			
-			return;
-		}
+		auto range(properties[p].get_range());
 		
-		// If colored path doesn't exist, we create one
+		// If we are not currently coloring a path, start coloring one at x
 		if(!properties[p].colored()) {
-		    std::cout << "coloring path\n";
-			// Begin coloring path with first color in x's list
-			auto path_color = color_list[x].front();
-			
-			// Must track current path end and next path vertex starting with x
-			vertex_descriptor path_end = x, next_vertex = x;
-			coloring[x] = path_color;
-			properties[x].color();
-			
-			// Reassign p to our new path start
 			p = x;
+			properties[p].color();
+			coloring[p] = color_list[p].front();
 			
-			if(x != y) {
-				do {
-					// Update the path end
-					path_end = next_vertex;
-				
-					// Look counterclockwise through our current range of interior neighbors
-					neighbor_range range(properties[path_end].get_range());
-					std::size_t current_index = range.first;
-					do {
-					    current_index %= plane_graph[path_end].size();
-						vertex_descriptor neighbor = plane_graph[path_end][current_index].neighbor;
-						std::size_t back_index = plane_graph[path_end][current_index].back_index;
-					
-					    std::cout << "looking at " << neighbor << "\n";
-					    
-						// Check if vertex is on the outer face between x and y
-						if(properties[neighbor].on_face() && (neighbor == y ||
-							face_locations.compare(properties[neighbor].get_face_location(), before_y)))
-						{
-							// Check if it may be colored path_color
-							for(auto color : color_list[neighbor]) {
-								if(color == path_color) {
-								    std::cout << "coloring " << neighbor << "\n";
-									// Color and append the vertex to the path
-									next_vertex = neighbor;
-									coloring[next_vertex] = path_color;
-									properties[next_vertex].color();
-									
-									break;
-								}
-							}
-						}
-						else if(neighbor == y && properties[y].colored() && coloring[y] == path_color) {
-							next_vertex = y;
-						}
-						
-						// If we have found a new end vertex, stop looking and see if we made a lobe
-						if(path_end != next_vertex) {
-							// Grab current range of new path vertex
-							neighbor_range n_range(properties[next_vertex].get_range());
-					
-							// Check if we took a chord
-							vertex_descriptor prev_on_face = plane_graph[next_vertex][n_range.first].neighbor;
-							if(!properties[prev_on_face].colored()) {
-								// Split range at last path vertex
-								auto pe_ranges = properties[path_end].split_range(current_index);
-								auto nv_ranges = properties[next_vertex].split_range(back_index);
-								
-								// Color lobe
-								hartman_path_list_color_recursive(
-										plane_graph,
-										properties, face_locations,
-										color_list, coloring,
-										next_vertex, nv_ranges.first,
-										path_end, pe_ranges.second,
-										next_vertex,
-										-1, -1, before_y
-									);
-						
-								properties[next_vertex].set_range(nv_ranges.second);
-								properties[path_end].set_range(pe_ranges.first);
-							}
-							
-							break;
-						}
-					} while(current_index++ != range.second);
-				} while(path_end != next_vertex && next_vertex != y);
-			}
-			
-			hartman_path_list_color_recursive(
-					plane_graph,
-					properties, face_locations,
-					color_list, coloring,
-					x, properties[x].get_range(),
-					y, properties[y].get_range(),
-					p,
-					-1, before_y, before_x
-				);
-			
-			return;
+			std::cout << "started new path of color " << coloring[p] << "\n";
 		}
 		
-		// New parameters for coloring the graph after removing p
+		// Vertices for x and y once p is removed
 		vertex_descriptor new_x = x, new_y = y;
 		
-		std::cout << "removing " << p << "\n";
-		
 		// Iterate counterclockwise through interior neighbors of p
-		neighbor_range range(properties[p].get_range());
 		std::size_t current_index = range.first;
 		do {
-		    current_index %= plane_graph[p].size();
-			vertex_descriptor neighbor = plane_graph[p][current_index].neighbor;
+			current_index %= plane_graph[p].size();
+			
+			vertex_descriptor n = plane_graph[p][current_index].neighbor;
 			std::size_t back_index = plane_graph[p][current_index].back_index;
+			int n_location = properties[n].get_face_location();
 			
-			std::cout << "looking at " << neighbor << "\n";
+			std::cout << "looking at " << n;
 			
-			// Remove p's color from the list of all adjacent neighbors
-			color_list[neighbor].erase(
-					std::remove(color_list[neighbor].begin(), color_list[neighbor].end(), coloring[p]),
-					color_list[neighbor].end()
-				);
-			
-			if(properties[neighbor].interior()) {
-			    std::cout << "interior\n";
-				// Add neighbor to the outer face with incidence list starting at p
-				before_p = properties[neighbor].initialize(
-				        back_index, plane_graph[neighbor].size(),
-				        before_p, face_locations
-			        );
+			if(properties[n].interior()) {
+				std::cout << " interior\n";
+				before_p = properties[n].initialize(
+						back_index, plane_graph[n].size(),
+						before_p, face_locations
+					);
 				
-				// Remove p from incidence list
-				properties[neighbor].remove_begin();
+				color_list[n].erase(
+						std::remove(color_list[n].begin(), color_list[n].end(),
+						coloring[p]), color_list[n].end()
+					);
+				
+				properties[n].remove_begin();
 			}
-			else {
-				// Vertex directly prior to p on the outer face
-				if(current_index == range.first) {
-				    std::cout << "begin\n";
-					// Reassign x or y as needed
-					if(x == p) {
-						if(y == p) {
-							before_x = properties[neighbor].set_face_location(before_x, face_locations);
-							new_y = neighbor;
-						}
-						else {
-							before_p = properties[neighbor].set_face_location(before_p, face_locations);
-							new_x = neighbor;
-						}
+			else if(current_index == range.first) {
+				// Base case of K_2
+				if(current_index == range.second) {
+					std::cout << " base case K_2\n";
+					// If we may not add n to the path, make sure it gets a different color
+					if(n != y) {
+						color_list[n].erase(
+								std::remove(color_list[n].begin(), color_list[n].end(),
+								coloring[p]), color_list[n].end()
+							);
 					}
+					if(!properties[n].colored()) {
+						properties[n].color();
+						coloring[n] = color_list[n].front();
+						std::cout << "colored " << n << " with color " << coloring[n] << "\n";
+					}
+				
+					break;
+				}
+				else if(n == y) {
+					std::cout << " y\n";
+					coloring[y] = coloring[p];
+					properties[y].color();
 					
-					// Remove p from incidence list
-					properties[neighbor].remove_end();
+					std::cout << "colored " << n << " with color " << coloring[p] << "\n";
+					std::cout << "ended path of color " << coloring[p] << "\n";
+					
+					if(x == p) new_x = y;
+					
+					hartman_path_list_color_recursive(
+							plane_graph,
+							properties, face_locations,
+							color_list, coloring,
+							new_x, p, y,
+							-1, -1, before_y
+						);
+					
+					break;
 				}
 				else {
-					int neighbor_face_location = properties[neighbor].get_face_location();
-					before_p = properties[neighbor].set_face_location(before_p, face_locations);
-					
-					// Reassign x or y as needed if they are being removed
-					if(y == p) {
-						if(x == p) {
-							new_x = neighbor;
-						}
-						else {
-							new_y = neighbor;
-						}
+					if(x == p) {
+						new_x = n;
+						before_p = properties[n].set_face_location(before_p, face_locations);
 					}
-					
-					// Vertex directly following p on the outer face
-					if(current_index == range.second) {
-					    std::cout << "end\n";
-						// Remove p from incidence list
-						properties[neighbor].remove_begin();
-						vertex_descriptor new_p = neighbor;
-						
-						// Correction for weird case where x = y = p
-						if(x == p && y == p) {
-							before_x = before_p;
-							before_p = -1;
-						}
-						// If we are removing the last path vertex, we must merge before_p and before_y
-						else if(!properties[neighbor].colored() || coloring[neighbor] != coloring[p]) {
-							before_y = face_locations.take_union(before_p, before_y);
-							before_p = -1;
-							new_p = new_x;
-						}
-						
-						// Color graph with p removed
+			
+					std::cout << " begin\n";
+			
+					color_list[n].erase(
+							std::remove(color_list[n].begin(), color_list[n].end(),
+							coloring[p]), color_list[n].end()
+						);
+			
+					properties[n].remove_end();
+				}
+			}
+			else {
+				auto p_ranges = properties[p].split_range(current_index);
+				auto n_ranges = properties[n].split_range(back_index);
+		
+				if(p == y) {
+					color_list[n].erase(
+							std::remove(color_list[n].begin(), color_list[n].end(),
+							coloring[p]), color_list[n].end()
+						);
+			
+					if(p == x) {
+						std::cout << " x = y\n";
+						properties[n].set_range(n_ranges.second);
+						properties[n].remove_begin();
+				
 						hartman_path_list_color_recursive(
 								plane_graph,
 								properties, face_locations,
 								color_list, coloring,
-								new_x, properties[new_x].get_range(),
-								new_y, properties[new_y].get_range(),
-								new_p,
-								before_p, before_y, before_x
+								new_x, n, new_x,
+								-1, before_p, before_y
 							);
+				
+						if(back_index != n_ranges.first.first) {
+							properties[n].set_range(n_ranges.first);
+							properties[p].set_range(p_ranges.second);
+				
+							hartman_path_list_color_recursive(
+									plane_graph,
+									properties, face_locations,
+									color_list, coloring,
+									p, p, p,
+									-1, before_y, -1
+								);
+						}
+						
+						break;
+					}
+					else if(current_index == range.second) {
+						std::cout << " end\n";
+						before_p = properties[n].set_face_location(before_p, face_locations);
+						properties[n].remove_begin();
+				
+						std::cout << "ended path of color " << coloring[p] << "\n";
+			
+						hartman_path_list_color_recursive(
+								plane_graph,
+								properties, face_locations,
+								color_list, coloring,
+								new_x, n, new_x,
+								-1, before_p, before_x
+							);
+						
+						break;
 					}
 					else {
-						// Split ranges along edge
-						auto p_ranges = properties[p].split_range(current_index);
-						auto n_ranges = properties[neighbor].split_range(back_index);
-					
-						// Special case for x = y = p
-						if(x == p && y == p) {
-						    std::cout << "x = y\n";
-							// Set ranges for "left" half to color
-							properties[neighbor].set_range(n_ranges.second);
-							properties[p].set_range(p_ranges.first);
-							
-							// Remove p from incidence list
-							properties[neighbor].remove_begin();
-							properties[p].remove_end();
-							
-							// Color "left" subgraph with p removed
-							hartman_path_list_color_recursive(
-									plane_graph,
-									properties, face_locations,
-									color_list, coloring,
-									new_x, properties[new_x].get_range(),
-									new_y, properties[new_y].get_range(),
-									new_x,
-									-1, before_y, before_p
-								);
-							
-							// Reassign ranges for remaining "right" subgraph
-							properties[neighbor].set_range(n_ranges.first);
-							
-							// Color remaining "right" subgraph
-							hartman_path_list_color_recursive(
-									plane_graph,
-									properties, face_locations,
-									color_list, coloring,
-									p, p_ranges.second,
-									p, p_ranges.second,
-									p,
-									-1, before_y, -1
-								);
-						}
-						//Case 1: C[y,x) Cutvertex between y and x, including y
-						else if(neighbor == y || face_locations.compare(neighbor_face_location, before_x)) {
-						    std::cout << "before_x\n";
-						    
-							// Reassign ranges for remaining "right" subgraph
-							properties[p].set_range(p_ranges.second);
-							
-							// Color remaining "right" subgraph
-							hartman_path_list_color_recursive(
-									plane_graph,
-									properties, face_locations,
-									color_list, coloring,
-									neighbor, n_ranges.first,
-									y, properties[y].get_range(),
-									p,
-									-1, before_y, before_x
-								);
-							
-							// Set ranges for "left" half to color
-							properties[neighbor].set_range(n_ranges.second);
-							properties[p].set_range(p_ranges.first);
-							
-							// Remove p from incidence list
-							properties[neighbor].remove_begin();
-							properties[p].remove_end();
-							
-							// Reassign p
-							vertex_descriptor new_p = new_x;
-							if(neighbor == y && properties[p].colored() && coloring[p] == coloring[neighbor]) {
-								new_p = y;
-							}
-							
-							// Color "left" subgraph with p removed
-							hartman_path_list_color_recursive(
-									plane_graph,
-									properties, face_locations,
-									color_list, coloring,
-									new_x, properties[new_x].get_range(),
-									neighbor, properties[neighbor].get_range(),
-									new_p,
-									-1, before_p, before_x
-								);
-						}
-						// Case 2: C[x,p) Cutvertex between x and p, including x
-						else if(face_locations.compare(neighbor_face_location, before_p)) {
-						    std::cout << "before_p\n";
-							// Set ranges for "right" subgraph
-							properties[p].set_range(p_ranges.second);
-							properties[neighbor].set_range(n_ranges.first);
-							
-							// Color "right" subgraph
-							hartman_path_list_color_recursive(
-									plane_graph,
-									properties, face_locations,
-									color_list, coloring,
-									x, properties[x].get_range(),
-									y, properties[y].get_range(),
-									p,
-									before_p, before_y, before_x
-								);
-							
-							// Set ranges for "left" half to color
-							properties[neighbor].set_range(n_ranges.second);
-							properties[p].set_range(p_ranges.first);
-							
-							// Remove p from incidence list
-							properties[neighbor].remove_begin();
-							properties[p].remove_end();
-							
-							// Color "left" subgraph with p removed
-							hartman_path_list_color_recursive(
-									plane_graph,
-									properties, face_locations,
-									color_list,  coloring,
-									neighbor, properties[neighbor].get_range(),
-									neighbor, properties[neighbor].get_range(),
-									neighbor,
-									-1, before_p, -1
-								);
-						}
-						// Case 3: C(p,y) Cutvertex between p and y, exclusive
-						else {
-						    std::cout << "before_y\n";
-							// Set ranges for "left" half to color
-							properties[neighbor].set_range(n_ranges.second);
-							properties[p].set_range(p_ranges.first);
-							
-							// Remove p from incidence list
-							properties[neighbor].remove_begin();
-							properties[p].remove_end();
-							
-							// Intersect face sections we are joining
-							before_y = face_locations.take_union(before_p, before_y);
-							
-							// Color "left" subgraph with p removed
-							hartman_path_list_color_recursive(
-									plane_graph,
-									properties, face_locations,
-									color_list, coloring,
-									new_x, properties[new_x].get_range(),
-									new_y, properties[new_y].get_range(),
-									new_x,
-									-1, before_y, before_x
-								);
-								
-							// Reassign ranges for remaining "right" subgraph
-							properties[p].set_range(p_ranges.second);
-							
-							// Color remaining "right" subgraph
-							hartman_path_list_color_recursive(
-									plane_graph,
-									properties, face_locations,
-									color_list, coloring,
-									neighbor, n_ranges.first,
-									neighbor, n_ranges.first,
-									neighbor,
-									-1, before_y, -1
-								);
-						}
+						new_y = n;
 					}
-					
-					break;
 				}
+				
+				if(face_locations.compare(n_location, before_y) || n == y) {
+					std::cout << " before_y\n";
+					
+					vertex_descriptor new_p = n;
+					
+					if(p != y && std::find(color_list[n].begin(), color_list[n].begin(), coloring[p])
+						!= color_list[n].end() && !properties[n].colored())
+					{
+						std::cout << "colored " << n << " with color " << coloring[p] << "\n";
+						coloring[n] = coloring[p];
+						properties[n].color();
+					}
+					else if(!properties[n].colored() || coloring[n] != coloring[p]) {
+						std::cout << "ended path of color " << coloring[p] << "\n";
+						
+						new_p = new_x;
+						before_y = face_locations.take_union(before_p, before_y);
+						before_p = -1;
+						
+						color_list[n].erase(
+								std::remove(color_list[n].begin(), color_list[n].end(),
+								coloring[p]), color_list[n].end()
+							);
+					}
+		
+					properties[n].set_range(n_ranges.second);
+					properties[n].remove_begin();
+		
+					hartman_path_list_color_recursive(
+							plane_graph,
+							properties, face_locations,
+							color_list, coloring,
+							new_x, new_y, new_p,
+							before_p, before_y, before_x
+						);
+		
+					if(back_index != n_ranges.first.first) {
+						std::cout << "chord/cutvertex at " << n << "\n";
+						properties[n].set_range(n_ranges.first);
+						properties[p].set_range(p_ranges.second);
+				
+						hartman_path_list_color_recursive(
+								plane_graph,
+								properties, face_locations,
+								color_list, coloring,
+								p, n, p,
+								-1, before_y, -1
+							);
+					}
+				}
+				else if(face_locations.compare(n_location, before_x)) {
+					std::cout << " before_x\n";
+					color_list[n].erase(
+							std::remove(color_list[n].begin(), color_list[n].end(),
+							coloring[p]), color_list[n].end()
+						);
+			
+					properties[n].set_range(n_ranges.second);
+					properties[n].remove_begin();
+			
+					hartman_path_list_color_recursive(
+							plane_graph,
+							properties, face_locations,
+							color_list, coloring,
+							new_x, n, new_x,
+							-1, before_p, before_x
+						);
+			
+					properties[n].set_range(n_ranges.first);
+					properties[p].set_range(p_ranges.second);
+			
+					hartman_path_list_color_recursive(
+							plane_graph,
+							properties, face_locations,
+							color_list, coloring,
+							n, y, p,
+							-1, before_y, before_x
+						);
+				}
+				else {
+					std::cout << " before_p\n";
+					
+					color_list[n].erase(
+							std::remove(color_list[n].begin(), color_list[n].end(),
+							coloring[p]), color_list[n].end()
+						);
+			
+					properties[n].set_range(n_ranges.first);
+					properties[p].set_range(p_ranges.second);
+			
+					hartman_path_list_color_recursive(
+							plane_graph,
+							properties, face_locations,
+							color_list, coloring,
+							x, y, p,
+							before_p, before_y, before_x
+						);
+					
+					properties[n].set_range(n_ranges.second);
+					properties[n].remove_begin();
+					
+					hartman_path_list_color_recursive(
+							plane_graph,
+							properties, face_locations,
+							color_list, coloring,
+							n, n, n,
+							-1, before_p, -1
+						);
+				}
+		
+				break;
 			}
 		} while(current_index++ != range.second);
 	}
