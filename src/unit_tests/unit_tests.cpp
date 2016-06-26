@@ -40,7 +40,7 @@ using namespace boost;
 //#define SHOW_PASSES
 
 // Comment line below to hide tikz drawing printouts
-#define SHOW_VISUALIZATION
+//#define SHOW_VISUALIZATION
 
 // Comment line below to hide test timings.
 //#define SHOW_TIMINGS
@@ -552,7 +552,7 @@ void test_list_path_color()
 					
 							found_planar = true;
 					
-							draw_graph_no_color(graph);
+							//draw_graph_no_color(graph);
 					
 							//std::cout << "Testing planarity.\n";
 							path_list_color_test(graph, colors);

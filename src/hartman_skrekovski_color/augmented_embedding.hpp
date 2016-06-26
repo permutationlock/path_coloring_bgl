@@ -101,13 +101,6 @@ namespace boost {
 					ndata_map[source_vertex][source_index].back_index = target_index;
 					ndata_map[target_vertex][target_index].back_index = source_index;
 				}
-				
-				for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; ++v_iter) {
-					std::cout << *v_iter;
-					for(std::size_t i = 0; i < ndata_map[*v_iter].size(); ++i) {
-					    std::cout << "\t-> " << ndata_map[*v_iter][i].neighbor << "\n";
-					}
-				}
 			}
 			
 			const std::vector<neighbor_data> & operator[](vertex_descriptor vertex) const {
