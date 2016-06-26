@@ -1,8 +1,8 @@
 /*
- * graph_parser.h
+ * draw_tikz_graph.h
  * Author: Aven Bross
  *
- * Recursive descent parser for simplified dot language
+ * Produce tikz drawings of boost graphs.
  */
 
 #ifndef DRAW_TIKZ_GRAPH_HPP
@@ -26,26 +26,25 @@ const std::vector<std::string> color_strings =
 	{"red", "blue","yellow", "green", "cyan", "magenta", "white", "black"};
 
 // Produce a dot language string to draw the given graph that has been three colored
-template<typename Graph, typename Coloring, typename Drawing>
-std::string draw_tikz_graph(const Graph & graph, const Coloring & coloring,
-	const Drawing & drawing)
+template<typename index_graph, typename color_map, typename plane_drawing>
+std::string draw_tikz_graph(const index_graph & graph, const color_map & coloring,
+	const plane_drawing & drawing)
 {
-	typedef boost::graph_traits<Graph> GraphTraits;
-	typedef typename GraphTraits::vertex_descriptor vertex_descriptor;
-	typedef typename GraphTraits::edge_descriptor edge_descriptor;
-	typedef typename boost::property_traits<Coloring>::value_type color_type;
+	typedef typename boost::graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	typedef typename boost::graph_traits<index_graph>::edge_descriptor edge_descriptor;
+	typedef typename boost::property_traits<color_map>::value_type color_type;
 	
-	std::map<color_type, std::string> color_map;
+	std::map<color_type, std::string> color_string_map;
 	
-	typename GraphTraits::vertex_iterator v_iter, v_end;
+	typename boost::graph_traits<index_graph>::vertex_iterator v_iter, v_end;
 
     for (boost::tie(v_iter, v_end) = boost::vertices(graph); v_iter != v_end; v_iter++) {
 		vertex_descriptor curr_vertex = *v_iter;
 		color_type curr_color = coloring[curr_vertex];
 		
-		if(color_map.count(curr_color) == 0)
+		if(color_string_map.count(curr_color) == 0)
 		{
-			color_map[curr_color] = color_strings[curr_color];
+			color_string_map[curr_color] = color_strings[curr_color];
 		}
 	}
 	
@@ -57,7 +56,7 @@ std::string draw_tikz_graph(const Graph & graph, const Coloring & coloring,
 	for (boost::tie(v_iter, v_end) = boost::vertices(graph); v_iter != v_end; v_iter++) {
 		vertex_descriptor curr_vertex = *v_iter;
 		std::string vname = std::to_string(curr_vertex);
-		std::string vcolor = color_map[coloring[curr_vertex]];
+		std::string vcolor = color_string_map[coloring[curr_vertex]];
 		std::string x = std::to_string(get(drawing, curr_vertex).x);
 		std::string y = std::to_string(get(drawing, curr_vertex).y);
 		
@@ -65,7 +64,7 @@ std::string draw_tikz_graph(const Graph & graph, const Coloring & coloring,
 			+ ") at (" + x + "cm, " + y + "cm) {$" +  vname + "$};\n";
 	}
 	
-	typename GraphTraits::edge_iterator e_iter, e_end;
+	typename boost::graph_traits<index_graph>::edge_iterator e_iter, e_end;
 	
 	for (boost::tie(e_iter, e_end) = boost::edges(graph); e_iter != e_end; e_iter++) {
 		edge_descriptor curr_edge = *e_iter;

@@ -30,8 +30,8 @@
 #include <boost/graph/make_maximal_planar.hpp>
 
 // Local project headers
-#include "../hartman_skrekovski_color.hpp"
-#include "../draw_tikz_graph.hpp"
+#include "../hartman_skrekovski_color/hartman_skrekovski_color.hpp"
+#include "../visualization/draw_tikz_graph.hpp"
 
 // Define graph properties
 typedef boost::adjacency_list<
