@@ -105,7 +105,7 @@ class list_color_properties {
 };
 
 /*
- * hartman_path_list_color
+ * hartman_skrekovski_color
  * inputs: A weakly triangulated planar graph with vertex indices (predefined boost property),
  *         a valid planar embedding of the graph (modeling the boost PlanarEmbedding concept),
  *         a read-write vertex property map assigning a range of colors to each vertex (each vertex must
@@ -122,7 +122,7 @@ template<
 		typename color_list_map, typename color_map,
 		typename vertex_iterator
 	>
-void hartman_path_list_color(
+void hartman_skrekovski_color(
 		const index_graph & graph,
 		const planar_embedding & embedding,
 		color_list_map & color_list,
@@ -169,7 +169,7 @@ void hartman_path_list_color(
 	
 	vertex_descriptor x = *face_begin, y = *(--face_end);
 	
-	hartman_path_list_color_recursive(
+	hartman_skrekovski_color_recursive(
 			plane_graph,
 			properties, face_locations,
 			color_list, coloring,
@@ -179,7 +179,7 @@ void hartman_path_list_color(
 }
 
 /*
- * hartman_path_list_color_recursive
+ * hartman_skrekovski_color_recursive
  * inputs: An augmented embedding representing a weakly triangulated plane graph,
  *         a read-write vertex property map assigning a list_color_properties object to each vertex
  *         (the properties for the outer face of the current subgraph must already be assigned),
@@ -203,7 +203,7 @@ template<
 		typename color_list_map, typename color_map,
 		typename vertex_descriptor = typename augmented_embedding<index_graph>::vertex_descriptor
 	>
-void hartman_path_list_color_recursive(
+void hartman_skrekovski_color_recursive(
 		const augmented_embedding<index_graph> & plane_graph,
 		list_color_property_map & properties, disjoint_set & face_locations,
 		color_list_map & color_list, color_map & coloring,
@@ -244,7 +244,7 @@ void hartman_path_list_color_recursive(
 		}
 		else if(current_index == range.first) {
 			if(current_index == range.second) {
-				if(n != y) {
+				if(n != x && n != y) {
 					color_list[n].erase(
 							std::remove(color_list[n].begin(), color_list[n].end(),
 							coloring[p]), color_list[n].end()
@@ -258,12 +258,14 @@ void hartman_path_list_color_recursive(
 				break;
 			}
 			else if(n == y) {
-				coloring[y] = coloring[p];
-				properties[y].color();
+				if(!properties[y].colored()) {
+					properties[y].color();
+					coloring[y] = coloring[p];
+				}
 				
 				if(x == p) new_x = y;
 				
-				hartman_path_list_color_recursive(
+				hartman_skrekovski_color_recursive(
 						plane_graph,
 						properties, face_locations,
 						color_list, coloring,
@@ -301,7 +303,7 @@ void hartman_path_list_color_recursive(
 					properties[n].set_range(n_ranges.second);
 					properties[n].remove_begin();
 			
-					hartman_path_list_color_recursive(
+					hartman_skrekovski_color_recursive(
 							plane_graph,
 							properties, face_locations,
 							color_list, coloring,
@@ -313,7 +315,7 @@ void hartman_path_list_color_recursive(
 						properties[n].set_range(n_ranges.first);
 						properties[p].set_range(p_ranges.second);
 			
-						hartman_path_list_color_recursive(
+						hartman_skrekovski_color_recursive(
 								plane_graph,
 								properties, face_locations,
 								color_list, coloring,
@@ -328,7 +330,7 @@ void hartman_path_list_color_recursive(
 					before_p = properties[n].set_face_location(before_p, face_locations);
 					properties[n].remove_begin();
 					
-					hartman_path_list_color_recursive(
+					hartman_skrekovski_color_recursive(
 							plane_graph,
 							properties, face_locations,
 							color_list, coloring,
@@ -366,7 +368,7 @@ void hartman_path_list_color_recursive(
 				properties[n].set_range(n_ranges.second);
 				properties[n].remove_begin();
 	
-				hartman_path_list_color_recursive(
+				hartman_skrekovski_color_recursive(
 						plane_graph,
 						properties, face_locations,
 						color_list, coloring,
@@ -378,7 +380,7 @@ void hartman_path_list_color_recursive(
 					properties[n].set_range(n_ranges.first);
 					properties[p].set_range(p_ranges.second);
 			
-					hartman_path_list_color_recursive(
+					hartman_skrekovski_color_recursive(
 							plane_graph,
 							properties, face_locations,
 							color_list, coloring,
@@ -396,7 +398,7 @@ void hartman_path_list_color_recursive(
 				properties[n].set_range(n_ranges.second);
 				properties[n].remove_begin();
 		
-				hartman_path_list_color_recursive(
+				hartman_skrekovski_color_recursive(
 						plane_graph,
 						properties, face_locations,
 						color_list, coloring,
@@ -407,7 +409,7 @@ void hartman_path_list_color_recursive(
 				properties[n].set_range(n_ranges.first);
 				properties[p].set_range(p_ranges.second);
 		
-				hartman_path_list_color_recursive(
+				hartman_skrekovski_color_recursive(
 						plane_graph,
 						properties, face_locations,
 						color_list, coloring,
@@ -424,7 +426,7 @@ void hartman_path_list_color_recursive(
 				properties[n].set_range(n_ranges.first);
 				properties[p].set_range(p_ranges.second);
 		
-				hartman_path_list_color_recursive(
+				hartman_skrekovski_color_recursive(
 						plane_graph,
 						properties, face_locations,
 						color_list, coloring,
@@ -435,7 +437,7 @@ void hartman_path_list_color_recursive(
 				properties[n].set_range(n_ranges.second);
 				properties[n].remove_begin();
 				
-				hartman_path_list_color_recursive(
+				hartman_skrekovski_color_recursive(
 						plane_graph,
 						properties, face_locations,
 						color_list, coloring,

@@ -441,7 +441,7 @@ void path_list_color_test(const index_graph & graph, std::size_t num_colors) {
 	#endif
 	
 	// Call path 3-list-color algorithm
-	hartman_path_list_color(graph, embedding, color_list, coloring, outer_face.begin(), outer_face.end());
+	hartman_skrekovski_color(graph, embedding, color_list, coloring, outer_face.begin(), outer_face.end());
 	
 	#ifdef SHOW_TIMINGS
 		auto end = nanosecond_timer::now();

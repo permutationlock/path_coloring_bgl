@@ -128,7 +128,7 @@ int main() {
 	}
 	
 	// Path 3-list-color the graph with the Hartman-Skrekovski algorithm
-	hartman_path_list_color(
+	hartman_skrekovski_color(
 			graph,
 			embedding,
 			color_list,
