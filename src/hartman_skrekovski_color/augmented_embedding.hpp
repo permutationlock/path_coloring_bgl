@@ -15,7 +15,14 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
-// Stores embedding as an adjacency list that allows back lookup
+/*
+ * augmented_embedding
+ * This structure takes a planar graph with vertex and edge indices and a valid plane embedding (modelling
+ * the boost PlanarEmbedding concept). It then constructs itself as an adjacency list graph, with lists
+ * ordered according to the given plane embedding. Furthermore, each entry in a vertex's adjacency list
+ * provides the index of its position in the corresponding the neighbor's ajdacency list.
+ */
+
 template<typename index_graph>
 class augmented_embedding {
 	public:

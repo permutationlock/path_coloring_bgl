@@ -20,7 +20,15 @@
 #include "disjoint_set.hpp"
 #include "augmented_embedding.hpp"
 
-// Stores all vertex propreties for path 3-list-coloring algorithm
+/*
+ * list_color_properties
+ * This structure stores all properties of a vertex relative to the Hartman-Skrekovski path 3-list-coloring
+ * implementation below. Firstly, a vertex has a state that proceeds from "interior" to "on the outer face,"
+ * and finally to "colored." Each vertex also tracks the current range of valid neighbors in its adjacency
+ * list. Finally, each vertex recieves a mark describing which section of the outer face it belongs to
+ * (note that this mark is only valid while the vertex has the state "on the outer face").
+ */
+
 template<typename index_graph>
 class list_color_properties {
 	public:
@@ -94,6 +102,19 @@ class list_color_properties {
 		neighbor_range range;	// Current incidence range in embedding
 		std::size_t degree;
 };
+
+/*
+ * hartman_path_list_color
+ * inputs: A weakly triangulated planar graph with vertex and edge indices (predefined boost properties),
+ *         a valid planar embedding of the graph (modeling the boost PlanarEmbedding concept),
+ *         a read-write vertex property map assigning a range of colors to each vertex (each vertex must
+ *         recieve a range of at least 3 colors if interior, and at least two colors if on the outer face),
+ *         a read-write vertex property map to which the coloring will be assigned,
+ *         and finally a pair of iterators providing the outer face of the graph in clockwise order.
+ * 
+ * outputs: The coloring will be a valid assignment of colors from the input color lists such that
+ *          each color class induces a disjoint union of paths.
+ */
  
 template<
 		typename index_graph, typename planar_embedding,
@@ -163,6 +184,26 @@ void hartman_path_list_color(
 			-1, before_y, -1
 		);
 }
+
+/*
+ * hartman_path_list_color_recursive
+ * inputs: An augmented embedding representing a weakly triangulated plane graph,
+ *         a read-write vertex property map assigning a list_color_properties object to each vertex
+ *         (the properties for the outer face of the current subgraph must already be assigned),
+ *         a disjoint set structure storing integer identifiers for segments of the outer face,
+ *         a read-write vertex property map assigning a range of colors to each vertex (each vertex must
+ *         recieve a range of at least 3 colors if interior, at least two colors if on the outer face,
+ *         and at least one color if they are x or y),
+ *         a read-write vertex property map to which the coloring will be assigned,
+ *         vertices x, y, and p on the outer face with p between x and y clockwise,
+ *         and finally the current identifiers for the outer face segments of vertices clockwise between
+ *         x and p (before_p), p and y (before_y), and y and x (before_x) respectively.
+ *
+ * outputs: Colors from the provided lists will be assigned to the vertices of the subgraph bounded by
+ *          the given outer face such that each color class induces a disjoint union of paths. Furthermore,
+ *          if x = y, then no neighbors of x (= y) will recieve the same color as x (= y). If x != y,
+ *          then x and y will have at most one neighbor sharing a color in the resulting coloring.
+ */
 
 template<
 		typename index_graph, typename list_color_property_map,
