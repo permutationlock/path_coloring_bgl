@@ -391,12 +391,8 @@ void path_list_color_test(const index_graph & graph, std::size_t num_colors) {
 	std::vector<int> color_storage(num_vertices(graph));
 	color_property_map coloring(color_storage.begin(), get(vertex_index, graph));
 	
-	// Create vectors to hold ordered outer face
-	std::vector<vertex_descriptor> outer_face;
-	
-	outer_face.push_back(ordering[1]);
-	outer_face.push_back(ordering[0]);
-	outer_face.push_back(ordering.back());
+	// Set up clockwise outer face using properties of a canonical ordering
+	std::vector<vertex_descriptor> outer_face = { ordering[1], ordering[0], ordering.back() };
 	
 	// Create property map to hold the coloring
 	typedef iterator_property_map<
