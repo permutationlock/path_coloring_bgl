@@ -333,8 +333,8 @@ void hartman_skrekovski_color_recursive(
 								plane_graph,
 								properties, face_locations,
 								color_list, coloring,
-								p, p, p,
-								-1, before_y, -1
+								n, p, p,
+								-1, -1, before_y
 							);
 					}
 					
