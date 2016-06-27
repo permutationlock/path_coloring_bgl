@@ -8,6 +8,7 @@
 #ifndef DRAW_TIKZ_GRAPH_HPP
 #define DRAW_TIKZ_GRAPH_HPP
 
+// STL headers
 #include <string>
 #include <utility>
 #include <map>
@@ -15,13 +16,13 @@
 #include <vector>
 #include <stdexcept>
 
+// Basic graph headers
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/properties.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
-#include <boost/tuple/tuple.hpp>
-
+// Vector of all default tikz colors (currently we only handle up to 8 colors)
 const std::vector<std::string> color_strings =
 	{"red", "blue","yellow", "green", "cyan", "magenta", "white", "black"};
 

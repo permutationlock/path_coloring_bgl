@@ -1,3 +1,11 @@
+/*
+ * unit_tests.cpp
+ * Author: Aven Bross
+ *
+ * Unit testing suite for path coloring.
+ */
+
+// STL headers
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>

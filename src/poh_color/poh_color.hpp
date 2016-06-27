@@ -245,7 +245,6 @@ namespace boost {
 				q_begin, q_end, coloring, coloring[p_0]);
 		}
 	}
-	
 }
 
 #endif

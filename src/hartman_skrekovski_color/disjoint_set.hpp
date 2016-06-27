@@ -8,6 +8,7 @@
 #ifndef __DISJOINT_SET_HPP
 #define __DISJOINT_SET_HPP
 
+// STL headers
 #include <vector>
 
 /*

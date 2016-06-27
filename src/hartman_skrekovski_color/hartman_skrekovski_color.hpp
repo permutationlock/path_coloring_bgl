@@ -8,15 +8,16 @@
 #ifndef __PATH_COLORING_HPP
 #define __PATH_COLORING_HPP
 
+// STL headers
 #include <vector>
 #include <utility>
 #include <algorithm>
 
-#include <boost/graph/adjacency_list.hpp>
+// Basic graph headers
 #include <boost/graph/properties.hpp>
-#include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
+// Local project headers
 #include "disjoint_set.hpp"
 #include "augmented_embedding.hpp"
 
@@ -105,7 +106,7 @@ class list_color_properties {
 
 /*
  * hartman_path_list_color
- * inputs: A weakly triangulated planar graph with vertex and edge indices (predefined boost properties),
+ * inputs: A weakly triangulated planar graph with vertex indices (predefined boost property),
  *         a valid planar embedding of the graph (modeling the boost PlanarEmbedding concept),
  *         a read-write vertex property map assigning a range of colors to each vertex (each vertex must
  *         recieve a range of at least 3 colors if interior, and at least two colors if on the outer face),
@@ -130,27 +131,21 @@ void hartman_path_list_color(
 		vertex_iterator face_end
 	)
 {
-	typedef typename boost::graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
-	
-	// Construct our special embedded adjacency list with backwards lookup
-	augmented_embedding<index_graph> plane_graph(graph, embedding);
-	
-	// Define the type for our property map
+	typedef typename augmented_embedding<index_graph>::vertex_descriptor vertex_descriptor;
 	typedef boost::iterator_property_map<
 			typename std::vector<list_color_properties<index_graph> >::iterator,
 			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
 		> list_color_property_map;
 	
-	// Make property map to store all properties
+	augmented_embedding<index_graph> plane_graph(graph, embedding);
+	
 	std::vector<list_color_properties<index_graph> > list_color_property_storage(num_vertices(graph));
 	list_color_property_map properties(list_color_property_storage.begin(),
 		boost::get(boost::vertex_index, graph));
 	
-	// Initialize face locations
 	disjoint_set face_locations;
 	int before_y = -1;
 	
-	// Initialize all vertices on the given outer face
 	for(auto vertex_iter = face_begin; vertex_iter != face_end; ++vertex_iter)
 	{
 		auto next = vertex_iter;
@@ -172,10 +167,8 @@ void hartman_path_list_color(
 		}
 	}
 	
-	// Star with x and y as the beginning and end of the outer face list given
 	vertex_descriptor x = *face_begin, y = *(--face_end);
 	
-	// Recursively list color the graph
 	hartman_path_list_color_recursive(
 			plane_graph,
 			properties, face_locations,
