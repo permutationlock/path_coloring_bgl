@@ -26,15 +26,18 @@ class disjoint_set {
 			sets.push_back(set_data(next));
 			return next++;
 		}
+		
 		bool exists(int n) {
 			return  (n >= 0) && (std::size_t) n < sets.size();
 		}
+		
 		int find(int n) {
 			if(sets[n].parent != n) {
 				sets[n].parent = find(sets[n].parent);
 			}
 			return sets[n].parent;
 		}
+		
 		bool compare(int n, int m) {
 			if(!exists(n) || !exists(m)) return false;
 			return find(n) == find(m);
@@ -62,6 +65,7 @@ class disjoint_set {
 				return n_root;
 			}
 		}
+		
 	private:
 		struct set_data {
 			int parent, rank;

@@ -21,9 +21,10 @@
 #include "disjoint_set.hpp"
 #include "augmented_embedding.hpp"
 
+
 /*
  * list_color_properties
- * This structure stores all properties of a vertex relative to the Hartman-Skrekovski path 3-list-coloring
+ * This structure stores all properties of a vertex in the Hartman-Skrekovski path 3-list-coloring
  * implementation below. Firstly, a vertex has a state that proceeds from "interior" to "on the outer face,"
  * and finally to "colored." Each vertex also tracks the current range of valid neighbors in its adjacency
  * list. Finally, each vertex recieves a mark describing which section of the outer face it belongs to
@@ -52,9 +53,11 @@ class list_color_properties {
 			
 			return face_location;
 		}
+		
 		void color() {
 			state = COLORED;
 		}
+		
 		int set_face_location(int new_face_location, disjoint_set & face_locations) {
 			if(!face_locations.exists(new_face_location)) {
 				face_location = face_locations.make_next();
@@ -64,33 +67,42 @@ class list_color_properties {
 			}
 			return face_location;
 		}
+		
 		int get_face_location() {
 			return face_location;
 		}
+		
 		void set_range(const neighbor_range & new_range) {
 			range = new_range;
 		}
+		
 		const neighbor_range & get_range() const {
 			return range;
 		}
+		
 		void remove_begin() {
 			range.first = (range.first + 1) % degree;
 		}
+		
 		void remove_end() {
 			range.second = (range.second + degree - 1) % degree;
 		}
+		
 		std::pair<neighbor_range, neighbor_range> split_range(std::size_t mid_index) const {
 			neighbor_range second_range(mid_index, range.second);
 			neighbor_range first_range(range.first, mid_index);
 
 			return std::pair<neighbor_range, neighbor_range>(first_range, second_range);
 		}
+		
 		bool interior() const {
 			return state == INTERIOR;
 		}
+		
 		bool on_face() const {
 			return state == ON_FACE;
 		}
+		
 		bool colored() const {
 			return state == COLORED;
 		}
@@ -103,6 +115,7 @@ class list_color_properties {
 		neighbor_range range;	// Current incidence range in embedding
 		std::size_t degree;
 };
+
 
 /*
  * hartman_skrekovski_color
@@ -177,6 +190,7 @@ void hartman_skrekovski_color(
 			-1, before_y, -1
 		);
 }
+
 
 /*
  * hartman_skrekovski_color_recursive
