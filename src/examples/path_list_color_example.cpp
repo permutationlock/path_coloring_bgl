@@ -71,9 +71,9 @@ typedef boost::iterator_property_map<
 
 int main() {
 	/*
-	 * First we must construct a weakly plane graph. In boost this means creating two structures:
-	 * a graph and an embedding (a property map ordering the edges around each vertex) described
-	 * in the boost PlanarEmbedding concept. We must also construct a list of the vertices on the
+	 * First we must construct a weakly triangulated plane graph. In boost we create two structures:
+	 * a graph and an embedding (a property map ordering the edges around each vertex, described
+	 * in the boost PlanarEmbedding concept). We must also construct a list of the vertices on the
 	 * outer face in clockwise order.
 	 */
 	
