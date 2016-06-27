@@ -67,6 +67,12 @@ typedef boost::iterator_property_map<
 		typename boost::property_map<index_graph, boost::vertex_index_t>::type
 	> color_list_map_t;
 
+// A class to hold the coordinates of the straight line embedding
+struct coord_t {
+  std::size_t x;
+  std::size_t y;
+};
+
 int main() {
 	// Construct a planar graph somehow (here we manually add edges)
 	index_graph graph(5);
@@ -93,7 +99,7 @@ int main() {
 	boost::planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
 	
 	// Set up outer face using properties of a canonical ordering
-	std::vector<vertex_descriptor> outer_face = { ordering[0], ordering[1], ordering.back() };
+	std::vector<vertex_descriptor> outer_face = { ordering[1], ordering[0], ordering.back() };
 	
 	// Define a map to write colors to
 	std::vector<int> color_storage(boost::num_vertices(graph));
@@ -103,6 +109,7 @@ int main() {
 	std::vector<std::list<int> > color_list_storage(boost::num_vertices(graph));
 	color_list_map_t color_list(color_list_storage.begin(), boost::get(boost::vertex_index, graph));
 	
+	// Assign a list of 3 colors to each vertexsssss
 	typename boost::graph_traits<index_graph>::vertex_iterator v_iter, v_end;
 	for(boost::tie(v_iter, v_end) = boost::vertices(graph); v_iter != v_end; ++v_iter) {
 		for(int color = 0; color < 3; ++color) {
@@ -117,7 +124,7 @@ int main() {
 	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
 		put(e_index, *ei, edge_count++);
 	
-	// Path 3-list-color the graph with Hartman-Skrekovski
+	// Path 3-list-color the graph with the Hartman-Skrekovski algorithm
 	hartman_path_list_color(
 			graph,
 			embedding,
@@ -126,6 +133,31 @@ int main() {
 			outer_face.begin(),
 			outer_face.end()
 		);
+	
+	//Set up a property map to hold the mapping from vertices to coord_t's
+	typedef std::vector< coord_t > straight_line_drawing_storage_t;
+	typedef boost::iterator_property_map
+		< straight_line_drawing_storage_t::iterator, 
+			typename boost::property_map<index_graph, boost::vertex_index_t>::type 
+		> straight_line_drawing_t;
+	
+	straight_line_drawing_storage_t straight_line_drawing_storage
+		(boost::num_vertices(graph));
+	straight_line_drawing_t straight_line_drawing
+		(straight_line_drawing_storage.begin(), 
+			boost::get(boost::vertex_index, graph)
+		);
+	
+	// Draw the plane graph to get integer plane coordinates
+	boost::chrobak_payne_straight_line_drawing(graph, 
+			embedding, 
+			ordering.begin(),
+			ordering.end(),
+			straight_line_drawing
+		);
+	
+	// Pint the tikz drawing of the graph
+	std::cout << draw_tikz_graph(graph, coloring, straight_line_drawing) << "\n";
 	
 	return 0;
 }
