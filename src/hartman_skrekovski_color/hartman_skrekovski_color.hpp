@@ -34,7 +34,7 @@ template<typename index_graph>
 class list_color_properties {
 	public:
 		typedef typename augmented_embedding<index_graph>::vertex_descriptor vertex_descriptor;
-		typedef typename std::pair<std::size_t, std::size_t> neighbor_range;
+		typedef std::pair<std::size_t, std::size_t> neighbor_range;
 		
 		list_color_properties() : state(INTERIOR) {}
 		
@@ -211,7 +211,7 @@ void hartman_path_list_color_recursive(
 		int before_p, int before_y, int before_x
 	)
 {
-	auto range(properties[p].get_range());
+	auto range = properties[p].get_range();
 	
 	if(!properties[p].colored()) {
 		p = x;
