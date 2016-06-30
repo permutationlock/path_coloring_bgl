@@ -1,0 +1,249 @@
+\documentclass[10pt,letter]{article}
+
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage{lipsum}
+\usepackage{chngpage}
+\usepackage{geometry}
+\usepackage{mathtools}
+\usepackage{tabularx}
+\usepackage{verbatim}
+\usepackage{tikz}
+\usepackage[ruled,vlined]{algorithm2e}
+\SetAlFnt{\footnotesize\sffamily}
+\geometry{letterpaper, portrait, margin=1in}
+ 
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\lhead{A Path 3-List-Coloring Algorithm for Plane Graphs}
+\rfoot{}
+
+\newcommand{\overbar}[1]{\mkern 1.5mu\overline{\mkern-1.5mu#1\mkern-1.5mu}\mkern 1.5mu}
+
+\begin{document}
+
+\title{A Path 3-List Coloring Algorithm for Plane Graphs}
+\date{April 20, 2016}
+
+\maketitle
+
+\section*{Abstract}
+
+We present an algorithm to path $3$-list-color plane graphs based on the work by Skrekovski [2]
+and Hartman [1]. Furthermore, we describe an implementation in linear time.
+
+\section*{Implementation}
+
+The following table describes the variables and data structures required for our implementation. Note that the $plane\_graph$
+structure is a double adjacency graph, which is similar to a standard adjacency graph but allows constant time
+backwards traversal. An embedded double adjacency graph can be constructed from
+a plane graph in linear time.\\
+
+\begin{tabular}{p{3.5cm}|p{4.5cm}|p{5.5cm}}
+\textbf{variable} & \textbf{data structure} & \textbf{interpretation}\\
+\hline
+$plane\_graph$ & vertex array of vertex index pair arrays & double adjacency list graph in embedded order\\
+\hline
+$color\_lists$ & vertex array of color lists & color lists assigned to each vertex\\
+\hline
+$color$ & vertex array of colors & colors assigned to each vertex\\
+\hline
+$state$ & vertex array of states & state of each vertex\\
+\hline
+$face\_location$ & vertex array of integers & id of the outer face segment each vertex belongs too\\
+\hline
+$face\_location\_sets$ & disjoint set structure of integers & outer face segment ids that may be unioned together\\
+\hline
+$neighbor\_range$ & vertex array of index pairs & range of neighbors in current subgraph
+\end{tabular}\\
+
+\centerline{\textbf{Table 1:} Variables} 
+
+\begin{algorithm}
+\LinesNumbered
+\DontPrintSemicolon
+\KwIn{vertices $x,y,p$, integers $c_{xp}$, $c_{py}$, $c_{yx}$}
+$assign\_color(p, color\_list[p].first)$\;
+$x'\longleftarrow x$, $y'\longleftarrow y$\;
+\For{$i_p\in neighbor\_range[p]$}{
+	$(n, i_n)\longleftarrow plane\_graph[p][i_p]$\;
+	\If{$state[n]=interior$}{
+		$initialize(n,i_n,c_{xp})$\;
+		remove $color[p]$ from $color\_list[n]$, remove first from $neighbor\_range[n]$\;
+	}
+	\ElseIf{$i_p$ is the first in $neighbor\_range[p]$}{
+		\If{$i_p$ is the last in $neighbor\_range[p]$}{
+			\If{$n\ne x \land n\ne y$}{
+				remove $color[p]$ from $color\_list[n]$\;
+			}
+			$assign\_color(n, color\_list[n].first)$, \textbf{stop}\;
+		}
+		\ElseIf{$n=y$}{
+			$assign\_color(n, color[p])$\;
+			\If{$x=p$}{
+				$x'\longleftarrow n$\;
+			}
+			$hartman\_skrekovski(x',p,y,-1,-1,c_{py})$, \textbf{stop}\;
+		}
+		\Else{
+			\If{$x=p$}{
+				$x'\longleftarrow n$\;
+				$set\_face\_location(n, c_{xp})$\;
+			}
+			remove $color[p]$ from $color\_list[n]$, remove last from $neighbor\_range[n]$\;
+		}
+	}
+	\Else{
+		$(b_p,e_p)\longleftarrow neighbor\_range[p]$, $(b_n,e_n)\longleftarrow neighbor\_range[n]$\;
+		\If{$p=y$}{
+			remove $color[p]$ from $color\_list[n]$\;
+			\If{$p=x$}{
+				$neighbor\_range[n]\longleftarrow(i_n,e_n-1)$\;
+				$hartman\_skrekovski(x',n,x',-1,c_{xp},c_{py})$\;
+				\If{$i_n\ne b_n$}{
+					$neighbor\_range[n]\longleftarrow(b_n,i_n)$, $neighbor\_range[p]\longleftarrow(i_p,e_p)$\;
+					$hartman\_skrekovski(n,p,p,-1,-1,c_{py})$\;
+				}
+				\textbf{stop}\;
+			}
+			\ElseIf{$i_p=e_p$}{
+				$assign\_face\_location(n, c_{xp})$, $neighbor\_range[n]\longleftarrow(i_0,e_n-1)$\;
+				$hartman\_skrekovski(x',n,x',-1,c_{xp},c_{yx})$, \textbf{stop}\;
+			}
+			$y'\longleftarrow n$\;
+		}
+		\If{$n=y \lor compare(face\_location[n], c_{py})$}{
+			$p'\longleftarrow n$\;
+			\If{$p\ne y \land color[p]$ in $color\_list[n]$}{
+				$assign\_color(n, color[p])$\;
+			}
+			\ElseIf{$state[n]\ne colored \lor color[n]\ne color[p]$}{
+				$p'\longleftarrow x'$, $c_{py}\longleftarrow union(c_{xp},c_{py})$, $c_{xp}\longleftarrow -1$\;
+			}
+			$neighbor\_range[n]\longleftarrow(i_n,e_n-1)$\;
+			$hartman\_skrekovski(x',y',p',c_{xp},c_{py},c_{yx})$\;
+			\If{$i_n\ne b_n$}{
+				$neighbor\_range[n]\longleftarrow(b_n,i_n)$, $neighbor\_range[p]\longleftarrow(i_p,e_p)$\;
+				$hartman\_skrekovski(p,n,p,-1,c_{py},-1)$\;
+			}
+		}
+		\ElseIf{$compare(face\_location[n], c_{yx})$}{
+			remove $color[p]$ from $color\_list[n]$\;
+			$neighbor\_range[n]\longleftarrow(i_n,e_n-1)$\;
+			$hartman\_skrekovski(x',n,x',-1,c_{xp},c_{yx})$\;
+			$neighbor\_range[n]\longleftarrow(b_n,i_n)$, $neighbor\_range[p]\longleftarrow(i_p,e_p)$\;
+			$hartman\_skrekovski(n,y,p,-1,c_{py},c_{yx})$\;
+		}
+		\Else{
+			remove $color[p]$ from $color\_list[n]$\;
+			$neighbor\_range[n]\longleftarrow(b_n,i_n)$, $neighbor\_range[p]\longleftarrow(i_p,e_p)$\;
+			$hartman\_skrekovski(x,y,p,c_{xp},c_{py},c_{yx})$\;
+			
+			$neighbor\_range[n]\longleftarrow(i_n,e_n-1)$\;
+			$hartman\_skrekovski(n,n,n,-1,c_{xp},-1)$\;
+		}
+		\textbf{stop}\;
+	}
+}
+\caption{$hartman\_skrekovski$}
+\end{algorithm}
+
+\begin{comment}
+\begin{algorithm}
+\LinesNumbered
+\DontPrintSemicolon
+\KwIn{vertex $v$, integer $f$}
+\If{$f=-1$}{
+	$f\longleftarrow face\_location\_sets.make\_set()$\;
+}
+$face\_location[v]\longleftarrow f$\;
+\KwRet{$f$}
+\caption{set\_face\_location}
+\end{algorithm}
+
+\begin{algorithm}
+\LinesNumbered
+\DontPrintSemicolon
+\KwIn{vertex $v$, index $i$, integer $f$}
+$state[v]\longleftarrow on\_face$\;
+$neighbor\_range[v]\longleftarrow(i,i-1)$\;
+\KwRet{$set\_face\_location(v,f)$}
+\caption{initialize}
+\end{algorithm}
+
+\begin{algorithm}
+\LinesNumbered
+\DontPrintSemicolon
+\KwIn{vertices $x$, $y$ and $p$, index pairs $x\_range$ and $y\_range$, integers $before\_p$, $before\_y$,
+	and $before\_x$}
+\If{$K_2$}{
+	base case\;
+}
+\If{$state[p]\ne$ colored}{
+	$coloring[p]\longleftarrow color\_list[p].first$\;
+	$state[p]\longleftarrow$ colored\;
+}
+$\alpha\longleftarrow coloring[p]$\;
+$(b_p,e_p)\longleftarrow neighbor\_range[p]$\;
+$x'\longleftarrow x$\;
+$y'\lonleftarrow y$\;
+\For{$i_p\in(b_p,e_p)$}{
+	$(n,i_n)\longleftarrow plane\_graph[p][i_p]$\;
+	\If{$i_p=b_p$}{
+		\If{$x=p$}{
+			\If{$y=p$}{
+				$y'\longleftarrow n$\;
+			}
+			\Else{
+				$x'\longleftarrow n$\;
+			}
+		}
+	}
+	\ElseIf{$state[n] =$ interior}{
+		$color\_list[n].remove(\alpha)$\;
+		$initialize(n, i_n, before\_p)$\;
+		$neighbor\_range[n].first\rightarrow neighbor\_range[n].first + 1$\;
+	}
+	\Else{
+		$(b_n,e_n)\longleftarrow neighbor\_range[n]$\;
+		\If{$face\_location[$ \textbf{and} $\alpha\in color\_list[n]$}{
+			$coloring[n]\longleftarrow\alpha$\;
+			$state[n]\longleftarrow$ colored\;
+			\If{$i_p\ne e_p$}{
+				$path\_3\_list\_color(n,p,n,(b_n,i_n),(i_p,e_p),before\_p, before\_y, before\_x)$\;
+			}
+		}
+		\If{$i_p=e_p$}{
+			
+		}
+	}
+}
+\caption{path\_3\_list\_color}
+\end{algorithm}
+
+\section*{References}
+
+\begin{tabularx}{\linewidth}{lX}
+[1] & Hartman, C., "Extremal problems in graph theory," Ph.D. thesis, Department of Mathematics,
+University of Illinois at Urbana-Champaign, 1997.\\\\\relax
+[2] & Skrekovski, R., "List improper colourings of planar graphs,"
+\emph{Combinatorics, Probability and Computing}, vol. 8, pp. 293-299, 1999.\\\relax
+\end{tabularx}
+[3] & Eaton, N., N. Hull, "Defective list colorings of planar graphs,"
+\emph{Bulletin of the Institute for Combinatorics and its Applications}, 1999.\\\relax
+[4] & Poh, K., "On the linear vertex-arboricity of a planar graph," \emph{Journal of Graph Theory},
+vol. 14, pp. 73-75, 1990\\\relax
+[5] & Kant, G., "Algorithms for drawing planar graphs," Ph.D. thesis, Department of Computer Science,
+Utrecht University, 1993.\\\relax
+[6] & Tarjan, R., "Depth-first search and linear graph algorithms," SIAM Journal on Computing, vol. 1, pp.
+146-160, 1972.\\\relax
+\end{comment}
+
+\end{document}

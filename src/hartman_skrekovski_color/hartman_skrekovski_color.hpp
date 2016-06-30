@@ -42,11 +42,9 @@ class list_color_properties {
 		int initialize(std::size_t start_index, std::size_t num_neighbors,
 			int new_face_location, disjoint_set & face_locations)
 		{
-			// Vertices are initialized as they are added to the outer face
 			state = ON_FACE;
 			set_face_location(new_face_location, face_locations);
 			
-			// Set up current neighbor range
 			degree = num_neighbors;
 			range.first = start_index;
 			range.second = (start_index + degree - 1) % degree;
@@ -228,7 +226,6 @@ void hartman_skrekovski_color_recursive(
 	auto range = properties[p].get_range();
 	
 	if(!properties[p].colored()) {
-		p = x;
 		properties[p].color();
 		coloring[p] = color_list[p].front();
 	}
@@ -362,7 +359,7 @@ void hartman_skrekovski_color_recursive(
 			if(face_locations.compare(n_location, before_y) || n == y) {
 				vertex_descriptor new_p = n;
 				
-				if(p != y && std::find(color_list[n].begin(), color_list[n].begin(), coloring[p])
+				if(std::find(color_list[n].begin(), color_list[n].begin(), coloring[p])
 					!= color_list[n].end() && !properties[n].colored())
 				{
 					coloring[n] = coloring[p];
@@ -372,11 +369,6 @@ void hartman_skrekovski_color_recursive(
 					new_p = new_x;
 					before_y = face_locations.take_union(before_p, before_y);
 					before_p = -1;
-					
-					color_list[n].erase(
-							std::remove(color_list[n].begin(), color_list[n].end(),
-							coloring[p]), color_list[n].end()
-						);
 				}
 	
 				properties[n].set_range(n_ranges.second);
