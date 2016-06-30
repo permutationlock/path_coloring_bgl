@@ -61,8 +61,8 @@ std::string draw_tikz_graph(const index_graph & graph, const color_map & colorin
 		std::string x = std::to_string(get(drawing, curr_vertex).x);
 		std::string y = std::to_string(get(drawing, curr_vertex).y);
 		
-		tikz_string += "  \\node [fill=" + vcolor + "!35] (" + vname
-			+ ") at (" + x + "cm, " + y + "cm) {$" +  vname + "$};\n";
+		tikz_string += "  \\node [fill=" + vcolor + "!50] (" + vname
+			+ ") at (" + x + "cm, " + y + "cm) {};\n"; //$" +  vname + "$};\n";
 	}
 	
 	typename boost::graph_traits<index_graph>::edge_iterator e_iter, e_end;
@@ -74,7 +74,14 @@ std::string draw_tikz_graph(const index_graph & graph, const color_map & colorin
 		std::string v1name = std::to_string(v1);
 		std::string v2name = std::to_string(v2);
 		
-		tikz_string += "  \\draw (" + v1name + ") -- (" + v2name + ");\n";
+		if(coloring[v1] == coloring[v2]) {
+			std::string vcolor = color_string_map[coloring[v1]];
+			tikz_string += "  \\draw (" + v1name + ") -- (" + v2name + ") [ultra thick,color=black];\n";
+			tikz_string += "  \\draw (" + v1name + ") -- (" + v2name + ") [very thick,color=" + vcolor + "!50];\n";
+		}
+		else {
+			tikz_string += "  \\draw (" + v1name + ") -- (" + v2name + ");\n";
+		}
 	}
 	
 	tikz_string += "\\end{tikzpicture}";

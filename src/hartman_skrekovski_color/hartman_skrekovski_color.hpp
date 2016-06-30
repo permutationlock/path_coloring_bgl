@@ -351,9 +351,8 @@ void hartman_skrekovski_color_recursive(
 					
 					break;
 				}
-				else {
-					new_y = n;
-				}
+				
+				new_y = n;
 			}
 			
 			if(face_locations.compare(n_location, before_y) || n == y) {
