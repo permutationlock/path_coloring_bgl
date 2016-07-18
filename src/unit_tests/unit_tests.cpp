@@ -329,26 +329,19 @@ void poh_color_test(const index_graph & graph) {
 	std::vector<vertex_descriptor> p;
 	std::vector<vertex_descriptor> q;
 	
-	// Initialize path p with top vertex of outer face and color 1
+	// Initialize path p with top vertex of outer face
 	p.push_back(ordering[0]);
-	color_property_map[ordering[0]] = 1;
 
-	// Initialize path q with bottom vertices of outer face and color 2
+	// Initialize path q with bottom vertices of outer face
 	q.push_back(ordering[1]);
 	q.push_back(ordering.back());
-	color_property_map[ordering.back()] = 2;
-	color_property_map[ordering[1]] = 2;
-	
-	// Remaining color is 3
-	int color = 0;
 	
 	#ifdef SHOW_TIMINGS
 		auto start = nanosecond_timer::now();
 	#endif
 	
 	// Call Poh algorithm
-	poh_path_color(graph, embedding, p.begin(), p.end(), q.begin(), q.end(),
-		color_property_map, color);
+	poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
 
 	#ifdef SHOW_TIMINGS
 		auto end = nanosecond_timer::now();
@@ -588,7 +581,7 @@ void test_list_path_color()
 
 int main() {
 	test_poh_color();
-	test_list_path_color();
+	//test_list_path_color();
 
 	if(failed)
 		std::cout<<"THERE ARE FAILING TESTS"<<std::endl;

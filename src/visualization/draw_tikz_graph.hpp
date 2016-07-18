@@ -62,7 +62,7 @@ std::string draw_tikz_graph(const index_graph & graph, const color_map & colorin
 		std::string y = std::to_string(get(drawing, curr_vertex).y);
 		
 		tikz_string += "  \\node [fill=" + vcolor + "!50] (" + vname
-			+ ") at (" + x + "cm, " + y + "cm) {};\n"; //$" +  vname + "$};\n";
+			+ ") at (" + x + "cm, " + y + "cm) {$" +  vname + "$};\n";
 	}
 	
 	typename boost::graph_traits<index_graph>::edge_iterator e_iter, e_end;

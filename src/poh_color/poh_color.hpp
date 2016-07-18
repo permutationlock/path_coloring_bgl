@@ -20,231 +20,211 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
-#include "incidence_list_helpers.hpp"
+template<
+		typename graph,
+		typename vertex_descriptor = typename boost::graph_traits<graph>::vertex_descriptor,
+		typename edge_descriptor = typename boost::graph_traits<graph>::edge_descriptor
+	>
+vertex_descriptor get_incident_vertex(vertex_descriptor v, edge_descriptor e, const graph & g)
+{
+	vertex_descriptor n = boost::source(e, g);
+	if(n == v)
+		n = boost::target(e, g);
+	return n;
+}
 
-namespace boost {
-	 
-	template<typename Graph, typename Embedding, typename Coloring, typename VertexIter,
-		typename color_type = typename property_traits<Coloring>::value_type>
-	void poh_path_color(const Graph & graph, const Embedding & embedding,
-		VertexIter p_begin, VertexIter p_end, VertexIter q_begin, VertexIter q_end, Coloring & coloring,
-		color_type new_color)
-	{
-		typedef typename graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+template<
+		typename index_graph, typename planar_embedding, typename color_map,
+		typename mark_map, typename vertex_map, typename color_type,
+		typename vertex_descriptor = typename boost::graph_traits<index_graph>::vertex_descriptor
+	>
+void poh_color_recursive(
+		const index_graph & graph, const planar_embedding & embedding,
+		color_map & coloring, mark_map & vertex_marks, vertex_map & parent_map,
+		vertex_descriptor p_0, vertex_descriptor p_1,
+		vertex_descriptor q_0, vertex_descriptor q_1,
+		std::size_t & count, std::size_t p_mark, std::size_t q_mark, color_type new_color
+	)
+{
+	if(p_0 == p_1 && q_0 == q_1) return;
+	
+	vertex_descriptor t_0, t_1;
+	
+	do {
+		t_0 = p_0;
 		
-		// Base case: Paths are each single vertices, K_2
-		if(p_end - p_begin == 1 && q_end - q_begin == 1)
-		{
-			return;
-		}
-		
-		// Vertices at the start and end of our paths
-		vertex_descriptor p_0 = *p_begin, p_1 = *(p_end - 1), q_0 = *q_begin,
-			q_1 = *(q_end - 1);
-			
-		//std::cout << "p_0=" << p_0 << ", p_1=" << p_1 << ", q_0=" << q_0 << ", q_1=" << q_1 << "\n";
-		
-		// Triangulation vertices at the beginning and end of the paths
-		vertex_descriptor t_0, t_1;
-		
-		// Case 1.1: Find t_0 and check if it hits a path
-		{
-			t_0 = q_0;
-			
-			// Iterate q_0's incident edges in counterclockwise order
-			auto ordering = embedding[q_0];
-			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter)
-			{
-				// Find p_0 for orientation
-				if(get_incident_vertex(q_0, *edge_iter, graph) == p_0)
-				{
-					// t_0 is one back from p_0 in the adjacency list
-					if(edge_iter == ordering.begin())
-					{
-						t_0 = get_incident_vertex(q_0, *(ordering.end() - 1), graph);
-					}
-					else
-					{
-						t_0 = get_incident_vertex(q_0, *(edge_iter - 1), graph);
-					}
-					break;
-				}
-			}
-			
-			if(t_0 == q_0) throw std::runtime_error("Invalid embedding (no t_0).");
-			
-			// Case 1.1.1: Triangle formed at start with path p
-			if(p_end - p_begin > 1 && t_0 == *(p_begin + 1))
-			{
-				poh_path_color(graph, embedding, p_begin + 1, p_end, q_begin, q_end, coloring, new_color);
-				return;
-			}
-			
-			// Case 1.1.2: Triangle formed at start with path q
-			if(q_end - q_begin > 1 && t_0 == *(q_begin + 1))
-			{
-				poh_path_color(graph, embedding, p_begin, p_end, q_begin + 1, q_end, coloring, new_color);
-				return;
-			}
-		}
-		
-		// Case 1.2: Find t_1 and check if it hits a path
-		{
-			t_1 = p_1;
-			
-			// Iterate p_1's incident edges in counterclockwise order
-			auto ordering = embedding[p_1];
-			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter)
-			{
-				// Find q_1 for orientation
-				if(get_incident_vertex(p_1, *edge_iter, graph) == q_1)
-				{
-					// t_1 is one back from q_1 in the adjacency list
-					if(edge_iter == ordering.begin())
-					{
-						t_1 = get_incident_vertex(p_1, *(ordering.end() - 1), graph);
-					}
-					else
-					{
-						t_1 = get_incident_vertex(p_1, *(edge_iter - 1), graph);
-					}
-					break;
-				}
-			}
-			
-			if(t_1 == p_1) throw std::runtime_error("Invalid embedding (no t_1).");
-			
-			// Case 1.2.1: Triangle formed at end with path p
-			if(p_end - p_begin > 1 && t_1 == *(p_end - 2))
-			{
-				//std::cout << "Triangle formed at end with path p.\n";
-				poh_path_color(graph, embedding, p_begin, p_end - 1, q_begin, q_end,
-					coloring, new_color);
-				return;
-			}
-			
-			// Case 1.2.1: Triangle formed at end with path q
-			if(q_end - q_begin > 1 && t_1 == *(q_end - 2))
-			{
-				//std::cout << "Triangle formed at end with path q.\n";
-				poh_path_color(graph, embedding, p_begin, p_end, q_begin, q_end - 1,
-					coloring, new_color);
-				return;
-			}
-		}
-		
-		// Case 2: Check for bridging edge between the two paths
-		{
-			std::unordered_map<vertex_descriptor, VertexIter> p_map;
-			
-			// Mark all vertices in path p
-			for(auto p_iter = p_begin; p_iter != p_end; ++p_iter)
-			{
-				p_map[*p_iter] = p_iter;
-			}
-			
-			// Check vertices in path q for neighbors in p
-			for(auto q_iter = q_begin; q_iter != q_end; ++q_iter)
-			{
-				// Look at each neighbor
-				auto ordering = embedding[*q_iter];
-				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter)
-				{
-					vertex_descriptor neighbor = get_incident_vertex(*q_iter, *edge_iter, graph);
-					
-					// If a vertex has neighbor in p
-					if(p_map.count(neighbor) != 0)
-					{
-						// Check if our edge is one of the outside edges
-						if(*q_iter == q_0 && *p_map[neighbor] == p_0)
-							continue;
-						if(*q_iter == q_1 && *p_map[neighbor] == p_1)
-							continue;
-						
-						// Recurse on left and right halves
-						poh_path_color(graph, embedding, p_begin, p_map[neighbor] + 1,
-							q_begin, q_iter + 1, coloring, new_color);
-						poh_path_color(graph, embedding, p_map[neighbor], p_end,
-							q_iter, q_end, coloring, new_color);
-						return;
-					}
-				}
-			}
-		}
-		
-		// Case 3: Find splitting path between triangulation vertices
-		{
-			/* 
-			 * We will perform a BFS from t_1 to find a chordless t_0t_1-path.
-			 * We initially mark paths p and q to contain the search within the
-			 * pq-cycle.
-			 */
-			
-			std::unordered_map<vertex_descriptor, vertex_descriptor> parent_map;
-			
-			// Mark vertices in path p
-			for(auto p_iter = p_begin; p_iter != p_end; ++p_iter)
-			{
-				parent_map[*p_iter] = *p_iter;
-			}
-			
-			// Mark vertices in path q
-			for(auto q_iter = q_begin; q_iter != q_end; ++q_iter)
-			{
-				parent_map[*q_iter] = *q_iter;
-			}
-			
-			std::queue<vertex_descriptor> bfs_queue;
-			
-			// Start bfs
-			parent_map[t_1] = t_1;
-			bfs_queue.push(t_1);
-			
-			vertex_descriptor curr_vertex = t_1;
-			
-			while(!bfs_queue.empty())
-			{
-				curr_vertex = bfs_queue.front();
-				bfs_queue.pop();
+		auto ordering = embedding[p_0];
+		for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter) {
+			if(get_incident_vertex(p_0, *edge_iter, graph) == q_0) {
+				++edge_iter;
 				
-				// We are done as soon as we find t_0
-				if(curr_vertex == t_0) break;
-				
-				// Add all unmarked neighbors of curr_vertex to bfs_queue
-				auto ordering = embedding[curr_vertex];
-				for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter)
-				{
-					vertex_descriptor neighbor = get_incident_vertex(curr_vertex, *edge_iter, graph);
-					
-					if(parent_map.count(neighbor) == 0)
-					{
-						parent_map[neighbor] = curr_vertex;
-						bfs_queue.push(neighbor);
-					}
+				if(edge_iter == ordering.end()) {
+					t_0 = get_incident_vertex(p_0, *ordering.begin(), graph);
 				}
+				else {
+					t_0 = get_incident_vertex(p_0, *edge_iter, graph);
+				}
+				break;
 			}
-			
-			if(curr_vertex != t_0) throw std::runtime_error("Invalid embedding (no splitting path).");
-			
-			// Backtrack and generate splitting path, coloring it new_color
-			std::vector<vertex_descriptor> splitting_path;
-			splitting_path.push_back(curr_vertex);
-			coloring[curr_vertex] = new_color;
-			
-			while(parent_map[curr_vertex] != curr_vertex)
-			{
-				curr_vertex = parent_map[curr_vertex];
-				splitting_path.push_back(curr_vertex);
-				coloring[curr_vertex] = new_color;
-			}
-			
-			// Recurse on top and bottom halves with the appropriate color
-			poh_path_color(graph, embedding, p_begin, p_end, splitting_path.begin(),
-				splitting_path.end(), coloring, coloring[q_0]);
-			poh_path_color(graph, embedding, splitting_path.begin(), splitting_path.end(),
-				q_begin, q_end, coloring, coloring[p_0]);
 		}
+		
+		if(t_0 == p_0) throw std::runtime_error("Invalid embedding (no t_0).");
+		
+		// Case 1.1.1: Triangle formed at start with path p
+		if(vertex_marks[t_0] == p_mark) {
+			p_0 = t_0;
+		}
+		// Case 1.1.2: Triangle formed at start with path q
+		else if(vertex_marks[t_0] == q_mark) {
+			q_0 = t_0;
+		}
+	} while(vertex_marks[t_0] == p_mark || vertex_marks[t_0] == q_mark);
+	
+	if(p_0 == p_1 && q_0 == q_1) return;
+	
+	do {
+		t_1 = q_1;
+		
+		auto ordering = embedding[q_1];
+		for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter) {
+			if(get_incident_vertex(q_1, *edge_iter, graph) == p_1) {
+				++edge_iter;
+				
+				if(edge_iter == ordering.end()) {
+					t_1 = get_incident_vertex(q_1, *ordering.begin(), graph);
+				}
+				else {
+					t_1 = get_incident_vertex(q_1, *edge_iter, graph);
+				}
+				break;
+			}
+		}
+		
+		if(t_1 == q_1) throw std::runtime_error("Invalid embedding (no t_1).");
+		
+		if(vertex_marks[t_1] == p_mark) {
+			p_1 = t_1;
+		}
+		else if(vertex_marks[t_1] == q_mark) {
+			q_1 = t_1;
+		}
+	} while(vertex_marks[t_1] == p_mark || vertex_marks[t_1] == q_mark);
+	
+	if(p_0 == p_1 && q_0 == q_1) return;
+	
+	std::queue<vertex_descriptor> bfs_queue;
+	std::size_t bfs_mark = count++;
+	bfs_queue.push(t_1);
+	vertex_marks[t_1] = bfs_mark;
+	parent_map[t_1] = t_1;
+	vertex_descriptor current_vertex;
+	
+	while(!bfs_queue.empty()) {
+		current_vertex = bfs_queue.front();
+		bfs_queue.pop();
+		
+		if(current_vertex == t_0) break;
+		
+		auto edge_iter = embedding[current_vertex].begin();
+		vertex_descriptor last_neighbor = get_incident_vertex(current_vertex, *edge_iter, graph);
+		do {
+			if(++edge_iter == embedding[current_vertex].end()) edge_iter = embedding[current_vertex].begin();
+			vertex_descriptor neighbor = get_incident_vertex(current_vertex, *edge_iter, graph);
+			
+			std::size_t mark = vertex_marks[neighbor];
+			std::size_t last_mark = vertex_marks[last_neighbor];
+			if(mark != bfs_mark && mark != p_mark && mark != q_mark) {
+				parent_map[neighbor] = current_vertex;
+				vertex_marks[neighbor] = bfs_mark;
+				bfs_queue.push(neighbor);
+			}
+			else if(mark == q_mark && last_mark == p_mark) {
+				poh_color_recursive(
+						graph, embedding, coloring, vertex_marks, parent_map,
+						p_0, last_neighbor, q_0, neighbor,
+						count, p_mark, q_mark, new_color
+					);
+				
+				p_0 = last_neighbor;
+				q_0 = neighbor;
+				t_0 = current_vertex;
+				
+				break;
+			}
+			
+			last_neighbor = neighbor;
+		} while(edge_iter != embedding[current_vertex].begin());
+		
+		if(current_vertex == t_0) break;
 	}
+	
+	if(current_vertex != t_0) throw std::runtime_error("Invalid embedding (no splitting path).");
+	
+	std::size_t new_mark = count++;
+	coloring[current_vertex] = new_color;
+	vertex_marks[current_vertex] = new_mark;
+	
+	while(parent_map[current_vertex] != current_vertex)
+	{
+		current_vertex = parent_map[current_vertex];
+		coloring[current_vertex] = new_color;
+		vertex_marks[current_vertex] = new_mark;
+	}
+	
+	poh_color_recursive(
+			graph, embedding, coloring, vertex_marks, parent_map,
+			p_0, p_1, t_0, t_1,
+			count, p_mark, new_mark, coloring[q_0]
+		);
+	poh_color_recursive(
+			graph, embedding, coloring, vertex_marks, parent_map,
+			t_0, t_1, q_0, q_1,
+			count, new_mark, q_mark, coloring[p_0]
+		);
+}
+
+template<
+		typename index_graph, typename planar_embedding,
+		typename color_map, typename vertex_iterator, typename color_type
+	>
+void poh_color(
+		const index_graph & graph, const planar_embedding & embedding,
+		color_map & coloring, vertex_iterator p_begin, vertex_iterator p_end,
+		vertex_iterator q_begin, vertex_iterator q_end,
+		color_type c_0, color_type c_1, color_type c_2
+	)
+{
+	std::vector<std::size_t> mark_storage(boost::num_vertices(graph));
+	typename boost::iterator_property_map<
+			std::vector<std::size_t>::iterator,
+			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
+		> vertex_marks(mark_storage.begin(), boost::get(boost::vertex_index, graph));
+	
+	typedef typename boost::graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	
+	std::vector<vertex_descriptor> parent_storage(boost::num_vertices(graph));
+	typename boost::iterator_property_map<
+			typename std::vector<vertex_descriptor>::iterator,
+			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
+		> parent_map(parent_storage.begin(), boost::get(boost::vertex_index, graph));
+	
+	for(vertex_iterator p_iter = p_begin; p_iter != p_end; ++p_iter) {
+		vertex_marks[*p_iter] = 1;
+		coloring[*p_iter] = c_0;
+	}
+	
+	for(vertex_iterator q_iter = q_begin; q_iter != q_end; ++q_iter) {
+		vertex_marks[*q_iter] = 2;
+		coloring[*q_iter] = c_1;
+	}
+	
+	std::size_t count = 3;
+	
+	poh_color_recursive(
+			graph, embedding, coloring, vertex_marks, parent_map,
+			*p_begin, *(--p_end), *q_begin, *(--q_end),
+			count, 1, 2, c_2
+		);
 }
 
 #endif
