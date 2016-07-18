@@ -41,46 +41,46 @@ template<
 void poh_color_recursive(
 		const index_graph & graph, const planar_embedding & embedding,
 		color_map & coloring, mark_map & vertex_marks, vertex_map & parent_map,
-		vertex_descriptor p_0, vertex_descriptor p_1,
+		vertex_descriptor p_0, vertex_descriptor p_1, vertex_descriptor t_0,
 		vertex_descriptor q_0, vertex_descriptor q_1,
 		std::size_t & count, std::size_t p_mark, std::size_t q_mark, color_type new_color
 	)
 {
-	if(p_0 == p_1 && q_0 == q_1) return;
-	
-	vertex_descriptor t_0, t_1;
-	
-	do {
-		t_0 = p_0;
+	if(t_0 == p_0) {
+		if(p_0 == p_1 && q_0 == q_1) return;
 		
-		auto ordering = embedding[p_0];
-		for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter) {
-			if(get_incident_vertex(p_0, *edge_iter, graph) == q_0) {
-				++edge_iter;
+		do {
+			t_0 = p_0;
+		
+			auto ordering = embedding[p_0];
+			for(auto edge_iter = ordering.begin(); edge_iter != ordering.end(); ++edge_iter) {
+				if(get_incident_vertex(p_0, *edge_iter, graph) == q_0) {
+					++edge_iter;
 				
-				if(edge_iter == ordering.end()) {
-					t_0 = get_incident_vertex(p_0, *ordering.begin(), graph);
+					if(edge_iter == ordering.end()) {
+						t_0 = get_incident_vertex(p_0, *ordering.begin(), graph);
+					}
+					else {
+						t_0 = get_incident_vertex(p_0, *edge_iter, graph);
+					}
+					break;
 				}
-				else {
-					t_0 = get_incident_vertex(p_0, *edge_iter, graph);
-				}
-				break;
 			}
-		}
 		
-		if(t_0 == p_0) throw std::runtime_error("Invalid embedding (no t_0).");
-		
-		// Case 1.1.1: Triangle formed at start with path p
-		if(vertex_marks[t_0] == p_mark) {
-			p_0 = t_0;
-		}
-		// Case 1.1.2: Triangle formed at start with path q
-		else if(vertex_marks[t_0] == q_mark) {
-			q_0 = t_0;
-		}
-	} while(vertex_marks[t_0] == p_mark || vertex_marks[t_0] == q_mark);
+			if(t_0 == p_0) throw std::runtime_error("Invalid embedding (no t_0).");
+			
+			if(vertex_marks[t_0] == p_mark) {
+				p_0 = t_0;
+			}
+			else if(vertex_marks[t_0] == q_mark) {
+				q_0 = t_0;
+			}
+		} while(vertex_marks[t_0] == p_mark || vertex_marks[t_0] == q_mark);
+	}
 	
 	if(p_0 == p_1 && q_0 == q_1) return;
+	
+	vertex_descriptor t_1;
 	
 	do {
 		t_1 = q_1;
@@ -141,7 +141,7 @@ void poh_color_recursive(
 			else if(mark == q_mark && last_mark == p_mark) {
 				poh_color_recursive(
 						graph, embedding, coloring, vertex_marks, parent_map,
-						p_0, last_neighbor, q_0, neighbor,
+						p_0, last_neighbor, t_0, q_0, neighbor,
 						count, p_mark, q_mark, new_color
 					);
 				
@@ -173,12 +173,12 @@ void poh_color_recursive(
 	
 	poh_color_recursive(
 			graph, embedding, coloring, vertex_marks, parent_map,
-			p_0, p_1, t_0, t_1,
+			p_0, p_1, p_0, t_0, t_1,
 			count, p_mark, new_mark, coloring[q_0]
 		);
 	poh_color_recursive(
 			graph, embedding, coloring, vertex_marks, parent_map,
-			t_0, t_1, q_0, q_1,
+			t_0, t_1, t_0, q_0, q_1,
 			count, new_mark, q_mark, coloring[p_0]
 		);
 }
@@ -222,7 +222,7 @@ void poh_color(
 	
 	poh_color_recursive(
 			graph, embedding, coloring, vertex_marks, parent_map,
-			*p_begin, *(--p_end), *q_begin, *(--q_end),
+			*p_begin, *(--p_end), *p_begin, *q_begin, *(--q_end),
 			count, 1, 2, c_2
 		);
 }

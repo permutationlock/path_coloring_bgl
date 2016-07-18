@@ -467,8 +467,8 @@ void test_poh_color() {
 		boost::minstd_rand gen;
 		gen.seed(8573);
 		
-		for(std::size_t order = 7; order < 100; order++) {
-			for(std::size_t seed = 0; seed < 5; seed++) {
+		for(std::size_t order = 7; order < 200; order++) {
+			for(std::size_t seed = 0; seed < 2; seed++) {
 				bool found_planar = false;
 				std::size_t count = 4;
 				
