@@ -21,7 +21,7 @@
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 
 // Local project headers
-#include "../hartman_skrekovski_color/hartman_skrekovski_color.hpp"
+#include "../path_coloring/hartman_skrekovski_color.hpp"
 #include "../visualization/draw_tikz_graph.hpp"
 
 // Define graph properties
