@@ -175,6 +175,7 @@ static void hartman_skrekovski_color_recursive(
 		else {
 			auto back_iter = find_neighbor_iterator_restricted(n, p, neighbor_ranges[n].first,
 				neighbor_ranges[n].second, embedding, graph);
+			
 			auto p_ranges = split_range(p, edge_iter, neighbor_ranges);
 			auto n_ranges = split_range(n, back_iter, neighbor_ranges);
 	
@@ -211,7 +212,6 @@ static void hartman_skrekovski_color_recursive(
 					break;
 				}
 				else if(edge_iter == range.second) {
-					before_p = set_face_location(n, before_p, face_locations, face_location_sets);
 					remove_first_edge(n, neighbor_ranges, embedding);
 					
 					hartman_skrekovski_color_recursive(
