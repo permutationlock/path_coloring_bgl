@@ -8,10 +8,9 @@
 #ifndef __INCIDENCE_LIST_HELPERS_HPP
 #define __INCIDENCE_LIST_HELPERS_HPP
 
-#include <boost/graph/adjacency_list.hpp>
+// Basic graph headers
 #include <boost/graph/properties.hpp>
 #include <boost/graph/graph_traits.hpp>
-#include <boost/property_map/property_map.hpp>
 
 template<
 		typename graph,

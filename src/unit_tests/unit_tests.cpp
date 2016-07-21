@@ -98,29 +98,25 @@ void make_triangulated(index_graph & graph) {
 	{
 		std::string error = "Non-planar graph.";
 		throw std::logic_error(error);
-	}            
+	}
 
+	make_biconnected_planar(graph, embedding);
+	
 	// Re-initialize the edge index, since we just added a few edges
 	edge_count = 0;
 	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
 		put(e_index, *ei, edge_count++);
-
-	make_biconnected_planar(graph, embedding);
-
+	
 	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
 						   boyer_myrvold_params::embedding = embedding);
 
-	// Re-initialize the edge index, since we just added a few edges
-	edge_count = 0;
-	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
-		put(e_index, *ei, edge_count++);
-
 	make_maximal_planar(graph, embedding);
-
+	
 	// Re-initialize the edge index, since we just added a few edges
 	edge_count = 0;
 	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
 		put(e_index, *ei, edge_count++);
+
 }
 
 template<typename index_graph>
@@ -312,7 +308,7 @@ void poh_color_test(const index_graph & graph) {
 	// Create the planar embedding
 	embedding_storage_t embedding_storage(num_vertices(graph));
 	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-
+	
 	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
 		boyer_myrvold_params::embedding = embedding);
 	

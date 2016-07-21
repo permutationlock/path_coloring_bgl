@@ -13,9 +13,9 @@
 
 /*
  * disjoint_set
- * This structure provides a simple disjoint set system with union and find operations.
- * New singleton sets are constructed in order using the make_next() function and unions,
- * finds, and comparisons may be performed on existing sets with the corresponding functions.
+ * This structure provides a simple disjoint set structure with union and find operations.
+ * New singleton sets are constructed in order using the make_next() function. Union,
+ * find, comparison, and existance functions are provided.
  */
 
 class disjoint_set {

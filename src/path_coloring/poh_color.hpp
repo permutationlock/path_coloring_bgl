@@ -8,18 +8,18 @@
 #ifndef __POH_COLOR_HPP
 #define __POH_COLOR_HPP
 
+// STL headers
 #include <vector>
-#include <list>
-#include <unordered_map>
 #include <queue>
 #include <stdexcept>
 #include <utility>
 
-#include <boost/graph/adjacency_list.hpp>
+// Basic graph headers
 #include <boost/graph/properties.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
+// Local project headers
 #include "incidence_list_helpers.hpp"
 
 template<
@@ -27,7 +27,7 @@ template<
 		typename mark_map, typename vertex_map, typename color_type,
 		typename vertex_descriptor = typename boost::graph_traits<index_graph>::vertex_descriptor
 	>
-void poh_color_recursive(
+static void poh_color_recursive(
 		const index_graph & graph, const planar_embedding & embedding,
 		color_map & coloring, mark_map & vertex_marks, vertex_map & parent_map,
 		vertex_descriptor p_0, vertex_descriptor p_1, vertex_descriptor t_0,
@@ -145,8 +145,7 @@ void poh_color_recursive(
 	coloring[current_vertex] = new_color;
 	vertex_marks[current_vertex] = new_mark;
 	
-	while(parent_map[current_vertex] != current_vertex)
-	{
+	while(parent_map[current_vertex] != current_vertex) {
 		current_vertex = parent_map[current_vertex];
 		coloring[current_vertex] = new_color;
 		vertex_marks[current_vertex] = new_mark;

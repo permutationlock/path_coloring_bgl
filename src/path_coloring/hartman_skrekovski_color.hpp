@@ -15,6 +15,7 @@
 
 // Basic graph headers
 #include <boost/graph/properties.hpp>
+#include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
 // Local project headers
@@ -88,118 +89,6 @@ static inline int initialize(vertex_descriptor v, edge_iterator start_iter, int 
 	return set_face_location(v, new_face_location, face_locations, face_location_sets);
 }
 
-
-/*
- * hartman_skrekovski_color
- * inputs: A weakly triangulated planar graph with vertex indices (predefined boost property),
- *         a valid planar embedding of the graph (modeling the boost PlanarEmbedding concept),
- *         a read-write vertex property map assigning a range of colors to each vertex (each vertex must
- *         recieve a range of at least 3 colors if interior, and at least two colors if on the outer face),
- *         a read-write vertex property map to which the coloring will be assigned,
- *         and finally a pair of iterators providing the outer face of the graph in clockwise order.
- * 
- * outputs: The coloring will be a valid assignment of colors from the input color lists such that
- *          each color class induces a disjoint union of paths.
- */
- 
-template<
-		typename index_graph, typename planar_embedding,
-		typename color_list_map, typename color_map,
-		typename face_iterator
-	>
-void hartman_skrekovski_color(
-		const index_graph & graph,
-		const planar_embedding & embedding,
-		const color_list_map & color_lists,
-		color_map & coloring,
-		face_iterator face_begin,
-		face_iterator face_end
-	)
-{
-	typedef typename boost::graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
-	typedef typename color_map::value_type color_type;
-	typedef typename boost::graph_traits<index_graph>::vertex_iterator vertex_iterator;
-	typedef typename boost::property_traits<planar_embedding>::value_type::const_iterator edge_iterator;
-	
-	std::vector<std::pair<edge_iterator, edge_iterator> > neighbor_range_storage(boost::num_vertices(graph));
-	boost::iterator_property_map<
-			typename std::vector<std::pair<edge_iterator, edge_iterator> >::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
-		> neighbor_ranges(neighbor_range_storage.begin(), boost::get(boost::vertex_index, graph));
-	
-	std::vector<int> face_location_storage(boost::num_vertices(graph));
-	boost::iterator_property_map<
-			std::vector<int>::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
-		> face_locations(face_location_storage.begin(), boost::get(boost::vertex_index, graph));
-		
-	std::vector<int> state_storage(boost::num_vertices(graph));
-	boost::iterator_property_map<
-			std::vector<int>::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
-		> states(state_storage.begin(), boost::get(boost::vertex_index, graph));
-	
-	std::vector<std::list<color_type> > color_list_storage(boost::num_vertices(graph));
-	boost::iterator_property_map<
-			typename std::vector<std::list<color_type> >::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
-		> color_lists_copy(color_list_storage.begin(), boost::get(boost::vertex_index, graph));
-		
-	vertex_iterator vertex_iter, vertex_end;
-	for(boost::tie(vertex_iter, vertex_end) = vertices(graph); vertex_iter != vertex_end; vertex_iter++) {
-		vertex_descriptor v = *vertex_iter;
-		std::copy(color_lists[v].begin(), color_lists[v].end(), std::back_inserter(color_lists_copy[v]));
-	}
-	
-	disjoint_set face_location_sets;
-	int before_y = -1;
-	
-	for(auto face_iter = face_begin; face_iter != face_end; ++face_iter)
-	{
-		auto next = face_iter;
-		if(++next == face_end) next = face_begin;
-		
-		vertex_descriptor l = *face_iter;
-		vertex_descriptor v = *next;
-		
-		auto back_iter = find_neighbor_iterator(v, l, embedding, graph);
-		before_y = initialize(v, back_iter, before_y, face_locations,
-			face_location_sets, states, neighbor_ranges, embedding);
-	}
-	
-	vertex_descriptor x = *face_begin, y = *(--face_end);
-	
-	hartman_skrekovski_color_recursive(
-			graph, embedding,
-			face_locations, face_location_sets,
-			states, neighbor_ranges, 
-			color_lists_copy, coloring,
-			x, y, x,
-			-1, before_y, -1
-		);
-}
-
-
-/*
- * hartman_skrekovski_color_recursive
- * inputs: An augmented embedding representing a weakly triangulated plane graph,
- *         a read-write vertex property map assigning a list_color_properties object to each vertex
- *         (the properties for the outer face of the current subgraph must already be assigned),
- *         a disjoint set structure storing integer identifiers for segments of the outer face,
- *         a read-write vertex property map assigning a range of colors to each vertex (each vertex must
- *         recieve a range of at least 3 colors if interior, at least two colors if on the outer face,
- *         and at least one color if they are x or y),
- *         a read-write vertex property map to which the coloring will be assigned,
- *         vertices x, y, and p on the outer face with p between x and y clockwise,
- *         and finally the current identifiers for the outer face segments of vertices clockwise between
- *         x and p (before_p), p and y (before_y), and y and x (before_x) respectively.
- *
- * outputs: Colors from the provided lists will be assigned to the vertices of the subgraph bounded by
- *          the given outer face such that each color class induces a disjoint union of paths. Furthermore,
- *          if x = y, then no neighbors of x (= y) will recieve the same color as x (= y). If x != y,
- *          then x and y will have at most one neighbor sharing a color in the resulting coloring.
- */
-
 template<
 		typename index_graph, typename planar_embedding,
 		typename face_location_map, typename state_map,
@@ -207,7 +96,7 @@ template<
 		typename color_list_map, typename color_map,
 		typename vertex_descriptor = typename boost::graph_traits<index_graph>::vertex_descriptor
 	>
-void hartman_skrekovski_color_recursive(
+static void hartman_skrekovski_color_recursive(
 		const index_graph & graph, const planar_embedding & embedding,
 		face_location_map & face_locations, disjoint_set & face_location_sets,
 		state_map & states, neighbor_range_map & neighbor_ranges,
@@ -237,20 +126,14 @@ void hartman_skrekovski_color_recursive(
 			before_p = initialize(n, back_iter, before_p, face_locations,
 				face_location_sets, states, neighbor_ranges, embedding);
 			
-			color_lists[n].erase(
-					std::remove(color_lists[n].begin(), color_lists[n].end(),
-					coloring[p]), color_lists[n].end()
-				);
+			color_lists[n].remove(coloring[p]);
 			
 			remove_first_edge(n, neighbor_ranges, embedding);
 		}
 		else if(edge_iter == range.first) {
 			if(edge_iter == range.second) {
 				if(n != x && n != y) {
-					color_lists[n].erase(
-							std::remove(color_lists[n].begin(), color_lists[n].end(),
-							coloring[p]), color_lists[n].end()
-						);
+					color_lists[n].remove(coloring[p]);
 				}
 				if(states[n] != COLORED) {
 					states[n] = COLORED;
@@ -283,11 +166,8 @@ void hartman_skrekovski_color_recursive(
 					new_x = n;
 					before_p = set_face_location(n, before_p, face_locations, face_location_sets);
 				}
-		
-				color_lists[n].erase(
-						std::remove(color_lists[n].begin(), color_lists[n].end(),
-						coloring[p]), color_lists[n].end()
-					);
+				
+				color_lists[n].remove(coloring[p]);
 		
 				remove_last_edge(n, neighbor_ranges, embedding);
 			}
@@ -299,10 +179,7 @@ void hartman_skrekovski_color_recursive(
 			auto n_ranges = split_range(n, back_iter, neighbor_ranges);
 	
 			if(p == y) {
-				color_lists[n].erase(
-						std::remove(color_lists[n].begin(), color_lists[n].end(),
-						coloring[p]), color_lists[n].end()
-					);
+				color_lists[n].remove(coloring[p]);
 		
 				if(p == x) {
 					neighbor_ranges[n] = n_ranges.second;
@@ -394,10 +271,7 @@ void hartman_skrekovski_color_recursive(
 				}
 			}
 			else if(face_location_sets.compare(n_location, before_x)) {
-				color_lists[n].erase(
-						std::remove(color_lists[n].begin(), color_lists[n].end(),
-						coloring[p]), color_lists[n].end()
-					);
+				color_lists[n].remove(coloring[p]);
 		
 				neighbor_ranges[n] = n_ranges.second;
 				remove_first_edge(n, neighbor_ranges, embedding);
@@ -424,10 +298,7 @@ void hartman_skrekovski_color_recursive(
 					);
 			}
 			else {
-				color_lists[n].erase(
-						std::remove(color_lists[n].begin(), color_lists[n].end(),
-						coloring[p]), color_lists[n].end()
-					);
+				color_lists[n].remove(coloring[p]);
 		
 				neighbor_ranges[n] = n_ranges.first;
 				neighbor_ranges[p] = p_ranges.second;
@@ -457,6 +328,97 @@ void hartman_skrekovski_color_recursive(
 			break;
 		}
 	} while(edge_iter++ != range.second);
+}
+
+
+/*
+ * hartman_skrekovski_color
+ * inputs: A weakly triangulated planar graph with vertex indices (predefined boost property),
+ *         a valid planar embedding of the graph (modeling the boost PlanarEmbedding concept),
+ *         a read-write vertex property map assigning a range of colors to each vertex (each vertex must
+ *         recieve a range of at least 3 colors if interior, and at least two colors if on the outer face),
+ *         a read-write vertex property map to which the coloring will be assigned,
+ *         and finally a pair of iterators providing the outer face of the graph in clockwise order.
+ * 
+ * outputs: The coloring will be a valid assignment of colors from the input color lists such that
+ *          each color class induces a disjoint union of paths.
+ */
+ 
+template<
+		typename index_graph, typename planar_embedding,
+		typename color_list_map, typename color_map,
+		typename face_iterator
+	>
+void hartman_skrekovski_color(
+		const index_graph & graph,
+		const planar_embedding & embedding,
+		const color_list_map & color_lists,
+		color_map & coloring,
+		face_iterator face_begin,
+		face_iterator face_end
+	)
+{
+	typedef typename boost::graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	typedef typename color_map::value_type color_type;
+	typedef typename boost::graph_traits<index_graph>::vertex_iterator vertex_iterator;
+	typedef typename boost::property_traits<planar_embedding>::value_type::const_iterator edge_iterator;
+	
+	std::vector<std::pair<edge_iterator, edge_iterator> > neighbor_range_storage(boost::num_vertices(graph));
+	boost::iterator_property_map<
+			typename std::vector<std::pair<edge_iterator, edge_iterator> >::iterator,
+			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
+		> neighbor_ranges(neighbor_range_storage.begin(), boost::get(boost::vertex_index, graph));
+	
+	std::vector<int> face_location_storage(boost::num_vertices(graph));
+	boost::iterator_property_map<
+			std::vector<int>::iterator,
+			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
+		> face_locations(face_location_storage.begin(), boost::get(boost::vertex_index, graph));
+		
+	std::vector<int> state_storage(boost::num_vertices(graph));
+	boost::iterator_property_map<
+			std::vector<int>::iterator,
+			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
+		> states(state_storage.begin(), boost::get(boost::vertex_index, graph));
+	
+	std::vector<std::list<color_type> > color_list_storage(boost::num_vertices(graph));
+	boost::iterator_property_map<
+			typename std::vector<std::list<color_type> >::iterator,
+			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
+		> color_lists_copy(color_list_storage.begin(), boost::get(boost::vertex_index, graph));
+		
+	vertex_iterator vertex_iter, vertex_end;
+	for(boost::tie(vertex_iter, vertex_end) = vertices(graph); vertex_iter != vertex_end; vertex_iter++) {
+		vertex_descriptor v = *vertex_iter;
+		std::copy(color_lists[v].begin(), color_lists[v].end(), std::back_inserter(color_lists_copy[v]));
+	}
+	
+	disjoint_set face_location_sets;
+	int before_y = -1;
+	
+	for(auto face_iter = face_begin; face_iter != face_end; ++face_iter)
+	{
+		auto next = face_iter;
+		if(++next == face_end) next = face_begin;
+		
+		vertex_descriptor l = *face_iter;
+		vertex_descriptor v = *next;
+		
+		auto back_iter = find_neighbor_iterator(v, l, embedding, graph);
+		before_y = initialize(v, back_iter, before_y, face_locations,
+			face_location_sets, states, neighbor_ranges, embedding);
+	}
+	
+	vertex_descriptor x = *face_begin, y = *(--face_end);
+	
+	hartman_skrekovski_color_recursive(
+			graph, embedding,
+			face_locations, face_location_sets,
+			states, neighbor_ranges, 
+			color_lists_copy, coloring,
+			x, y, x,
+			-1, before_y, -1
+		);
 }
 
 #endif
