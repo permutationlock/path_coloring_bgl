@@ -464,43 +464,41 @@ void test_poh_color() {
 		gen.seed(8573);
 		
 		for(std::size_t order = 7; order < 100; order++) {
-			for(std::size_t seed = 0; seed < 5; seed++) {
-				bool found_planar = false;
-				std::size_t count = 4;
-				
-				while(!found_planar) {
-					try {
-						// Construct a random trriangulated graph
-						//std::cout << "Generating graph.\n";
-						index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
-				
-						++count;
-						
-						//std::cout << "Triangulating graph.\n";
-						make_triangulated(graph);
-				
-						found_planar = true;
-				
-						//draw_graph_no_color(graph);
-				
-						//std::cout << "Testing planarity.\n";
-						poh_color_test(graph);
-				
-						#ifdef SHOW_PASSES
-							std::cout<<"    PASS " << order << " vertex path 3-color."<<std::endl;
-						#endif
-					}
-					catch(std::logic_error error) {
-						// Generated a non-planar graph, ignore this case
-					}
-					catch(std::exception& error) {
-						std::cout<<"    FAIL " << order << " vertex path 3-color ("<<error.what()<<")."<<std::endl;
-						failed=true;
-					}
-					catch(...) {
-						std::cout<<"    FAIL " << order << " vertex path 3-color (unknown error)."<<std::endl;
-						failed=true;
-					}
+			bool found_planar = false;
+			std::size_t count = 4;
+			
+			while(!found_planar) {
+				try {
+					// Construct a random trriangulated graph
+					//std::cout << "Generating graph.\n";
+					index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+			
+					++count;
+					
+					//std::cout << "Triangulating graph.\n";
+					make_triangulated(graph);
+			
+					found_planar = true;
+			
+					//draw_graph_no_color(graph);
+			
+					//std::cout << "Testing planarity.\n";
+					poh_color_test(graph);
+			
+					#ifdef SHOW_PASSES
+						std::cout<<"    PASS " << order << " vertex path 3-color."<<std::endl;
+					#endif
+				}
+				catch(std::logic_error error) {
+					// Generated a non-planar graph, ignore this case
+				}
+				catch(std::exception& error) {
+					std::cout<<"    FAIL " << order << " vertex path 3-color ("<<error.what()<<")."<<std::endl;
+					failed=true;
+				}
+				catch(...) {
+					std::cout<<"    FAIL " << order << " vertex path 3-color (unknown error)."<<std::endl;
+					failed=true;
 				}
 			}
 		}
@@ -528,46 +526,44 @@ void test_list_path_color()
 		
 		for(std::size_t order = 7; order < 100; order++) {
 			for(std::size_t colors = 3; colors < 9; ++colors) {
-				for(std::size_t seed = 0; seed < 5; seed++) {
-					bool found_planar = false;
-					std::size_t count = 4;
-					
-					while(!found_planar) {
-						try {
-							// Construct a random trriangulated graph
-							//std::cout << "Generating graph.\n";
-							index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
-							
-							++count;
-							
-							//std::cout << "Triangulating graph.\n";
-							make_triangulated(graph);
-					
-							found_planar = true;
-					
-							//draw_graph_no_color(graph);
-					
-							//std::cout << "Testing planarity.\n";
-							path_list_color_test(graph, colors);
-					
-							#ifdef SHOW_PASSES
-								std::cout<<"    PASS " << order << " vertex, " << colors << " colors, test "
-									<< seed << " path 3-list-color."<<std::endl;
-							#endif
-						}
-						catch(std::logic_error error) {
-							// Generated a non-planar graph, ignore this case
-						}
-						catch(std::exception& error) {
-							std::cout<<"    FAIL " << order << " vertex, " << colors << " colors, test "
-									<< seed << " path 3-list-color ("<<error.what()<<")."<<std::endl;
-							failed=true;
-						}
-						catch(...) {
-							std::cout<<"    FAIL " << order << " vertex, " << colors << " colors, test "
-									<< seed << " path 3-list-color (unknown error)."<<std::endl;
-							failed=true;
-						}
+				bool found_planar = false;
+				std::size_t count = 4;
+				
+				while(!found_planar) {
+					try {
+						// Construct a random trriangulated graph
+						//std::cout << "Generating graph.\n";
+						index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+						
+						++count;
+						
+						//std::cout << "Triangulating graph.\n";
+						make_triangulated(graph);
+				
+						found_planar = true;
+				
+						//draw_graph_no_color(graph);
+				
+						//std::cout << "Testing planarity.\n";
+						path_list_color_test(graph, colors);
+				
+						#ifdef SHOW_PASSES
+							std::cout<<"    PASS " << order << " vertex, " << colors
+								<< " colors path 3-list-color."<<std::endl;
+						#endif
+					}
+					catch(std::logic_error error) {
+						// Generated a non-planar graph, ignore this case
+					}
+					catch(std::exception& error) {
+						std::cout<<"    FAIL " << order << " vertex, " << colors
+								<< " colors path 3-list-color ("<<error.what()<<")."<<std::endl;
+						failed=true;
+					}
+					catch(...) {
+						std::cout<<"    FAIL " << order << " vertex, " << colors
+								<< " colors path 3-list-color (unknown error)."<<std::endl;
+						failed=true;
 					}
 				}
 			}

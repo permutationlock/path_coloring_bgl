@@ -135,6 +135,7 @@ static void hartman_skrekovski_color_recursive(
 				if(n != x && n != y) {
 					color_lists[n].remove(coloring[p]);
 				}
+				
 				if(states[n] != COLORED) {
 					states[n] = COLORED;
 					coloring[n] = color_lists[n].front();
@@ -363,9 +364,9 @@ void hartman_skrekovski_color(
 	typedef typename boost::graph_traits<index_graph>::vertex_iterator vertex_iterator;
 	typedef typename boost::property_traits<planar_embedding>::value_type::const_iterator edge_iterator;
 	
-	std::vector<std::pair<edge_iterator, edge_iterator> > neighbor_range_storage(boost::num_vertices(graph));
+	std::vector<std::pair<edge_iterator, edge_iterator>> neighbor_range_storage(boost::num_vertices(graph));
 	boost::iterator_property_map<
-			typename std::vector<std::pair<edge_iterator, edge_iterator> >::iterator,
+			typename std::vector<std::pair<edge_iterator, edge_iterator>>::iterator,
 			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
 		> neighbor_ranges(neighbor_range_storage.begin(), boost::get(boost::vertex_index, graph));
 	
@@ -381,9 +382,9 @@ void hartman_skrekovski_color(
 			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
 		> states(state_storage.begin(), boost::get(boost::vertex_index, graph));
 	
-	std::vector<std::list<color_type> > color_list_storage(boost::num_vertices(graph));
+	std::vector<std::list<color_type>> color_list_storage(boost::num_vertices(graph));
 	boost::iterator_property_map<
-			typename std::vector<std::list<color_type> >::iterator,
+			typename std::vector<std::list<color_type>>::iterator,
 			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
 		> color_lists_copy(color_list_storage.begin(), boost::get(boost::vertex_index, graph));
 		
