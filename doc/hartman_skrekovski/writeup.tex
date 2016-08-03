@@ -76,37 +76,43 @@ linear time implementation of Hartman and Skrekovski's algorithm.\\
 We first restate the algorithm and proof of Poh [l] for path $3$-coloring plane graphs.\\
 
 \begin{adjustwidth}{1.5em}{1.5em}
-\noindent\textbf{Theorem 1.} Let $G$ be a $2$-connected weakly triangulated plane graph and
+\noindent\textbf{Theorem 1.} Let $G$ be a $2$-connected weakly triangulated plane graph or a complete
+graph on two vertices and
 suppose the outer face $C$ has been $2$-colored such that each color class induces a non-empty path. This
 $2$-coloring may be extended to a path $3$-coloring of $G$ such that no vertex in $C$ recieves a same color
-neighbor.
+neighbor.\\
 \end{adjustwidth}
 
 \begin{proof}
-\noindent Let $P=p_0\ldots p_n$ and $Q=q_0\ldots q_m$ denote the two induced paths from the $2$-coloring of $C$
+\noindent If $|V(G)|\le 3$ the coloring follows trivially. Let $|V(G)|>3$ and suppose the theorem holds
+for all graphs $H$ with $|V(H)|<|V(G)|$. Let $P=p_0\ldots p_n$ and $Q=q_0\ldots q_m$ denote the two induced paths from the $2$-coloring of $C$
 such that the edges $p_0q_0$ and $p_nq_m$ are in $C$. Suppose there exist uncolored vertices, that is
 $V(G)\setminus V(C)\ne\emptyset$.\\
 
 \noindent Let $t_0$ be the vertex forming a face with $p_0$ and $q_0$. If $t_0\in P$, this face is already
-colored and we consider the graph bounded by $P-p_0$ and $Q$. Similarly, if $t_0\in Q$ we consider
-the graph bounded by $P$ and $Q-q_0$. Let $t_1$ be the vertex forming a face with $p_n$ and $q_m$ and
-proceed in the same manner until $t_1$ is not in either path.\\
+colored and we consider the graph bounded by $P-p_0$ and $Q$. Similarly, if $t_0\in Q$ then the inductive
+hypothesis applies to the graph bounded by $P$ and $Q-q_0$. Let $t_1$ be the vertex forming a face with $p_n$
+and $q_m$ and proceed in the same manner until $t_1$ is not in either path.\\
 
 \noindent Suppose there exists an induced path $T$ from $t_0$ to $t_1$. We color $T$ the remaining color not
-assigned to $P$ or $Q$ and now separately consider the subgraph bounded by $P$ and $T$, and the subgraph bounded
-by $T$ and $Q$.\\
+assigned to $P$ or $Q$ and apply the inductive hypothesis to the subgraph bounded by $P$ and $T$, and the
+subgraph bounded by $T$ and $Q$. With only the path $T$ in common between the two subgraphs, the combined
+$3$-coloring forms a path coloring of $G$.\\
 
-\noindent Suppose no path exists from $t_0$ to $t_1$. Then for some $p_i\in P$ and $q_j\in Q$, there exists an
-edge $p_iq_m$. We then separately consider the subgraph bounded by $p_0\ldots p_i$ and $q_0\ldots q_j$, and
-the subgraph bounded by $p_i\ldots p_n$ and $q_j\ldots q_m$.
+\noindent Suppose no path exists from $t_0$ to $t_1$. Since $G$ is weakly triangulated there exists $p_i\in P$ and
+$q_j\in Q$ with an
+edge $p_iq_m\in E(G)$. We may then separately apply the inductive hypothesis to the subgraph bounded by
+$p_0\ldots p_i$ and $q_0\ldots q_j$, and the subgraph bounded by $p_i\ldots p_n$ and $q_j\ldots q_m$. The two
+subgraphs only share the vertices $p_i$ and $q_j$, thus the combined $3$-coloring forms a path coloring
+of $G$.
 \end{proof}
 
 \subsection*{Implementation}
 
 Let the plane graph $G$ be represented as an adjacency list and an ordering of neighbors following a
 combinatorial embedding. We track the paths $P$ and $Q$ by marking each path vertex and storing the endpoints
-of the paths. To find $t_0$ we look at the ordered neighbors of $p_0$ and take the vertex clockwise past $q_0$.
-We find $t_1$ similarly by looking at $p_n$ and $q_m$.\\
+of the paths. To find $t_0$ we look at the ordered neighbors of $p_0$ and take the vertex counterclockwise past
+$q_0$. We find $t_1$ similarly by looking at $p_n$ and $q_m$.\\
 
 \noindent To check for the path from $t_0$ to $t_1$ we perform a
 breadth first search starting at $t_1$, and store parents for each vertex visited. If $t_0$ is reached, an induced path from $t_0$ 
@@ -118,7 +124,7 @@ using the $p_0p_i$-path and $q_0p_j$-path.\\
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -141,7 +147,7 @@ using the $p_0p_i$-path and $q_0p_j$-path.\\
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -183,14 +189,16 @@ entire graph is $O(|V|^2)$. This gives us an overall amortized complexity of $O(
 
 The following theorem is a significant restatement of the work of Hartman [r] and Skrekovski [s]. Suppose $C$ is
 the outer cycle of a weakly triangulated plane graph $G$. Using notation from [r] for vertices $u,v\in C$ we
-let $C[u,v]$ denote the path from $u$ to $v$ clockwise along the outer face. Similarly, for $v\in V(G)$ and
+let $C[u,v]$ denote the path from $u$ to $v$ clockwise along the outer face. If we wish to exclude $u$ or $v$
+from this path we will use parenthesis, $C(u,v)$. Similarly, for $v\in V(G)$ and
 $u,w\in N(v)$ we let $[u,w]_v$ denote the path from $u$ to $w$ clockwise around $v$, assuming triangulated
 faces.\\
 
 \begin{adjustwidth}{1.5em}{1.5em}
 \noindent\textbf{Theorem 2.} Let $G$ be a $2$-connected weakly triangulated plane graph with outer face $C$, or
-a complete graph on two vertices.
-Let $x,y\in C$ be not necessarily distinct, potentially precolored vertices. Suppose $L(v)$ assigns a list of colors to each $v\in V(G)$ such that
+a complete graph on two vertices. 
+Let $x,y\in C$ be not necessarily distinct, potentially precolored vertices. Let $p\in C[x,y]$ be precolored some
+color $\alpha$. Suppose $L(v)$ assigns a list of colors to each $v\in V(G)\setminus\{p\}$ such that
 \[
     \begin{array}{ll}
 	    |L(v)|\ge 1 & \text{if } v=x \text{ or } v=y \text{ or } v=p;\\
@@ -198,7 +206,7 @@ Let $x,y\in C$ be not necessarily distinct, potentially precolored vertices. Sup
 	    |L(v)|\ge 3 & \text{otherwise.}
     \end{array}
 \]
-Let $p\in C[x,y]$ be precolored some color $\alpha\in L(p)$. If $p\ne x$, suppose $\alpha\not\in L(v)$ for
+If $p\ne x$, let $\alpha\not\in L(v)$ for
 any $v\in C[x,p)$.\\
 
 \noindent The coloring may then be extended to
@@ -228,12 +236,12 @@ is unlabled it represents arbitrary color assignment from $L$.
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
   \node (c_n) [label=above left:$c_n$, fill] at (-1.5cm, 1.25cm) {};
-  \node (p) [label=above:{$y$, $p$}] at (0cm, 2cm) {};
+  \node (p) [label=above:{$c_0$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
   \node (c_1) [label=above:$c_1$, fill] at (1.5cm, 1.25cm) {};
   \node (c_i) [label=below:$c_i$, fill] at (0cm, -1cm) {};
@@ -262,12 +270,12 @@ colored $\alpha$ in the appropriate case. Finally, $|L_0|\ge2$ for all other $v$
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
   \node (c_n) [label=above left:$c_n$, fill] at (-1.5cm, 1.25cm) {};
-  \node (p) [label=above:{$y$, $p$}] at (0cm, 2cm) {};
+  \node (p) [label=above:{$x$, $y$, $p$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
   \node (c_i) [label=below:$c_i$, fill] at (0cm, -1cm) {};
   \node (G_0) [draw=none, ] at (-0.75cm, 0.12cm) {$G_0$};
@@ -281,7 +289,7 @@ colored $\alpha$ in the appropriate case. Finally, $|L_0|\ge2$ for all other $v$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -295,7 +303,7 @@ $\qquad$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -319,7 +327,7 @@ forms a path choosing of $G$ from $L$.\\
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -340,7 +348,7 @@ forms a path choosing of $G$ from $L$.\\
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -356,7 +364,7 @@ $\qquad$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -380,7 +388,7 @@ no same color neighbors in $G_0$ so the combined coloring forms a path choosing 
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -401,7 +409,7 @@ no same color neighbors in $G_0$ so the combined coloring forms a path choosing 
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -416,7 +424,7 @@ $\qquad$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -440,7 +448,7 @@ neighbor in each $G_0$ and $G_1$.\\
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -461,7 +469,7 @@ neighbor in each $G_0$ and $G_1$.\\
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -475,7 +483,7 @@ $\qquad$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -500,7 +508,7 @@ color neighbor in each $G_0$ and $G_1$.\\
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -521,7 +529,7 @@ color neighbor in each $G_0$ and $G_1$.\\
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -536,7 +544,7 @@ $\qquad$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -564,7 +572,7 @@ $p_1=p$ and thus $c_i$ will recieve no same color neighbors in $G_1$.\\
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -587,7 +595,7 @@ $p_1=p$ and thus $c_i$ will recieve no same color neighbors in $G_1$.\\
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -605,7 +613,7 @@ $\qquad$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -628,7 +636,7 @@ no same color neighbors in $G_0$ so the combined coloring forms a path choosing 
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -651,7 +659,7 @@ no same color neighbors in $G_0$ so the combined coloring forms a path choosing 
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -666,7 +674,7 @@ $\qquad$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -691,7 +699,7 @@ one same color neighbor in each $G_0$ and $G_1$.\\
 
 \begin{center}
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -714,7 +722,7 @@ one same color neighbor in each $G_0$ and $G_1$.\\
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
@@ -731,30 +739,30 @@ $\qquad$
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
-		scale=1.1,
+		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
-  \node (p) [label=above:{$x$, $p$}] at (0cm, 2cm) {};
+  \node (p) [label=above:{$x_1$, $p_1$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
-  \node (c_i) [label=below:$c_i$] at (0cm, -1cm) {};
+  \node (c_i) [label=below:$y_1$, fill] at (0cm, -1cm) {};
   \node (G_1) [draw=none] at (0.5cm, 0.5cm) {$G_1$};
   \node (null) [draw=none] at (270:1.5cm) {};
   \draw (p) edge (c_i);
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\footnotesize{\textbf{Figure 3.9} The case $x\ne p$, $y\ne p$, and $c_i\in C(p,y]$.}
+\footnotesize{\textbf{Figure 3.9} The case $x\ne p$, $y\ne p$, and $c_i\in C(p,y]$ with $\alpha\not\in L(c_i)$.}
 \end{center}
 
 \noindent Finally, suppose $x\ne p$, $y\ne p$, and $c_i\in C(p,y]$. If
-$\alpha\in L(c_i)$ we set $p_0=c_i$ and color $c_i$ with $\alpha$. Otherwise, set $p_0=c_1$ and we color it with
+$\alpha\in L(c_i)$ we set $p_0=c_i$ and color $c_i$ with $\alpha$. Otherwise, set $p_0=c_1$ and color it with
 the first color in $L_0(c_1)$, noting $|L_0(c_i)|\ge 2$ in this case. We then apply the inductive hypothesis to
-choose $G_0$ from $L_0$ with $x_0=x$, $y_0=y$, and $p_0$. If $G_1$ exists, we then apply the inductive
+choose $G_0$ from $L_0$ with $x_0=x$, $y_0=y$, and $p_0$. If $G_1$ exists, we again apply the inductive
 hypothesis to choose $G_1$ from $L$ with $x_1=p_1=p$ and $y_1=c_i$. Note that $c_i$ was precolored by our
 choosing of $G_0$. If $p_0=c_i$ then $c_i$ recieves at most one same
 color neighbor in each $G_0$ and $G_1$. If $p_0\ne c_i$, then $y_1=c_i$ is immediatley prior to
-$p_1=p$ and thus $c_i$ will recieve no same color neighbors in $G_1$.
+$p_1=p$ and $\alpha\not\in L(c_i)$. Thus $c_i$ will recieve no same color neighbors in $G_1$.
 \end{proof}
 
 \begin{comment}
