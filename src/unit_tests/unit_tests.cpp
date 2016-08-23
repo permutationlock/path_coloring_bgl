@@ -528,7 +528,7 @@ void test_path_choose()
 	for(std::size_t colors = 3; colors < 9; ++colors) {
 		std::cout << "Path 3-choosing with " << colors << " colors" << std::endl;
 	
-		for(std::size_t order = 4; order <= 100; order++) {
+		for(std::size_t order = 4; order <= 100; ++order) {
 			bool found_planar = false;
 			std::size_t count = 4;
 			

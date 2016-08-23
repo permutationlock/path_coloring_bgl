@@ -335,9 +335,9 @@ static void hartman_skrekovski_choose_recursive(
  * hartman_skrekovski_choose
  * inputs: A weakly triangulated planar graph with vertex indices (predefined boost property),
  *         a valid planar embedding of the graph (modeling the boost PlanarEmbedding concept),
- *         a read-write vertex property map assigning a range of colors to each vertex (each vertex must
+ *         a read-able vertex property map assigning a range of colors to each vertex (each vertex must
  *         recieve a range of at least 3 colors if interior, and at least two colors if on the outer face),
- *         a read-write vertex property map to which the coloring will be assigned,
+ *         a read-write-able vertex property map to which the coloring will be assigned,
  *         and finally a pair of iterators providing the outer face of the graph in clockwise order.
  * 
  * outputs: The coloring will be a valid assignment of colors from the input color lists such that
