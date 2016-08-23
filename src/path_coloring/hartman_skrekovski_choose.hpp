@@ -47,12 +47,11 @@ static inline void remove_last_edge(vertex_descriptor v, neighbor_range_map & ne
 template<
 		typename vertex_descriptor, typename edge_iterator, typename neighbor_range_map,
 		typename neighbor_range = typename std::pair<edge_iterator, edge_iterator>,
-		typename neighbor_range_pair = typename std::pair<neighbor_range, neighbor_range>
 	>
-static inline neighbor_range_pair split_range(vertex_descriptor v, edge_iterator mid_iter,
-	neighbor_range_map & neighbor_ranges)
+static inline std::pair<neighbor_range, neighbor_range> split_range(vertex_descriptor v,
+	edge_iterator mid_iter, neighbor_range_map & neighbor_ranges)
 {
-	return neighbor_range_pair(
+	return std::pair<neighbor_range, neighbor_range>(
 			neighbor_range(neighbor_ranges[v].first, mid_iter),
 			neighbor_range(mid_iter, neighbor_ranges[v].second)
 		);
