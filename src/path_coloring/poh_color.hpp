@@ -35,15 +35,15 @@ static void poh_color_recursive(
 		std::size_t & count, std::size_t p_mark, std::size_t q_mark, color_type new_color
 	)
 {
-	if(p_0 == p_n && q_0 == q_m) return;
-	
 	vertex_descriptor t_0 = p_0, t_1 = p_n;
 	
 	do {
+		if(p_0 == p_n && q_0 == q_m) return;
+		
 		auto edge_iter = find_neighbor_iterator(q_m, p_n, embedding, graph);
 			
 		if(edge_iter == embedding[q_m].end()) {
-			throw std::runtime_error("Invalid embedding (no t_1).");
+			throw std::runtime_error("Invalid embedding (no edge p_n to q_m).");
 		}
 		else if(++edge_iter == embedding[q_m].end()) {
 			t_1 = get_incident_vertex(q_m, *embedding[q_m].begin(), graph);
@@ -58,8 +58,6 @@ static void poh_color_recursive(
 		else if(vertex_marks[t_1] == q_mark) {
 			q_m = t_1;
 		}
-		
-		if(p_0 == p_n && q_0 == q_m) return;
 	} while(vertex_marks[t_1] == p_mark || vertex_marks[t_1] == q_mark);
 	
 	vertex_descriptor current_vertex;
@@ -83,9 +81,10 @@ static void poh_color_recursive(
 					edge_iter = embedding[current_vertex].begin();
 				
 				vertex_descriptor neighbor = get_incident_vertex(current_vertex, *edge_iter, graph);
-			
+				
 				std::size_t mark = vertex_marks[neighbor];
 				std::size_t last_mark = vertex_marks[last_neighbor];
+				
 				if(mark != bfs_mark && mark != p_mark && mark != q_mark) {
 					parent_map[neighbor] = current_vertex;
 					vertex_marks[neighbor] = bfs_mark;

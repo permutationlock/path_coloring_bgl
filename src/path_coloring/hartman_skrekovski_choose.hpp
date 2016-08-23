@@ -2,7 +2,7 @@
  * hartman_skrekovski_choose.hpp
  * Author: Aven Bross
  * 
- * Implementation of Hartman-Skrekovski path 3-choose algorithm.
+ * Implementation of Hartman-Skrekovski path 3-choosing algorithm.
  */
 
 #ifndef __PATH_COLORING_HPP
@@ -46,7 +46,7 @@ static inline void remove_last_edge(vertex_descriptor v, neighbor_range_map & ne
 
 template<
 		typename vertex_descriptor, typename edge_iterator, typename neighbor_range_map,
-		typename neighbor_range = typename std::pair<edge_iterator, edge_iterator>,
+		typename neighbor_range = typename std::pair<edge_iterator, edge_iterator>
 	>
 static inline std::pair<neighbor_range, neighbor_range> split_range(vertex_descriptor v,
 	edge_iterator mid_iter, neighbor_range_map & neighbor_ranges)
