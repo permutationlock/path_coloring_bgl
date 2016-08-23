@@ -30,62 +30,37 @@ template<
 static void poh_color_recursive(
 		const index_graph & graph, const planar_embedding & embedding,
 		color_map & coloring, mark_map & vertex_marks, vertex_map & parent_map,
-		vertex_descriptor p_0, vertex_descriptor p_1, vertex_descriptor t_0,
-		vertex_descriptor q_0, vertex_descriptor q_1,
+		vertex_descriptor p_0, vertex_descriptor p_n,
+		vertex_descriptor q_0, vertex_descriptor q_m,
 		std::size_t & count, std::size_t p_mark, std::size_t q_mark, color_type new_color
 	)
 {
-	if(t_0 == p_0) {
-		if(p_0 == p_1 && q_0 == q_1) return;
-		
-		do {
-			auto edge_iter = find_neighbor_iterator(p_0, q_0, embedding, graph);
-			
-			if(edge_iter == embedding[p_0].end()) {
-				throw std::runtime_error("Invalid embedding (no t_0).");
-			}
-			else if(++edge_iter == embedding[p_0].end()) {
-				t_0 = get_incident_vertex(p_0, *embedding[p_0].begin(), graph);
-			}
-			else {
-				t_0 = get_incident_vertex(p_0, *edge_iter, graph);
-			}
-			
-			if(vertex_marks[t_0] == p_mark) {
-				p_0 = t_0;
-			}
-			else if(vertex_marks[t_0] == q_mark) {
-				q_0 = t_0;
-			}
-		} while(vertex_marks[t_0] == p_mark || vertex_marks[t_0] == q_mark);
-	}
+	if(p_0 == p_n && q_0 == q_m) return;
 	
-	if(p_0 == p_1 && q_0 == q_1) return;
-	
-	vertex_descriptor t_1;
+	vertex_descriptor t_0 = p_0, t_1 = p_n;
 	
 	do {
-		auto edge_iter = find_neighbor_iterator(q_1, p_1, embedding, graph);
+		auto edge_iter = find_neighbor_iterator(q_m, p_n, embedding, graph);
 			
-		if(edge_iter == embedding[q_1].end()) {
+		if(edge_iter == embedding[q_m].end()) {
 			throw std::runtime_error("Invalid embedding (no t_1).");
 		}
-		else if(++edge_iter == embedding[q_1].end()) {
-			t_1 = get_incident_vertex(q_1, *embedding[q_1].begin(), graph);
+		else if(++edge_iter == embedding[q_m].end()) {
+			t_1 = get_incident_vertex(q_m, *embedding[q_m].begin(), graph);
 		}
 		else {
-			t_1 = get_incident_vertex(q_1, *edge_iter, graph);
+			t_1 = get_incident_vertex(q_m, *edge_iter, graph);
 		}
 		
 		if(vertex_marks[t_1] == p_mark) {
-			p_1 = t_1;
+			p_n = t_1;
 		}
 		else if(vertex_marks[t_1] == q_mark) {
-			q_1 = t_1;
+			q_m = t_1;
 		}
+		
+		if(p_0 == p_n && q_0 == q_m) return;
 	} while(vertex_marks[t_1] == p_mark || vertex_marks[t_1] == q_mark);
-	
-	if(p_0 == p_1 && q_0 == q_1) return;
 	
 	vertex_descriptor current_vertex;
 	
@@ -96,11 +71,9 @@ static void poh_color_recursive(
 		vertex_marks[t_1] = bfs_mark;
 		parent_map[t_1] = t_1;
 	
-		while(!bfs_queue.empty()) {
+		while(t_0 == p_0 && !bfs_queue.empty()) {
 			current_vertex = bfs_queue.front();
 			bfs_queue.pop();
-		
-			if(current_vertex == t_0) break;
 		
 			auto edge_iter = embedding[current_vertex].begin();
 			vertex_descriptor last_neighbor = get_incident_vertex(current_vertex, *edge_iter, graph);
@@ -119,27 +92,28 @@ static void poh_color_recursive(
 					bfs_queue.push(neighbor);
 				}
 				else if(mark == q_mark && last_mark == p_mark) {
-					poh_color_recursive(
-							graph, embedding, coloring, vertex_marks, parent_map,
-							p_0, last_neighbor, t_0, q_0, neighbor,
-							count, p_mark, q_mark, new_color
-						);
-				
-					p_0 = last_neighbor;
-					q_0 = neighbor;
 					t_0 = current_vertex;
+					vertex_descriptor p_i = last_neighbor;
+					vertex_descriptor q_j = neighbor;
+					
+					if(p_i != p_0 || q_j != q_0) {
+						poh_color_recursive(
+								graph, embedding, coloring, vertex_marks, parent_map,
+								p_0, p_i, q_0, q_j,
+								count, p_mark, q_mark, new_color
+							);
+				
+						p_0 = p_i;
+						q_0 = q_j;
+					}
 				
 					break;
 				}
 			
 				last_neighbor = neighbor;
 			} while(edge_iter != embedding[current_vertex].begin());
-		
-			if(current_vertex == t_0) break;
 		}
 	}
-	
-	if(current_vertex != t_0) throw std::runtime_error("Invalid embedding (no splitting path).");
 	
 	std::size_t new_mark = count++;
 	coloring[current_vertex] = new_color;
@@ -153,13 +127,13 @@ static void poh_color_recursive(
 	
 	poh_color_recursive(
 			graph, embedding, coloring, vertex_marks, parent_map,
-			p_0, p_1, p_0, t_0, t_1,
+			p_0, p_n, t_0, t_1,
 			count, p_mark, new_mark, coloring[q_0]
 		);
 	
 	poh_color_recursive(
 			graph, embedding, coloring, vertex_marks, parent_map,
-			t_0, t_1, t_0, q_0, q_1,
+			t_0, t_1, q_0, q_m,
 			count, new_mark, q_mark, coloring[p_0]
 		);
 }
@@ -203,7 +177,7 @@ void poh_color(
 	
 	poh_color_recursive(
 			graph, embedding, coloring, vertex_marks, parent_map,
-			*p_begin, *(--p_end), *p_begin, *q_begin, *(--q_end),
+			*p_begin, *(--p_end), *q_begin, *(--q_end),
 			count, 1, 2, c_2
 		);
 }

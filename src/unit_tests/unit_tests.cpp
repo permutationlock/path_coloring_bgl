@@ -39,7 +39,7 @@
 
 // Local project headers
 #include "../path_coloring/poh_color.hpp"
-#include "../path_coloring/hartman_skrekovski_color.hpp"
+#include "../path_coloring/hartman_skrekovski_choose.hpp"
 #include "../visualization/draw_tikz_graph.hpp"
 
 using namespace boost;
@@ -81,7 +81,7 @@ void make_triangulated(index_graph & graph) {
 		> embedding_t;
 
 	make_connected(graph);
-
+	
 	//Initialize the interior edge index
 	typename property_map<index_graph, edge_index_t>::type e_index = get(edge_index, graph);
 	typename graph_traits<index_graph>::edges_size_type edge_count = 0;
@@ -332,16 +332,18 @@ void poh_color_test(const index_graph & graph) {
 	q.push_back(ordering[1]);
 	q.push_back(ordering.back());
 	
+	// Call Poh algorithm
 	#ifdef SHOW_TIMINGS
 		auto start = nanosecond_timer::now();
-	#endif
+		
+		for(std::size_t i = 0; i < 1000; ++i) {
+			poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
+		}
 	
-	// Call Poh algorithm
-	poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
-
-	#ifdef SHOW_TIMINGS
 		auto end = nanosecond_timer::now();
-		std::cout << "Time = " << (end - start).count() << "ns\n";
+		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
+	#else
+		poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
 	#endif
 	
 	#ifdef SHOW_VISUALIZATION
@@ -354,7 +356,7 @@ void poh_color_test(const index_graph & graph) {
 
 // Apply Hartman-Skrekovski algorithm to given graph and verify it works
 template<typename index_graph>
-void path_list_color_test(const index_graph & graph, std::size_t num_colors) {
+void path_choose_test(const index_graph & graph, std::size_t num_colors) {
 	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
 	typedef typename graph_traits<index_graph>::vertex_iterator vertex_iterator;
 	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
@@ -425,16 +427,20 @@ void path_list_color_test(const index_graph & graph, std::size_t num_colors) {
 		std::copy(random_colors.begin(), random_colors.end(), std::back_inserter(color_list[*v_iter]));
 	}
 	
+	// Call path 3-choose algorithm
 	#ifdef SHOW_TIMINGS
 		auto start = nanosecond_timer::now();
-	#endif
+		
+		for(std::size_t i = 0; i < 1000; ++i) {
+			hartman_skrekovski_choose(graph, embedding, color_list, coloring,
+				outer_face.begin(), outer_face.end());
+		}
 	
-	// Call path 3-list-color algorithm
-	hartman_skrekovski_color(graph, embedding, color_list, coloring, outer_face.begin(), outer_face.end());
-	
-	#ifdef SHOW_TIMINGS
 		auto end = nanosecond_timer::now();
-		std::cout << "Time = " << (end - start).count() << "ns\n";
+		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
+	#else
+		hartman_skrekovski_choose(graph, embedding, color_list, coloring,
+				outer_face.begin(), outer_face.end());
 	#endif
 	
 	#ifdef SHOW_VISUALIZATION
@@ -448,22 +454,81 @@ void path_list_color_test(const index_graph & graph, std::size_t num_colors) {
 void test_poh_color() {
 	std::cout<<"Path 3-coloring"<<std::endl;
 	
-	{
-		// Define graph properties
-		typedef adjacency_list
-			<	setS,
-				vecS,
-				undirectedS,
-				property<vertex_index_t, std::size_t>,
-				property<edge_index_t, std::size_t>
-			> index_graph;
+	// Define graph properties
+	typedef adjacency_list
+		<	setS,
+			vecS,
+			undirectedS,
+			property<vertex_index_t, std::size_t>,
+			property<edge_index_t, std::size_t>
+		> index_graph;
+	
+	typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
+	
+	boost::minstd_rand gen;
+	gen.seed(8573);
+	
+	for(std::size_t order = 4; order <= 100; ++order) {
+		bool found_planar = false;
+		std::size_t count = 4;
 		
-		typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
+		while(!found_planar) {
+			try {
+				// Construct a random trriangulated graph
+				//std::cout << "Generating graph.\n";
+				index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 		
-		boost::minstd_rand gen;
-		gen.seed(8573);
+				++count;
+				
+				//std::cout << "Triangulating graph.\n";
+				make_triangulated(graph);
 		
-		for(std::size_t order = 7; order < 100; order++) {
+				found_planar = true;
+		
+				//draw_graph_no_color(graph);
+		
+				//std::cout << "Testing planarity.\n";
+				poh_color_test(graph);
+		
+				#ifdef SHOW_PASSES
+					std::cout<<"    PASS " << order << " vertex path 3-color."<<std::endl;
+				#endif
+			}
+			catch(std::logic_error error) {
+				// Generated a non-planar graph, ignore this case
+			}
+			catch(std::exception& error) {
+				std::cout<<"    FAIL " << order << " vertex path 3-color ("<<error.what()<<")."<<std::endl;
+				failed=true;
+			}
+			catch(...) {
+				std::cout<<"    FAIL " << order << " vertex path 3-color (unknown error)."<<std::endl;
+				failed=true;
+			}
+		}
+	}
+}
+
+void test_path_choose()
+{
+	// Define graph properties
+	typedef adjacency_list
+		<	setS,
+			vecS,
+			undirectedS,
+			property<vertex_index_t, std::size_t>,
+			property<edge_index_t, std::size_t>
+		> index_graph;
+
+	typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
+	
+	boost::minstd_rand gen;
+	gen.seed(8573);
+	
+	for(std::size_t colors = 3; colors < 9; ++colors) {
+		std::cout << "Path 3-choosing with " << colors << " colors" << std::endl;
+	
+		for(std::size_t order = 4; order <= 100; order++) {
 			bool found_planar = false;
 			std::size_t count = 4;
 			
@@ -472,7 +537,7 @@ void test_poh_color() {
 					// Construct a random trriangulated graph
 					//std::cout << "Generating graph.\n";
 					index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
-			
+					
 					++count;
 					
 					//std::cout << "Triangulating graph.\n";
@@ -483,88 +548,25 @@ void test_poh_color() {
 					//draw_graph_no_color(graph);
 			
 					//std::cout << "Testing planarity.\n";
-					poh_color_test(graph);
+					path_choose_test(graph, colors);
 			
 					#ifdef SHOW_PASSES
-						std::cout<<"    PASS " << order << " vertex path 3-color."<<std::endl;
+						std::cout<<"    PASS " << order << " vertex, " << colors
+							<< " colors path 3-choose."<<std::endl;
 					#endif
 				}
 				catch(std::logic_error error) {
 					// Generated a non-planar graph, ignore this case
 				}
 				catch(std::exception& error) {
-					std::cout<<"    FAIL " << order << " vertex path 3-color ("<<error.what()<<")."<<std::endl;
+					std::cout<<"    FAIL " << order << " vertex, " << colors
+							<< " colors path 3-choose ("<<error.what()<<")."<<std::endl;
 					failed=true;
 				}
 				catch(...) {
-					std::cout<<"    FAIL " << order << " vertex path 3-color (unknown error)."<<std::endl;
+					std::cout<<"    FAIL " << order << " vertex, " << colors
+							<< " colors path 3-choose (unknown error)."<<std::endl;
 					failed=true;
-				}
-			}
-		}
-	}
-}
-
-void test_list_path_color()
-{
-	std::cout<<"Path 3-list-coloring"<<std::endl;
-	
-	{
-		// Define graph properties
-		typedef adjacency_list
-			<	setS,
-				vecS,
-				undirectedS,
-				property<vertex_index_t, std::size_t>,
-				property<edge_index_t, std::size_t>
-			> index_graph;
-	
-		typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
-		
-		boost::minstd_rand gen;
-		gen.seed(8573);
-		
-		for(std::size_t order = 7; order < 100; order++) {
-			for(std::size_t colors = 3; colors < 9; ++colors) {
-				bool found_planar = false;
-				std::size_t count = 4;
-				
-				while(!found_planar) {
-					try {
-						// Construct a random trriangulated graph
-						//std::cout << "Generating graph.\n";
-						index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
-						
-						++count;
-						
-						//std::cout << "Triangulating graph.\n";
-						make_triangulated(graph);
-				
-						found_planar = true;
-				
-						//draw_graph_no_color(graph);
-				
-						//std::cout << "Testing planarity.\n";
-						path_list_color_test(graph, colors);
-				
-						#ifdef SHOW_PASSES
-							std::cout<<"    PASS " << order << " vertex, " << colors
-								<< " colors path 3-list-color."<<std::endl;
-						#endif
-					}
-					catch(std::logic_error error) {
-						// Generated a non-planar graph, ignore this case
-					}
-					catch(std::exception& error) {
-						std::cout<<"    FAIL " << order << " vertex, " << colors
-								<< " colors path 3-list-color ("<<error.what()<<")."<<std::endl;
-						failed=true;
-					}
-					catch(...) {
-						std::cout<<"    FAIL " << order << " vertex, " << colors
-								<< " colors path 3-list-color (unknown error)."<<std::endl;
-						failed=true;
-					}
 				}
 			}
 		}
@@ -573,7 +575,7 @@ void test_list_path_color()
 
 int main() {
 	test_poh_color();
-	test_list_path_color();
+	test_path_choose();
 
 	if(failed)
 		std::cout<<"THERE ARE FAILING TESTS"<<std::endl;
