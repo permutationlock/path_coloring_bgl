@@ -46,7 +46,9 @@ Skrekovski [c].
 All graphs discussed in this project will be simple, undirected, and finite. A graph is planar if it may
 be drawn in the plane without edge crossings. A $k$-coloring of a graph partitions
 its vertices into $k$ color classes. Such a coloring is called proper if each color class consists of
-nonadjacent vertices. In 1976 Appel and Haken [d,e] displayed that all planar graphs have a proper $4$-coloring.
+nonadjacent vertices.\\
+
+\noindent In 1976 Appel and Haken [d,e] displayed that all planar graphs have a proper $4$-coloring.
 This result is best possible and solved the century old Four Color Conjecture.
 Generalizations of proper coloring were introduced in [f,g,h] allowing color classes to form forests, or allowing vertices
 to have some bounded number of same color neighbors. Cowen et al. ([j]) show a best possible result that planar
@@ -59,21 +61,24 @@ with the added restriction that path coloring forbids cycles. In [l] Poh display
 planar graphs have a path $3$-coloring. Here we present an implementation of Poh's algorithm to path
 $3$-color plane graphs.\\
 
-\noindent Given a list of $k$ colors for each vertex, a $k$-list-coloring assigns each vertex a color from its list.
-If a graph has a proper $k$-list-coloring it is said to be $k$-choosable. List-coloring was first introduced by
-Erd{\"o}s et al. in [m]. Thomassen in [n] proves that all planar graphs are $5$ choosable. Planar
+\noindent Given a list of $k$ colors for each vertex, a $k$-list-coloring, or $k$-choosing, assigns each vertex a
+color from its list.
+If a graph has a proper $k$-choosing it is said to be $k$-choosable. List-coloring was first introduced by
+Erd{\"o}s et al. in [m]. Thomassen in [n] proves that all planar graphs are $5$-choosable. Planar
 graphs that are not $4$-choosable are described by Mirzakhani in [o] and Voigt in [p], so Thomassen's result
-is best possible.\\
+is best possible. Jensen and Toft in [t] note that Thomassen's proof yields a linear algorithm for $5$-choosing
+plane graphs.\\
 
 \noindent Hull and Eaton in [q] prove planar graphs are $3$-choosable such that each vertex recieves at most two
 same color neighbors, and furthermore show this result is best possible. Hartman in [r] and Skrekovski in [s] independantly
 provide similar proofs that planar graphs are path $3$-choosable. Hartman claims the proof yields
 a linear time algorithm for path $3$-list-coloring, and thus path $3$-coloring, plane graphs. Here we present a
-linear time implementation of Hartman and Skrekovski's algorithm.\\
+linear time implementation of Hartman and Skrekovski's algorithm.
 
 \section{Path $3$-Coloring Plane Graphs}
 
-We first restate the algorithm and proof of Poh [l] for path $3$-coloring plane graphs.\\
+We first restate the algorithm and proof of Poh [l]. This proof yields a simple algorithm for path $3$-coloring
+plane graphs.\\
 
 \begin{adjustwidth}{1.5em}{1.5em}
 \noindent\textbf{Theorem 1.} Let $G$ be a $2$-connected weakly triangulated plane graph or a complete
@@ -100,21 +105,26 @@ subgraph bounded by $T$ and $Q$. With only the path $T$ in common between the tw
 $3$-coloring forms a path coloring of $G$.\\
 
 \noindent Suppose no such path exists from $t_0$ to $t_1$. Since $G$ is weakly triangulated there must exist an
-edge $p_iq_m\in E(G)$ with $p_i\in P$ and $q_i\in Q$, distinct from $p_0q_0$ and $p_nq_m$. We may then separately
-apply the inductive hypothesis to the subgraph bounded by
-$p_0\ldots p_i$ and $q_0\ldots q_j$, and the subgraph bounded by $p_i\ldots p_n$ and $q_j\ldots q_m$. The two
-subgraphs only share the vertices $p_i$ and $q_j$, thus the combined $3$-coloring forms a path coloring
-of $G$.
+edge $p_iq_j\in E(G)\setminus E(C)$ with $p_i\in P$ and $q_j\in Q$. We separately apply the inductive hypothesis
+to the subgraph bounded by $p_0\ldots p_i$ and $q_0\ldots q_j$, and the subgraph bounded by $p_i\ldots p_n$ and
+$q_j\ldots q_m$. The two subgraphs only share the vertices $p_i$ and $q_j$, thus the combined $3$-coloring forms
+a path coloring of $G$.
 \end{proof}
 
-\subsection*{Implementation}
+\subsection*{Implementing Poh's Algorithm}
 
 Let the plane graph $G$ be represented as an adjacency list and an ordering of neighbors following a
 combinatorial embedding. We track the paths $P$ and $Q$ by marking each vertex with its respective path and
-storing the just path start and end vertices $p_0$, $p_n$, $q_0$, and $q_m$.
-To find $t_0$ we look through the ordered neighbors of $p_0$ and take the vertex counterclockwise past
-$q_0$. We find $t_1$ similarly by looking at $p_n$ and $q_m$. These steps are repeated until the graph is colored
-or both $t_0$ and $t_1$ are not in either path.
+storing the path start and end vertices $p_0$, $p_n$, $q_0$, and $q_m$.
+We first find $t_1$ by looking through the ordered neighbors of $q_m$ and take the vertex counterclockwise past
+$p_n$. This step is repeated until the graph is colored or $t_1\not\in P\cup Q$.\\
+
+\noindent We perform a
+breadth first search starting at $t_1$ and storing parents for each vertex visited. Vertices marked to be in $P$
+or $Q$ will be ignored, in this way containing the search within the current bounded subgraph. The
+search terminates once a vertex $u$ with adjacent neighbors $p_i\in P$ and $q_j\in Q$ has been reached. An
+induced $ut_1$-path is produced by backtracking through the search from $u$. We color and mark each vertex on the
+new path with the remaining color not used to color $P$ or $Q$.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -173,18 +183,16 @@ $\qquad$
   \draw (t0_1) edge (t1_1) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 2.1} The case of a $t_0t_1$-path.
+\textbf{Figure 2.1} The case $p_i=p_0$ and $q_j=q_0$.
 \end{center}
 
-\noindent To check for the path from $t_0$ to $t_1$ we perform a
-breadth first search starting at $t_1$, and store parents for each vertex visited. If $t_0$ is reached, an induced path from $t_0$ 
-to $t_1$ is produced by backtracking through the search. We then color and mark each vertex on the new path.
-Otherwise, we find a vertex $u\ne t_0$ with consecutive neighbors in opposite paths. These vertices
-will be $p_i$ and $q_j$. We may then immediately recurse on region bounded by the $p_ip_n$-path and $ut_1$-path
-and the region bounded by the $ut_1$-path and the $q_jp_m$-path. To handle the remaining graph we also recurse
-using the $p_0p_i$-path and $q_0p_j$-path. Note as each recursive step is independant and marks are shared,
-this process may also be performed iteratively by instead pushing paths, represented by their start and end vertices,
-into a stack or queue.
+\noindent To color the remaining graph we recurse on both the region
+bounded by the $p_ip_n$-path and $ut_1$-path, and the region bounded by the $ut_1$-path and $q_jp_m$-path.
+If $p_i=p_0$ and $q_j=q_0$ we are done and this mimicks the case of a $t_0t_1$ path in with $u=t_0$.
+If $p_i\ne p_0$ or $q_j\ne q_0$ we handle the remaining subgraph by recursing on the region bounded by the
+$p_0p_i$-path and $q_0p_j$-path. Note each recursive step is independant and vertex marks are shared,
+thus the algorithm may instead proceed iteratively by pushing paths, represented by their start and end
+vertices, into a stack or queue.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -258,21 +266,22 @@ $\qquad$
   \draw (qj_1) edge (t0_1);
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 2.2} The case of no $t_0t_1$-path.
+\textbf{Figure 2.2} The case $p_i\ne p_0$ or $q_i\ne q_0$.
 \end{center}
 
-\noindent In locating $t_0$ and $t_1$ we make a neighbor lookup once for each. The amortized complexity of a
-neighbor lookup is $O(|E|/|V|)$. Since a vertex may only be $t_0$
-or $t_1$ once in the algorithm we perform at most $|V|$ neighbor lookups and the amoritized complexity
-of this step is $O(|V||E|/|V|)=O(|E|)$. In planar graphs $|E|\le 3|V|-6$, and $O(|E|)=O(|V|)$. Therefore, the
-amortized complexity is $O(|V|)$. We also perform at most one breadth first
-search from each $t_1$, each with complexity $O(|V|)$. Therefore the complexity of the serach step over the
+\noindent Locating $t_1$ requires a single neighbor lookup. The amortized complexity of a neighbor lookup is
+$O(|E|/|V|)$. Each vertex may be $t_1$ at most once so over the entire graph we perform at most $|V|$ neighbor
+lookups. In planar graphs $|E|\le 3|V|-6$, and $O(|E|)=O(|V|)$. Therefore, the
+amortized complexity of this step is $O(|V|^2/|V|)=O(|V|)$. We also perform at most one breadth first
+search from each $t_1$ with complexity $O(|V|)$. Therefore the complexity of the serach step over the
 entire graph is $O(|V|^2)$. This gives us an overall amortized complexity of $O(|V|+|V|^2)=O(|V|^2)$.
 
 \section{Path $3$-Choosing Plane Graphs}
 
-The following theorem is a significant restatement of the work of Hartman [r] and Skrekovski [s]. The
-restatement limits each inductive step to considering a single vertex and its set of neighbors.\\
+The following is a restatment of a theorem of Hartman [r] and Skrekovski [s]. We provide a modification of
+the proof that limits each inductive step to considering a single vertex and its set of neighbors. In this way
+the proof follows a similar process to that of Thomassen [n] and yields a linear time implementation as suggested
+by Hartman [r] detailed in following sections.\\
 
 \noindent Suppose $C$ is
 the outer cycle of a weakly triangulated plane graph $G$. Using notation from [r] for $u,v\in V(C)$ we
@@ -281,11 +290,15 @@ from this path we will use parenthesis, $C(u,v)$. Similarly, for $v\in V(G)$ and
 $u,w\in N(v)$ we let $[u,w]_v$ denote the path from $u$ to $w$ clockwise around $v$, assuming triangulated
 faces.\\
 
+\noindent Note that in all figures solid circles denote vertices yet to be colored, and colored vertices will
+be labeled with their assigned color. Labels $\alpha$ and $\beta$ will denote distinct colors. If a vertex
+is unlabled it represents arbitrary color assignment from its list.\\
+
 \begin{adjustwidth}{1.5em}{1.5em}
-\noindent\textbf{Theorem 2.} Let $G$ be a $2$-connected weakly triangulated plane graph with outer face $C$, or
-a complete graph on two vertices. 
-Let $x,y\in V(C)$ be not necessarily distinct, potentially precolored vertices. Let $p\in V(C[x,y])$ be precolored some
-color $\alpha$. Suppose $L(v)$ assigns a list of colors to each $v\in V(G)\setminus\{p\}$ such that
+\noindent\textbf{Theorem 2.} Let $G$ be a $2$-connected weakly triangulated plane graph, or a complete graph
+on one or two vertics, with outer face $C$. 
+Let $x,y\in V(C)$ be not necessarily distinct, potentially precolored vertices. Let $p\in C[x,y]$ be precolored some
+color $\alpha$. Suppose $L(v)$ assigns a list of colors to each $v\in V(G)$ that has not been precolored such that
 \[
     \begin{array}{ll}
 	    |L(v)|\ge 1 & \text{if } v=x \text{ or } v=y;\\
@@ -296,30 +309,23 @@ color $\alpha$. Suppose $L(v)$ assigns a list of colors to each $v\in V(G)\setmi
 If $p\ne x$, let $\alpha\not\in L(v)$ for
 any $v\in V(C[x,p))$.\\
 
-\noindent The coloring may then be extended to
-a path choosing of $G$ from $L$ such that $x$, $y$, and $p$ recieve at most one same color neighbor. If
+\noindent This coloring may be extended to
+a path choosing of $G$ from $L$ such that $x$, $y$, and $p$ each recieve at most one same color neighbor. If
 $x=y$ then $x$ and $y$ recieve no same color neighbors. If $y=p$, or $y$ is immediately prior to
 $p$ on the outer face and $\alpha\not\in L(y)$, then $y$ recieves no same color neighbors.\\
 \end{adjustwidth}
 
 \begin{proof}
-Suppose $|V(G)|=2$. If $x=y=p$ color the remaining vertex any color in its list other than $\alpha$. Otherwise,
-color the remaining color any color in its list if it has not been precolored.\\
-
-\noindent Suppose $|V(G)|>2$ and the theorem holds for all graphs $H$ with $|V(H)|<|V(G)|$. Let
+If $|V(G)\le 2$ the theorem easily follows. Suppose $|V(G)|>2$ and the theorem
+holds for all graphs $H$ with $|V(H)|<|V(G)|$. Let
 $C=c_0c_1\ldots c_n$ denote, in clockwise order, the outer face of $G$ with $p=c_0$.
-There are several cases to consider. Let $c_i\in V(C)$ be the next neighhbor of $p$ counterclockwise from $c_n$.
+There are several cases to consider. Let $c_i$ be the next vertex in $V(C)\cap N(p)$ counterclockwise from $c_n$.
 Let $G_0$ be the subgraph bounded by the cycle formed from $C[c_i,c_n]$ and $[c_n,c_i]_p$. If $c_i\ne c_1$ let
 $G_1$ be the sugbraph bounded by the cycle formed from $C[p,c_i]$ and the edge $pc_i$. As seen in Figure
-3.1 $G=G_0\cup G_1$
-and $V(G_0)\cap V(G_1)=\{c_i\}$.
-We will display in each case that the inductive hypothesis holds for each subgraph and show their union still
+3.1 $G=G_0\cup G_1$ and $V(G_0)\cap V(G_1)=\{c_i\}$.
+We will display in each case that the inductive hypothesis holds for each subgraph and their union still
 forms a path choosing of $G$ from $L$.
-If $c_i=c_1$ then $G_1$ will not exist and we handle this case specially, noting $G_0=G-p$.\\
-
-\noindent Note that in all figures solid circles denote vertices yet to be colored, and colored vertices will
-be labeled with their assigned color. A label $\beta$ will denote a color distinct from $\alpha$. If a vertex
-is unlabled it represents arbitrary color assignment from $L$.
+If $c_i=c_1$ we will say $G_1$ does not exist and handle this case specially noting $G_0=G-p$.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -328,7 +334,7 @@ is unlabled it represents arbitrary color assignment from $L$.
 		every label/.append style={rectangle}
 	]
   \node (c_n) [label=above left:$c_n$, fill] at (-1.5cm, 1.25cm) {};
-  \node (p) [label=above:{$c_0$}] at (0cm, 2cm) {};
+  \node (p) [label=above:{$c_0$, $p$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
   \node (c_1) [label=above:$c_1$, fill] at (1.5cm, 1.25cm) {};
   \node (c_i) [label=below:$c_i$, fill] at (0cm, -1cm) {};
@@ -346,16 +352,21 @@ is unlabled it represents arbitrary color assignment from $L$.
 \textbf{Figure 3.1} The subdivision of $G$ into $G_0$ and $G_1$.
 \end{center}
 
-\noindent For all $v\in N(p)\cap V(G_0)\setminus\{x,y\}$ we note if $v=c_n$ or $v=c_i$
+\noindent For all $v\in (N(p)\cap V(G_0))\setminus\{x,y\}$ we note if $v=c_n$ or $v=c_i$
 then $|L(v)|\ge 2$, and $|L(v)|\ge3$ otherwise. We define a new list assignment $L_0$
 such that $L_0(v)=L(v)\setminus\{\alpha\}$ for
 $v\in N(p)\cap V(G_0)$, and $L_0(v)=L(v)$ for $v\in V(G_0)\setminus N(p)$. Note that all
 $v\in N(p)\cap V(G_0)$ will be on the outer face of $G_0$. Thus $|L_0(v)|\ge 3$ for all interior
-vertices $v$ of $G_0$. Also, $|L_0(v)|\ge 1$ for all $v\in\{x,y,c_i,c_n\}$. The case $\alpha\in L(y)$ when
-$y\in V(G_i)\cap N(p)$ will potentially result in $|L_0(y)|=0$, but in this case $y=c_i$ and $y$ will be
-colored $\alpha$. Finally, $|L_0|\ge2$ for all other $v$ on the outer face of $G_0$. By choosing $G_0$ from
+vertices $v$ of $G_0$. Except for a few special cases for $y$ mentioned below, $|L_0(v)|\ge 1$ for all
+$v\in\{x,y,c_i,c_n\}$. Finally, $|L_0(v)|\ge2$ for all other $v$ on the outer face of $G_0$. By choosing $G_0$ from
 $L_0$ we ensure $p$ recieves no $\alpha$ colored neighbors in $G_0$, except in a few specially handled cases
-where $c_i$ is colored $\alpha$.
+where $c_i$ is colored $\alpha$.\\
+
+\noindent If $\alpha\in L(y)$ and $y\in V(G_0)\cap N(p)$ it may be that $|L_0(y)|=0$. To handle this we
+first note $y\in\{c_n, c_i\}$. The case $y=c_i$ will require no special treatment as $c_i$ will
+naturally be colored $\alpha$. Suppose $y=c_n$. Then $x=p$ as otherwise $y\in C[x,p)$ and
+$\alpha\not\in L(y)$. Color $y$ with $\alpha$ and apply the inductive hypothesis to choose
+$G$ from $L$ with $x'=y$, $y'=x$, and $p'=y$. Otherwise suppose $y\ne c_n$.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -376,7 +387,7 @@ where $c_i$ is colored $\alpha$.
   \draw (p) edge (c_i);
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -385,7 +396,7 @@ $\qquad$
   \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
   \node (null) [draw=none] at (270:1.5cm) {};
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -399,7 +410,16 @@ $\qquad$
   \draw (c_i) edge [bend left] (c_n) [dashed];
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+\end{tikzpicture}
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -407,7 +427,8 @@ $\qquad$
 	]
   \node (p) [label=above:{$y_1$, $p_1$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
-  \node (c_i) [label=below:$x_1$, fill] at (0cm, -1cm) {};
+  \node (c_i) [label=below:$x_1$] at (0cm, -1cm) {};
+  \node (c_i_label) [draw=none, scale=0.8] at (0cm, -1cm) {$\beta$};
   \node (G_1) [draw=none] at (0.5cm, 0.5cm) {$G_1$};
   \node (null) [draw=none] at (270:1.5cm) {};
   \draw (p) edge (c_i);
@@ -417,11 +438,10 @@ $\qquad$
 \textbf{Figure 3.2} The case $x=y=p$.
 \end{center}
 
-\noindent Suppose $x=y=p$. Define $p_0=c_n$ and precolor $p_0$ from $L_0(p_0)$. By our note above, clearly
-$L_0(v)$ satisfies the inductive hypothesis with $G_0$, $x_0=c_n$, $y_0=c_i$, and $p_0$. After choosing $G_0$
-from $L_0$, if $G_1$ exists we apply the inductive hypothesis again to choose $G_1$ from $L$ with $x_1=c_i$,
-$y_1=y$, and $p_1=p$. Since $c_i$ recieves at most one neighbor in each $G_0$ and $G_1$, the combined coloring
-forms a path choosing of $G$ from $L$.
+\noindent Suppose $x=y=p$. Color $c_i$ from $L_0(c_i)$. Apply the inductive hypothesis to choose $G_0$ from
+$L$ with $x_0=c_n$, $y_0=p_0=c_i$. If $G_1$ exists we apply the inductive hypothesis again to choose $G_1$ from
+$L$ with $x_1=c_i$, $y_1=y$, and $p_1=p$. Since $c_i$ recieves at most one neighbor in each $G_0$ and $G_1$, the
+combined coloring forms a path choosing of $G$ from $L$.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -444,7 +464,7 @@ forms a path choosing of $G$ from $L$.
   \draw (p) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -453,7 +473,7 @@ $\qquad$
   \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
   \node (null) [draw=none] at (270:1.5cm) {};
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -469,7 +489,16 @@ $\qquad$
   \draw (p) edge [bend left] (x) [dashed];
   \draw (x) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+\end{tikzpicture}
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -484,14 +513,14 @@ $\qquad$
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.3} The case $y=p$, $x\ne p$, and $c_i\in V(C[x,p))$ (shown is the case $x\ne c_i$).
+\textbf{Figure 3.3} The case $y=p$, $x\ne p$, and $c_i\in C[x,p)$ (shown is the case $x\ne c_i$).
 \end{center}
 
-\noindent Suppose $y=p$, $x\ne p$, and $c_i\in V(C[x,p))$. I $G_1$ exists, first apply
+\noindent Suppose $y=p$, $x\ne p$, and $c_i\in C[x,p)$. If $G_1$ exists, apply
 the inductive hypothesis to choose $G_1$ from $L$ with $x_1=x$, $y_1=y$, and $p_1=p$.
-Since $\alpha\not\in L(v)$ for any $v\in V(C[x,p))$ we may apply the inductive hypothesis to choose $G_0$ from
-$L_0$ with $x_0=y_0=p_0=c_i$. If $G_1$ exists note $c_i$  precolored from our choosing of $G_1$ and recieves
-no same color neighbors in $G_0$, thus the combined coloring forms a path choosing of $G$ from $L$.
+Apply the inductive hypothesis to choose $G_0$ from
+$L_0$ with $x_0=y_0=p_0=c_i$. If $G_1$ exists note $c_i$ was precolored from the choosing of $G_1$ and recieves
+no same color neighbors in $G_0$. Thus the combined coloring forms a path choosing of $G$ from $L$.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -514,7 +543,7 @@ no same color neighbors in $G_0$, thus the combined coloring forms a path choosi
   \draw (p) edge (c_i);
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -523,7 +552,7 @@ $\qquad$
   \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
   \node (null) [draw=none] at (270:1.5cm) {};
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -538,7 +567,16 @@ $\qquad$
   \draw (x) edge (c_n) [dashed];
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+\end{tikzpicture}
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -546,21 +584,22 @@ $\qquad$
 	]
   \node (p) [label=above:{$y_1$, $p_1$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
-  \node (c_i) [label=below:$x_1$, fill] at (0cm, -1cm) {};
+  \node (c_i) [label=below:$x_1$] at (0cm, -1cm) {};
+  \node (c_i_label) [draw=none, scale=0.8] at (0cm, -1cm) {$\beta$};
   \node (G_1) [draw=none] at (0.5cm, 0.5cm) {$G_1$};
   \node (null) [draw=none] at (270:1.5cm) {};
   \draw (p) edge (c_i);
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.4} The case $y=p$, $x\ne p$, and $c_i\not\in V(C[x,p))$.
+\textbf{Figure 3.4} The case $y=p$, $x\ne p$, and $c_i\not\in C[x,p)$.
 \end{center}
 
-\noindent Suppose $y=p$, $x\ne p$, and $c_i\not\in V(C[x,p))$. Since $\alpha\not\in L(v)$
-for any $v\in V(C[x,p))$ we precolor $x$ from $L_0(x)$ and apply the inductive hypothesis to choose
+\noindent Suppose $y=p$, $x\ne p$, and $c_i\not\in C[x,p)$. Color $x$ from $L_0(x)$ and apply the inductive
+hypothesis to choose
 $G_0$ from $L_0$ with $x_0=p_0=x$ and $y_0=c_i$. If $G_1$ exists we apply the inductive hypothesis again to
 choose $G_1$ from $L$ with $x_1=c_i$, $y_1=y$, and $p_1=p$. Notice $c_i$ recieves at most one same color
-neighbor in each $G_0$ and $G_1$.
+neighbor in each $G_0$ and $G_1$. 
 
 \begin{center}
 \begin{tikzpicture}[
@@ -583,7 +622,7 @@ neighbor in each $G_0$ and $G_1$.
   \draw (p) edge [bend left] (y) [dashed];
   \draw (y) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -592,7 +631,7 @@ $\qquad$
   \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
   \node (null) [draw=none] at (270:1.5cm) {};
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -606,7 +645,16 @@ $\qquad$
   \draw (c_i) edge [bend left] (c_n) [dashed];
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+\end{tikzpicture}
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -615,7 +663,8 @@ $\qquad$
   \node (p) [label=above:$p_1$] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
   \node (y) [label=right:$y_1$, fill] at (1.5cm, 0.5cm) {};
-  \node (c_i) [label=below:$x_1$,fill] at (0cm, -1cm) {};
+  \node (c_i) [label=below:$x_1$] at (0cm, -1cm) {};
+  \node (c_i_label) [draw=none, scale=0.8] at (0cm, -1cm) {$\beta$};
   \node (G_1) [draw=none] at (0.7cm, 0.5cm) {$G_1$};
   \node (null) [draw=none] at (270:1.5cm) {};
   \draw (p) edge (c_i);
@@ -623,11 +672,12 @@ $\qquad$
   \draw (y) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.5} The case $x=p$, $y\ne p$, and $c_i\in V(C(y,x))$.
+\textbf{Figure 3.5} The case $x=p$, $y\ne p$, and $c_i\in C(y,x)$.
 \end{center}
 
-\noindent Suppose $x=p$, $y\ne p$, and $c_i\in V(C(y,x))$. In this case $G_1$ must exist, so first apply the
-inductive hypothesis to choose $G_0$ from $L_0$ with $x_0=p_0=c_n$ and $y_0=c_i$. We again apply the inductive
+\noindent Suppose $x=p$, $y\ne p$, and $c_i\in C(y,x)$. Apply the
+inductive hypothesis to choose $G_0$ from $L_0$ with $x_0=p_0=c_n$ and $y_0=c_i$. In this case $G_1$ must exist
+and we apply the inductive
 hypothesis to choose $G_1$ from $L$ with $x_1=c_i$, $y_1=y$, and $p_1=p$. Notice $c_i$ recieves at most one same
 color neighbor in each $G_0$ and $G_1$.
 
@@ -652,7 +702,7 @@ color neighbor in each $G_0$ and $G_1$.
   \draw (p) edge (c_i);
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -661,7 +711,7 @@ $\qquad$
   \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
   \node (null) [draw=none] at (270:1.5cm) {};
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -676,7 +726,16 @@ $\qquad$
   \draw (p) edge (c_i);
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+\end{tikzpicture}
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -693,16 +752,16 @@ $\qquad$
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.6} The case $x=p$, $y\ne p$, and $c_i\not\in V(C(y,x))$ (shown is the case $y\ne c_i$ and
+\textbf{Figure 3.6} The case $x=p$, $y\ne p$, and $c_i\not\in C(y,x)$ (shown is the case $y\ne c_i$ and
 $\alpha\in L(c_i)$).
 \end{center}
 
-\noindent Suppose $x=p$, $y\ne p$, and $c_i\not\in V(C(y,x))$. If
+\noindent Suppose $x=p$, $y\ne p$, and $c_i\not\in C(y,x)$. If
 $\alpha\in L(c_i)$ we set $p_0=c_i$ and color $c_i$ with $\alpha$. Otherwise, set $p_0=c_n$ and color it with
-the first color in $L_0(c_n)$, note $|L_0(c_i)|\ge 2$ in this case. We then apply the inductive hypothesis to
-choose $G_0$ from $L_0$ with $x_0=c_n$, $y_0=y$, and $p_0$. If $G_1$ exists, we again apply the inductive
-hypothesis to color $G_1$ with $x_1=p_1=p$ and $y_1=c_i$. Notice if $p_0=c_i$, $c_i$ recieves at most one same
-color neighbor in $G_0$ and the single same color neighbor $p$ in $G_1$. Furthermore, $p$ will recieve no
+the first color in $L_0(c_n)$, note $|L_0(c_i)|\ge 2$ in this case. Apply the inductive hypothesis to
+choose $G_0$ from $L_0$ with $x_0=c_n$, $y_0=y$, and $p_0$. If $G_1$ exists, apply the inductive
+hypothesis to choose $G_1$ from $L$ with $x_1=p_1=p$ and $y_1=c_i$. Notice if $p_0=c_i$, $c_i$ recieves at most
+one same color neighbor in $G_0$ and the single same color neighbor $p$ in $G_1$. Furthermore, $p$ will recieve no
 same color neighbor in $G_1$ other than $c_i$. If $p_0\ne c_i$, then $y_1=c_i$ is immediatley prior to
 $p_1=p$ and $\alpha\not\in L(c_i)$. Thus $c_i$ will recieve no same color neighbors in $G_1$.
 
@@ -729,7 +788,7 @@ $p_1=p$ and $\alpha\not\in L(c_i)$. Thus $c_i$ will recieve no same color neighb
   \draw (y) edge (x) [dashed];
   \draw (x) edge (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -738,16 +797,16 @@ $\qquad$
   \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
   \node (null) [draw=none] at (270:1.5cm) {};
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
-  \node (p) [label=above:{$p$}] at (0cm, 2cm) {};
+  \node (p) [label=above:{$p_1$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
-  \node (y) [label=right:$y$, fill] at (1.5cm, 1.25cm) {};
-  \node (x) [label=right:$x$, fill] at (1.5cm, -0.25cm) {};
+  \node (y) [label=right:$y_1$, fill] at (1.5cm, 1.25cm) {};
+  \node (x) [label=right:$x_1$, fill] at (1.5cm, -0.25cm) {};
   \node (c_i) [label=below:$c_i$, fill] at (0cm, -1cm) {};
   \node (G_1) [draw=none] at (0.7cm, 0.5cm) {$G_1$};
   \node (null) [draw=none] at (270:1.5cm) {};
@@ -756,7 +815,16 @@ $\qquad$
   \draw (y) edge (x) [dashed];
   \draw (x) edge (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+\end{tikzpicture}
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -764,19 +832,20 @@ $\qquad$
 	]
   \node (c_n) [label=above left:$c_i$, fill] at (-1.5cm, 1.25cm) {};
   \node (c_i) [label=below:{$x_0$, $y_0$, $p_0$}] at (0cm, -1cm) {};
+  \node (c_i_label) [draw=none, scale=0.8] at (0cm, -1cm) {$\beta$};
   \node (G_0) [draw=none, ] at (-0.75cm, 0.12cm) {$G_0$};
   \node (null) [draw=none] at (270:1.5cm) {};
   \draw (c_i) edge [bend left] (c_n) [dashed];
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.7} The case $x\ne p$, $y\ne p$, and $c_i\in V(C[x,p))$ (shown is the case $x\ne c_i$).
+\textbf{Figure 3.7} The case $x\ne p$, $y\ne p$, and $c_i\in C[x,p)$ (shown is the case $x\ne c_i$).
 \end{center}
 
-\noindent Suppose $x\ne p$, $y\ne p$, and $c_i\in V(C[x,p))$. In this case $G_1$ must exist, so first apply
+\noindent Suppose $x\ne p$, $y\ne p$, and $c_i\in C[x,p)$. In this case $G_1$ must exist and we apply
 the inductive hypothesis to choose $G_1$ from $L$ with $x_1=x$, $y_1=y$, and $p_1=p$.
-Since $\alpha\not\in L(v)$ for any $v\in V(C[x,p))$ we may apply the inductive hypothesis to choose $G_0$ from
-$L_0$ with $x_0=y_0=p_0=c_i$. Note that $c_i$ was precolored from our choosing of $G_1$ and recieves
+Apply the inductive hypothesis again to choose $G_0$ from
+$L_0$ with $x_0=y_0=p_0=c_i$. Note that $c_i$ was precolored from the choosing of $G_1$ and recieves
 no same color neighbors in $G_0$ so the combined coloring forms a path choosing of $G$ from $L$.
 
 \begin{center}
@@ -786,7 +855,7 @@ no same color neighbors in $G_0$ so the combined coloring forms a path choosing 
 		every label/.append style={rectangle}
 	]
   \node (c_n) [label=above left:$c_n$, fill] at (-1.5cm, 1.25cm) {};
-  \node (p) [label=above:{$x$, $p$}] at (0cm, 2cm) {};
+  \node (p) [label=above:{$p$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
   \node (x) [label=below left:$x$, fill] at (-1.5cm, 0.25cm) {};
   \node (y) [label=right:$y$, fill] at (1.5cm, 0.5cm) {};
@@ -802,7 +871,7 @@ no same color neighbors in $G_0$ so the combined coloring forms a path choosing 
   \draw (p) edge [bend left] (y) [dashed];
   \draw (y) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -811,7 +880,7 @@ $\qquad$
   \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
   \node (null) [draw=none] at (270:1.5cm) {};
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -826,7 +895,16 @@ $\qquad$
   \draw (x) edge (c_n) [dashed];
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+\end{tikzpicture}
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -835,7 +913,8 @@ $\qquad$
   \node (p) [label=above:$p_1$] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
   \node (y) [label=right:$y_1$, fill] at (1.5cm, 0.5cm) {};
-  \node (c_i) [label=below:$x_1$,fill] at (0cm, -1cm) {};
+  \node (c_i) [label=below:$x_1$] at (0cm, -1cm) {};
+  \node (c_i_label) [draw=none, scale=0.8] at (0cm, -1cm) {$\beta$};
   \node (G_1) [draw=none] at (0.7cm, 0.5cm) {$G_1$};
   \node (null) [draw=none] at (270:1.5cm) {};
   \draw (p) edge (c_i);
@@ -843,11 +922,12 @@ $\qquad$
   \draw (y) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.8} The case $x\ne p$, $y\ne p$, and $c_i\in V(C(y,x))$.
+\textbf{Figure 3.8} The case $x\ne p$, $y\ne p$, and $c_i\in C(y,x)$.
 \end{center}
 
-\noindent Suppose $x\ne p$, $y\ne p$, and $c_i\in V(C(y,x))$. In this case $G_1$ must exist. We apply
-the inductive hypothesis to color $G_0$ from $L_0$ with $x_0=p_0=x$ and $y_0=c_i$. Then apply the inductive
+\noindent Suppose $x\ne p$, $y\ne p$, and $c_i\in C(y,x)$. Apply
+the inductive hypothesis to choose $G_0$ from $L_0$ with $x_0=p_0=x$ and $y_0=c_i$. In this case $G_1$ must exist
+and we apply the inductive
 hypothesis again to choose $G_1$ from $L$ with $x_1=c_i$, $y_1=y$, and $p_1=p$. Notice $c_i$ recieves at most
 one same color neighbor in each $G_0$ and $G_1$.
 
@@ -858,7 +938,7 @@ one same color neighbor in each $G_0$ and $G_1$.
 		every label/.append style={rectangle}
 	]
   \node (c_n) [label=above left:$c_n$, fill] at (-1.5cm, 1.25cm) {};
-  \node (p) [label=above:{$x$, $p$}] at (0cm, 2cm) {};
+  \node (p) [label=above:{$p$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
   \node (x) [label=left:$x$, fill] at (-1.5cm, 0.25cm) {};
   \node (y) [label=below left:$y$, fill] at (-1cm, -0.75cm) {};
@@ -874,7 +954,7 @@ one same color neighbor in each $G_0$ and $G_1$.
   \draw (p) edge (c_i);
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -883,7 +963,7 @@ $\qquad$
   \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
   \node (null) [draw=none] at (270:1.5cm) {};
 \end{tikzpicture}
-$\qquad$
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -900,7 +980,16 @@ $\qquad$
   \draw (x) edge (c_n) [dashed];
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (null) [draw=none] at (0cm, 0.5cm) {$\rightarrow$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+\end{tikzpicture}
+$\quad$
 \begin{tikzpicture}[
 		scale=1,
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
@@ -908,21 +997,22 @@ $\qquad$
 	]
   \node (p) [label=above:{$x_1$, $p_1$}] at (0cm, 2cm) {};
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
-  \node (c_i) [label=below:$y_1$, fill] at (0cm, -1cm) {};
+  \node (c_i) [label=below:$y_1$] at (0cm, -1cm) {};
+  \node (c_i_label) [draw=none, scale=0.8] at (0cm, -1cm) {$\beta$};
   \node (G_1) [draw=none] at (0.5cm, 0.5cm) {$G_1$};
   \node (null) [draw=none] at (270:1.5cm) {};
   \draw (p) edge (c_i);
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.9} The case $x\ne p$, $y\ne p$, and $c_i\in V(C(p,y])$ (shown is the case $y\ne c_i$ and
+\textbf{Figure 3.9} The case $x\ne p$, $y\ne p$, and $c_i\in C(p,y]$ (shown is the case $y\ne c_i$ and
 $\alpha\not\in L(c_i)$).
 \end{center}
 
-\noindent Finally, suppose $x\ne p$, $y\ne p$, and $c_i\in V(C(p,y])$. If
-$\alpha\in L(c_i)$ we set $p_0=c_i$ and color $c_i$ with $\alpha$. Otherwise, set $p_0=c_1$ and color it with
-the first color in $L_0(c_1)$, noting $|L_0(c_i)|\ge 2$ in this case. We then apply the inductive hypothesis to
-choose $G_0$ from $L_0$ with $x_0=x$, $y_0=y$, and $p_0$. If $G_1$ exists, we again apply the inductive
+\noindent Finally, suppose $x\ne p$, $y\ne p$, and $c_i\in C(p,y]$. If
+$\alpha\in L(c_i)$ we set $p_0=c_i$ and color $c_i$ with $\alpha$. Otherwise, define $p_0=c_1$ and color it from
+$L_0(c_1)$, noting $|L_0(c_i)|\ge 2$ in this case. Apply the inductive hypothesis to
+choose $G_0$ from $L_0$ with $x_0=x$, $y_0=y$, and $p_0$. If $G_1$ exists, apply the inductive again
 hypothesis to choose $G_1$ from $L$ with $x_1=p_1=p$ and $y_1=c_i$. Note that $c_i$ was precolored by our
 choosing of $G_0$. If $p_0=c_i$, $c_i$ recieves at most one same
 color neighbor in $G_0$ and the single same color neighbor $p$ in $G_1$. Furthermore, $p$ will recieve no
@@ -936,9 +1026,9 @@ To implement the coloring procedure described in Theorem 2 we must be able to ef
 the following:
 \begin{enumerate}
 \item maintain the current subgraph $G$ and its outer face $C$;
-\item remove a single vertex $v\in V(C)$ maintaining the new outer face of $G-v$;
+\item remove a single vertex $v\in C$ maintaining the new outer face of $G-v$;
 \item split $G$ into two subgraphs along an edge bridging the outer face;
-\item for any $v\in V(C)$, determine the region of $C$ that $v$ lies in with respect to $x$, $y$, and $p$.
+\item for any $v\in C$, determine the region of $C$ that $v$ lies in with respect to $x$, $y$, and $p$.
 \end{enumerate}
 
 Each vertex will marked with a \emph{state}
