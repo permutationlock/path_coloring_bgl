@@ -77,7 +77,7 @@ linear time implementation of Hartman and Skrekovski's algorithm.
 
 \section{Path $3$-Coloring Plane Graphs}
 
-We first restate the algorithm and proof of Poh [l]. This proof yields a simple algorithm for path $3$-coloring
+We first restate the theorem and proof of Poh [l]. This proof yields a simple algorithm for path $3$-coloring
 plane graphs.\\
 
 \begin{adjustwidth}{1.5em}{1.5em}
@@ -89,7 +89,7 @@ neighbor in $V(G)\setminus V(C)$.\\
 \end{adjustwidth}
 
 \begin{proof}
-\noindent If $|V(G)|\le 3$ the coloring follows trivially. Let $|V(G)|>3$ and suppose the theorem holds
+\noindent If $|V(G)|\le 2$ the coloring follows trivially. Let $|V(G)|>2$ and suppose the theorem holds
 for all graphs $H$ with $|V(H)|<|V(G)|$. Let $P=p_0\ldots p_n$ and $Q=q_0\ldots q_m$ denote the two induced paths from the $2$-coloring of $C$
 such that the edges $p_0q_0$ and $p_nq_m$ are in $C$. Suppose there exist uncolored vertices, that is
 $V(G)\setminus V(C)\ne\emptyset$.\\
@@ -113,18 +113,12 @@ a path coloring of $G$.
 
 \subsection*{Implementing Poh's Algorithm}
 
-Let the plane graph $G$ be represented as an adjacency list and an ordering of neighbors following a
+Let the plane graph $G$ be represented as an incidence list (or adjacency list) and an ordering of edges around
+each vertex following a
 combinatorial embedding. We track the paths $P$ and $Q$ by marking each vertex with its respective path and
 storing the path start and end vertices $p_0$, $p_n$, $q_0$, and $q_m$.
 We first find $t_1$ by looking through the ordered neighbors of $q_m$ and take the vertex counterclockwise past
 $p_n$. This step is repeated until the graph is colored or $t_1\not\in P\cup Q$.\\
-
-\noindent We perform a
-breadth first search starting at $t_1$ and storing parents for each vertex visited. Vertices marked to be in $P$
-or $Q$ will be ignored, in this way containing the search within the current bounded subgraph. The
-search terminates once a vertex $u$ with adjacent neighbors $p_i\in P$ and $q_j\in Q$ has been reached. An
-induced $ut_1$-path is produced by backtracking through the search from $u$. We color and mark each vertex on the
-new path with the remaining color not used to color $P$ or $Q$.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -186,13 +180,12 @@ $\qquad$
 \textbf{Figure 2.1} The case $p_i=p_0$ and $q_j=q_0$.
 \end{center}
 
-\noindent To color the remaining graph we recurse on both the region
-bounded by the $p_ip_n$-path and $ut_1$-path, and the region bounded by the $ut_1$-path and $q_jp_m$-path.
-If $p_i=p_0$ and $q_j=q_0$ we are done and this mimicks the case of a $t_0t_1$ path in with $u=t_0$.
-If $p_i\ne p_0$ or $q_j\ne q_0$ we handle the remaining subgraph by recursing on the region bounded by the
-$p_0p_i$-path and $q_0p_j$-path. Note each recursive step is independant and vertex marks are shared,
-thus the algorithm may instead proceed iteratively by pushing paths, represented by their start and end
-vertices, into a stack or queue.
+\noindent We perform a
+breadth first search starting at $t_1$ and storing parents for each vertex visited. Vertices marked to be in $P$
+or $Q$ will be ignored, in this way containing the search within the current bounded subgraph. The
+search terminates once a vertex $u$ with adjacent neighbors $p_i\in P$ and $q_j\in Q$ has been reached. An
+induced $ut_1$-path is produced by backtracking through the search from $u$. We color and mark each vertex on the
+new path with the remaining color not used to color $P$ or $Q$.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -269,6 +262,16 @@ $\qquad$
 \textbf{Figure 2.2} The case $p_i\ne p_0$ or $q_i\ne q_0$.
 \end{center}
 
+\noindent To color the remaining graph we recurse on both the region
+bounded by the $p_ip_n$-path and $ut_1$-path, and the region bounded by the $ut_1$-path and $q_jp_m$-path.
+If $p_i=p_0$ and $q_j=q_0$ we are done and this mimicks the case of a $t_0t_1$ path in with $u=t_0$.
+If $p_i\ne p_0$ or $q_j\ne q_0$ we handle the remaining subgraph by recursing on the region bounded by the
+$p_0p_i$-path and $q_0p_j$-path. Note each recursive step is independant and vertex marks are shared,
+thus the algorithm may instead proceed iteratively by pushing paths, represented by their start and end
+vertices, into a stack or queue.
+
+\subsection*{Time Complexity}
+
 \noindent Locating $t_1$ requires a single neighbor lookup. The amortized complexity of a neighbor lookup is
 $O(|E|/|V|)$. Each vertex may be $t_1$ at most once so over the entire graph we perform at most $|V|$ neighbor
 lookups. In planar graphs $|E|\le 3|V|-6$, and $O(|E|)=O(|V|)$. Therefore, the
@@ -291,8 +294,9 @@ $u,w\in N(v)$ we let $[u,w]_v$ denote the path from $u$ to $w$ clockwise around 
 faces.\\
 
 \noindent Note that in all figures solid circles denote vertices yet to be colored, and colored vertices will
-be labeled with their assigned color. Labels $\alpha$ and $\beta$ will denote distinct colors. If a vertex
-is unlabled it represents arbitrary color assignment from its list.\\
+be labeled with their assigned color. We have $\alpha$ denote the current color and a label $\beta$ represent
+coloring $v$ from $L(v)\setminus\{\alpha\}$. If a vertex $v$ is unlabled it represents arbitrary coloring from
+$L(v)$.\\
 
 \begin{adjustwidth}{1.5em}{1.5em}
 \noindent\textbf{Theorem 2.} Let $G$ be a $2$-connected weakly triangulated plane graph, or a complete graph
@@ -307,16 +311,16 @@ color $\alpha$. Suppose $L(v)$ assigns a list of colors to each $v\in V(G)$ that
     \end{array}
 \]
 If $p\ne x$, let $\alpha\not\in L(v)$ for
-any $v\in V(C[x,p))$.\\
+any $v\in V(C[x,p))$. Also assume the precoloring is a path coloring.\\
 
-\noindent This coloring may be extended to
+\noindent The coloring may be extended to
 a path choosing of $G$ from $L$ such that $x$, $y$, and $p$ each recieve at most one same color neighbor. If
 $x=y$ then $x$ and $y$ recieve no same color neighbors. If $y=p$, or $y$ is immediately prior to
 $p$ on the outer face and $\alpha\not\in L(y)$, then $y$ recieves no same color neighbors.\\
 \end{adjustwidth}
 
 \begin{proof}
-If $|V(G)\le 2$ the theorem easily follows. Suppose $|V(G)|>2$ and the theorem
+If $|V(G)\le 3$ the theorem easily follows. Suppose $|V(G)|>3$ and the theorem
 holds for all graphs $H$ with $|V(H)|<|V(G)|$. Let
 $C=c_0c_1\ldots c_n$ denote, in clockwise order, the outer face of $G$ with $p=c_0$.
 There are several cases to consider. Let $c_i$ be the next vertex in $V(C)\cap N(p)$ counterclockwise from $c_n$.
@@ -359,14 +363,14 @@ $v\in N(p)\cap V(G_0)$, and $L_0(v)=L(v)$ for $v\in V(G_0)\setminus N(p)$. Note 
 $v\in N(p)\cap V(G_0)$ will be on the outer face of $G_0$. Thus $|L_0(v)|\ge 3$ for all interior
 vertices $v$ of $G_0$. Except for a few special cases for $y$ mentioned below, $|L_0(v)|\ge 1$ for all
 $v\in\{x,y,c_i,c_n\}$. Finally, $|L_0(v)|\ge2$ for all other $v$ on the outer face of $G_0$. By choosing $G_0$ from
-$L_0$ we ensure $p$ recieves no $\alpha$ colored neighbors in $G_0$, except in a few specially handled cases
-where $c_i$ is colored $\alpha$.\\
+$L_0$ we ensure either $p$ recieves no new $\alpha$ colored neighbors in $G_0$. If $c_i$ is colored $\alpha$
+then $p$ recieves no $\alpha$ colored neighbors in $G_1$ other than $c_i$.\\
 
 \noindent If $\alpha\in L(y)$ and $y\in V(G_0)\cap N(p)$ it may be that $|L_0(y)|=0$. To handle this we
 first note $y\in\{c_n, c_i\}$. The case $y=c_i$ will require no special treatment as $c_i$ will
-naturally be colored $\alpha$. Suppose $y=c_n$. Then $x=p$ as otherwise $y\in C[x,p)$ and
+naturally be colored $\alpha$. Suppose $\alpha\in L(y)$ and $y=c_n$. Then $x=p$ as otherwise $y\in C[x,p)$ and
 $\alpha\not\in L(y)$. Color $y$ with $\alpha$ and apply the inductive hypothesis to choose
-$G$ from $L$ with $x'=y$, $y'=x$, and $p'=y$. Otherwise suppose $y\ne c_n$.
+$G$ from $L$ with $x'=y$, $y'=x$, and $p'=y$. Otherwise suppose if $\alpha\in L(y)$ then $y\ne c_n$.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -1020,23 +1024,40 @@ same color neighbor in $G_1$ other than $c_i$. If $p_0\ne c_i$, then $y_1=c_i$ i
 $p_1=p$ and $\alpha\not\in L(c_i)$. Thus $c_i$ will recieve no same color neighbors in $G_1$.
 \end{proof}
 
-\subsection*{Implementation}
+\subsection*{Implementing Hartman and Skrekovski's Algorithm}
 
-To implement the coloring procedure described in Theorem 2 we must be able to efficiently achieve each of
-the following:
+Once again let the plane graph $G$ be represented as an incidence list and an ordering of edges around each
+vertex following a planar embedding. Let the vertices $x$, $y$, and $p$ be provided. We will track subgraphs by
+marking each vertex with a \emph{state} of \emph{interior},
+\emph{face}, or \emph{colored}. Vertices will only change in state from \emph{interior} to \emph{face} to
+\emph{colored}. We will also have a \emph{neighbor range} for all \emph{face} and \emph{colored} vertices
+that will track the subset of the ordered incidence list included in the current outer face. To walk clockwise
+along the outer face from some \emph{face} vertex we may simply proceed to the most counterclockwise neighbor in
+its \emph{neighbor range}. To be able to perform the proceedure from the proof above
+we must also determine where each \emph{face} vertex lies on the face in respect to $x$, $y$, and $p$. This
+\emph{face location} property is nontrivial and is discussed in the following section.\\
+
+\noindent Suppose the afformentioned properties tracked for each vertex. Note \emph{neighbor range}
+for $p$ will begin at $c_i$ and proceed clockwise to $c_n$. We first check for the case $y=c_n$ and
+$\alpha\in L(y)$ and perform the necessary coloring of $y$ and renaming of $x$, $y$, and $p$. Next proceed
+counterclockwise through each $n\in N(p)$ starting with $c_n$. For each $n$ we perform the following:
+
 \begin{enumerate}
-\item maintain the current subgraph $G$ and its outer face $C$;
-\item remove a single vertex $v\in C$ maintaining the new outer face of $G-v$;
-\item split $G$ into two subgraphs along an edge bridging the outer face;
-\item for any $v\in C$, determine the region of $C$ that $v$ lies in with respect to $x$, $y$, and $p$.
+\item if $n$ is interior, initialize its \emph{neighbor range} and set its \emph{state} to \emph{face};
+\item contract the \emph{neighbor range} of $n$ to remove $p$ from its incidence list;
+\item if $n\in C$ and $n\ne c_n$ terminate;
+\item remove $\alpha$ from $L(n)$.
 \end{enumerate}
 
-Each vertex will marked with a \emph{state}
-indicating whether it is currently interior, uncolored on the outer face, or colored. Since $G$ is a plane graph
-we are provided with an embedded ordering of incident edges for each vertex. For each vertex we will maintain
-a pair of indices into this embedded ordering of edges, initialized with the start and end of the ordered lists.
-When removing a vertex $v\in C$ from $G$ we must simply remove $v$ from the incidence list of each $u\in N(v)$.
-Since $v$ is on the outer face, it will be the the first or last index 
+\noindent Once the above procedure terminates we will have located $c_i$. The tracking of the subgraphs $G_0$ and $G_1$
+are already almost complete by our tracking of \emph{state} and \emph{neighbor range}. It remains to determine
+\emph{neighbor range} for $c_i$ in $G_0$ and $G_1$. This can be achieved by locating $p$ in $c_i$'s incidence list
+and splitting the current \emph{neighbor range} of $c_i$ in two at the given edge. Comparing $c_i$, $x$, $y$, and
+$p$, along with the \emph{face location} and \emph{state} properties for each we may determine which case to
+apply and make the appropriate recursive calls on $G_0$ and $G_1$.
+
+\subsection*{Efficient Tracking of Outer Face Location}
+
 
 \begin{comment}
 \begin{algorithm}
