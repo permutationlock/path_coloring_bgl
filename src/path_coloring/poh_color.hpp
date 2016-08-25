@@ -23,81 +23,81 @@
 #include "incidence_list_helpers.hpp"
 
 template<
-		typename index_graph, typename planar_embedding, typename color_map,
-		typename mark_map, typename vertex_map, typename color_type,
-		typename vertex_descriptor = typename boost::graph_traits<index_graph>::vertex_descriptor
+		typename graph_t, typename planar_embedding_t, typename color_map_t,
+		typename mark_map_t, typename parent_map_t, typename color_t,
+		typename vertex_t = typename boost::graph_traits<graph_t>::vertex_descriptor
 	>
 static void poh_color_recursive(
-		const index_graph & graph, const planar_embedding & embedding,
-		color_map & coloring, mark_map & vertex_marks, vertex_map & parent_map,
-		vertex_descriptor p_0, vertex_descriptor p_n,
-		vertex_descriptor q_0, vertex_descriptor q_m,
-		std::size_t & count, std::size_t p_mark, std::size_t q_mark, color_type new_color
+		const graph_t & graph, const planar_embedding_t & planar_embedding,
+		color_map_t & color_map, mark_map_t & mark_map, parent_map_t & parent_map,
+		vertex_t p_0, vertex_t p_n,
+		vertex_t q_0, vertex_t q_m,
+		std::size_t & count, std::size_t p_mark, std::size_t q_mark, color_t new_color
 	)
 {
-	vertex_descriptor t_0 = p_0, t_1 = p_n;
+	vertex_t t_0 = p_0, t_1 = p_n;
 	
 	do {
 		if(p_0 == p_n && q_0 == q_m) return;
 		
-		auto edge_iter = find_neighbor_iterator(q_m, p_n, embedding, graph);
+		auto edge_iter = find_neighbor_iterator(q_m, p_n, planar_embedding, graph);
 			
-		if(edge_iter == embedding[q_m].end()) {
-			throw std::runtime_error("Invalid embedding (no edge p_n to q_m).");
+		if(edge_iter == planar_embedding[q_m].end()) {
+			throw std::runtime_error("No edge between p_n and q_m).");
 		}
-		else if(++edge_iter == embedding[q_m].end()) {
-			t_1 = get_incident_vertex(q_m, *embedding[q_m].begin(), graph);
+		else if(++edge_iter == planar_embedding[q_m].end()) {
+			t_1 = get_incident_vertex(q_m, *planar_embedding[q_m].begin(), graph);
 		}
 		else {
 			t_1 = get_incident_vertex(q_m, *edge_iter, graph);
 		}
 		
-		if(vertex_marks[t_1] == p_mark) {
+		if(mark_map[t_1] == p_mark) {
 			p_n = t_1;
 		}
-		else if(vertex_marks[t_1] == q_mark) {
+		else if(mark_map[t_1] == q_mark) {
 			q_m = t_1;
 		}
-	} while(vertex_marks[t_1] == p_mark || vertex_marks[t_1] == q_mark);
+	} while(mark_map[t_1] == p_mark || mark_map[t_1] == q_mark);
 	
-	vertex_descriptor current_vertex;
+	vertex_t current_vertex;
 	
 	{
-		std::queue<vertex_descriptor> bfs_queue;
+		std::queue<vertex_t> bfs_queue;
 		std::size_t bfs_mark = count++;
 		bfs_queue.push(t_1);
-		vertex_marks[t_1] = bfs_mark;
+		mark_map[t_1] = bfs_mark;
 		parent_map[t_1] = t_1;
 	
 		while(t_0 == p_0 && !bfs_queue.empty()) {
 			current_vertex = bfs_queue.front();
 			bfs_queue.pop();
 		
-			auto edge_iter = embedding[current_vertex].begin();
-			vertex_descriptor last_neighbor = get_incident_vertex(current_vertex, *edge_iter, graph);
+			auto edge_iter = planar_embedding[current_vertex].begin();
+			vertex_t last_neighbor = get_incident_vertex(current_vertex, *edge_iter, graph);
 			
 			do {
-				if(++edge_iter == embedding[current_vertex].end())
-					edge_iter = embedding[current_vertex].begin();
+				if(++edge_iter == planar_embedding[current_vertex].end())
+					edge_iter = planar_embedding[current_vertex].begin();
 				
-				vertex_descriptor neighbor = get_incident_vertex(current_vertex, *edge_iter, graph);
+				vertex_t neighbor = get_incident_vertex(current_vertex, *edge_iter, graph);
 				
-				std::size_t mark = vertex_marks[neighbor];
-				std::size_t last_mark = vertex_marks[last_neighbor];
+				std::size_t mark = mark_map[neighbor];
+				std::size_t last_mark = mark_map[last_neighbor];
 				
 				if(mark != bfs_mark && mark != p_mark && mark != q_mark) {
 					parent_map[neighbor] = current_vertex;
-					vertex_marks[neighbor] = bfs_mark;
+					mark_map[neighbor] = bfs_mark;
 					bfs_queue.push(neighbor);
 				}
 				else if(mark == q_mark && last_mark == p_mark) {
 					t_0 = current_vertex;
-					vertex_descriptor p_i = last_neighbor;
-					vertex_descriptor q_j = neighbor;
+					vertex_t p_i = last_neighbor;
+					vertex_t q_j = neighbor;
 					
 					if(p_i != p_0 || q_j != q_0) {
 						poh_color_recursive(
-								graph, embedding, coloring, vertex_marks, parent_map,
+								graph, planar_embedding, color_map, mark_map, parent_map,
 								p_0, p_i, q_0, q_j,
 								count, p_mark, q_mark, new_color
 							);
@@ -110,72 +110,76 @@ static void poh_color_recursive(
 				}
 			
 				last_neighbor = neighbor;
-			} while(edge_iter != embedding[current_vertex].begin());
+			} while(edge_iter != planar_embedding[current_vertex].begin());
+		}
+		
+		if(t_0 == p_0) {
+			throw std::runtime_error("BFS failed to find edge between paths.");
 		}
 	}
 	
 	std::size_t new_mark = count++;
-	coloring[current_vertex] = new_color;
-	vertex_marks[current_vertex] = new_mark;
+	color_map[current_vertex] = new_color;
+	mark_map[current_vertex] = new_mark;
 	
 	while(parent_map[current_vertex] != current_vertex) {
 		current_vertex = parent_map[current_vertex];
-		coloring[current_vertex] = new_color;
-		vertex_marks[current_vertex] = new_mark;
+		color_map[current_vertex] = new_color;
+		mark_map[current_vertex] = new_mark;
 	}
 	
 	poh_color_recursive(
-			graph, embedding, coloring, vertex_marks, parent_map,
+			graph, planar_embedding, color_map, mark_map, parent_map,
 			p_0, p_n, t_0, t_1,
-			count, p_mark, new_mark, coloring[q_0]
+			count, p_mark, new_mark, color_map[q_0]
 		);
 	
 	poh_color_recursive(
-			graph, embedding, coloring, vertex_marks, parent_map,
+			graph, planar_embedding, color_map, mark_map, parent_map,
 			t_0, t_1, q_0, q_m,
-			count, new_mark, q_mark, coloring[p_0]
+			count, new_mark, q_mark, color_map[p_0]
 		);
 }
 
 template<
-		typename index_graph, typename planar_embedding,
-		typename color_map, typename vertex_iterator, typename color_type
+		typename graph_t, typename planar_embedding_t,
+		typename color_map_t, typename vertex_iterator_t, typename color_t
 	>
 void poh_color(
-		const index_graph & graph, const planar_embedding & embedding,
-		color_map & coloring, vertex_iterator p_begin, vertex_iterator p_end,
-		vertex_iterator q_begin, vertex_iterator q_end,
-		color_type c_0, color_type c_1, color_type c_2
+		const graph_t & graph, const planar_embedding_t & planar_embedding,
+		color_map_t & color_map, vertex_iterator_t p_begin, vertex_iterator_t p_end,
+		vertex_iterator_t q_begin, vertex_iterator_t q_end,
+		color_t c_0, color_t c_1, color_t c_2
 	)
 {
 	std::vector<std::size_t> mark_storage(boost::num_vertices(graph));
 	typename boost::iterator_property_map<
 			std::vector<std::size_t>::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
-		> vertex_marks(mark_storage.begin(), boost::get(boost::vertex_index, graph));
+			typename boost::property_map<graph_t, boost::vertex_index_t>::const_type
+		> mark_map(mark_storage.begin(), boost::get(boost::vertex_index, graph));
 	
-	typedef typename boost::graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
 	
-	std::vector<vertex_descriptor> parent_storage(boost::num_vertices(graph));
+	std::vector<vertex_t> parent_storage(boost::num_vertices(graph));
 	typename boost::iterator_property_map<
-			typename std::vector<vertex_descriptor>::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
+			typename std::vector<vertex_t>::iterator,
+			typename boost::property_map<graph_t, boost::vertex_index_t>::const_type
 		> parent_map(parent_storage.begin(), boost::get(boost::vertex_index, graph));
 	
-	for(vertex_iterator p_iter = p_begin; p_iter != p_end; ++p_iter) {
-		vertex_marks[*p_iter] = 1;
-		coloring[*p_iter] = c_0;
+	for(vertex_iterator_t p_iter = p_begin; p_iter != p_end; ++p_iter) {
+		mark_map[*p_iter] = 1;
+		color_map[*p_iter] = c_0;
 	}
 	
-	for(vertex_iterator q_iter = q_begin; q_iter != q_end; ++q_iter) {
-		vertex_marks[*q_iter] = 2;
-		coloring[*q_iter] = c_1;
+	for(vertex_iterator_t q_iter = q_begin; q_iter != q_end; ++q_iter) {
+		mark_map[*q_iter] = 2;
+		color_map[*q_iter] = c_1;
 	}
 	
 	std::size_t count = 3;
 	
 	poh_color_recursive(
-			graph, embedding, coloring, vertex_marks, parent_map,
+			graph, planar_embedding, color_map, mark_map, parent_map,
 			*p_begin, *(--p_end), *q_begin, *(--q_end),
 			count, 1, 2, c_2
 		);

@@ -5,22 +5,22 @@
  * Implementation of a simple disjoint set data structure.
  */
 
-#ifndef __DISJOINT_SET_HPP
-#define __DISJOINT_SET_HPP
+#ifndef __disjoint_set_HPP
+#define __disjoint_set_HPP
 
 // STL headers
 #include <vector>
 
 /*
- * disjoint_set
+ * disjoint_set_t
  * This structure provides a simple disjoint set structure with union and find operations.
  * New singleton sets are constructed in order using the make_next() function. Union,
  * find, comparison, and existance functions are provided.
  */
 
-class disjoint_set {
+class disjoint_set_t {
 	public:
-		disjoint_set() : next(0) {}
+		disjoint_set_t() : next(0) {}
 		
 		int make_next() {
 			sets.push_back(set_data(next));

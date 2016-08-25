@@ -5,8 +5,8 @@
  * Implementation of Hartman-Skrekovski path 3-choosing algorithm.
  */
 
-#ifndef __PATH_COLORING_HPP
-#define __PATH_COLORING_HPP
+#ifndef __HARTMAN_SKREKOVSKI_CHOOSE_HPP
+#define __HARTMAN_SKREKOVSKI_CHOOSE_HPP
 
 // STL headers
 #include <vector>
@@ -25,136 +25,136 @@
 
 const static int INTERIOR = 0, ON_FACE = 1, COLORED = 2;
 
-template<typename vertex_descriptor, typename neighbor_range_map, typename planar_embedding>
-static inline void remove_first_edge(vertex_descriptor v, neighbor_range_map & neighbor_ranges,
-	const planar_embedding & embedding)
+template<typename vertex_t, typename neighbor_range_map_t, typename planar_embedding_t>
+static inline void remove_first_edge(vertex_t v, neighbor_range_map_t & neighbor_range_map,
+	const planar_embedding_t & planar_embedding)
 {
-	if(++neighbor_ranges[v].first == embedding[v].end()) {
-		neighbor_ranges[v].first = embedding[v].begin();
+	if(++neighbor_range_map[v].first == planar_embedding[v].end()) {
+		neighbor_range_map[v].first = planar_embedding[v].begin();
 	}
 }
 
-template<typename vertex_descriptor, typename neighbor_range_map, typename planar_embedding>
-static inline void remove_last_edge(vertex_descriptor v, neighbor_range_map & neighbor_ranges,
-	const planar_embedding & embedding)
+template<typename vertex_t, typename neighbor_range_map_t, typename planar_embedding_t>
+static inline void remove_last_edge(vertex_t v, neighbor_range_map_t & neighbor_range_map,
+	const planar_embedding_t & planar_embedding)
 {
-	if(neighbor_ranges[v].second == embedding[v].begin()) {
-		neighbor_ranges[v].second = embedding[v].end();
+	if(neighbor_range_map[v].second == planar_embedding[v].begin()) {
+		neighbor_range_map[v].second = planar_embedding[v].end();
 	}
-	--neighbor_ranges[v].second;
+	--neighbor_range_map[v].second;
 }
 
 template<
-		typename vertex_descriptor, typename edge_iterator, typename neighbor_range_map,
-		typename neighbor_range = typename std::pair<edge_iterator, edge_iterator>
+		typename vertex_t, typename edge_iterator_t, typename neighbor_range_map_t,
+		typename neighbor_range_t = typename std::pair<edge_iterator_t, edge_iterator_t>
 	>
-static inline std::pair<neighbor_range, neighbor_range> split_range(vertex_descriptor v,
-	edge_iterator mid_iter, neighbor_range_map & neighbor_ranges)
+static inline std::pair<neighbor_range_t, neighbor_range_t> split_range(vertex_t v,
+	edge_iterator_t mid_iter, neighbor_range_map_t & neighbor_range_map)
 {
-	return std::pair<neighbor_range, neighbor_range>(
-			neighbor_range(neighbor_ranges[v].first, mid_iter),
-			neighbor_range(mid_iter, neighbor_ranges[v].second)
+	return std::pair<neighbor_range_t, neighbor_range_t>(
+			neighbor_range_t(neighbor_range_map[v].first, mid_iter),
+			neighbor_range_t(mid_iter, neighbor_range_map[v].second)
 		);
 }
 
-template<typename vertex_descriptor, typename face_location_map>
-static inline int set_face_location(vertex_descriptor v, int new_face_location,
-	face_location_map & face_locations, disjoint_set & face_location_sets)
+template<typename vertex_t, typename face_location_map_t>
+static inline int set_face_location(vertex_t v, int new_face_location,
+	face_location_map_t & face_location_map, disjoint_set_t & face_location_sets)
 {
 	if(!face_location_sets.exists(new_face_location)) {
-		face_locations[v] = face_location_sets.make_next();
+		face_location_map[v] = face_location_sets.make_next();
 	}
 	else {
-		face_locations[v] = face_location_sets.find(new_face_location);
+		face_location_map[v] = face_location_sets.find(new_face_location);
 	}
-	return face_locations[v];
+	return face_location_map[v];
 }
 
 template<
-		typename vertex_descriptor, typename face_location_map,
-		typename state_map, typename neighbor_range_map, typename planar_embedding,
-		typename edge_iterator = typename boost::property_traits<planar_embedding>::value_type::const_iterator
+		typename vertex_t, typename face_location_map_t,
+		typename state_map_t, typename neighbor_range_map_t, typename planar_embedding_t,
+		typename edge_iterator_t = typename boost::property_traits<planar_embedding_t>::value_type::const_iterator
 	>
-static inline int initialize(vertex_descriptor v, edge_iterator start_iter, int new_face_location,
-	face_location_map & face_locations, disjoint_set & face_location_sets, state_map & states,
-	neighbor_range_map & neighbor_ranges, const planar_embedding & embedding)
+static inline int initialize(vertex_t v, edge_iterator_t start_iter, int new_face_location,
+	face_location_map_t & face_location_map, disjoint_set_t & face_location_sets, state_map_t & state_map,
+	neighbor_range_map_t & neighbor_range_map, const planar_embedding_t & planar_embedding)
 {
-	states[v] = ON_FACE;
+	state_map[v] = ON_FACE;
 	
-	neighbor_ranges[v].first = start_iter;
-	neighbor_ranges[v].second = start_iter;
-	remove_last_edge(v, neighbor_ranges, embedding);
+	neighbor_range_map[v].first = start_iter;
+	neighbor_range_map[v].second = start_iter;
+	remove_last_edge(v, neighbor_range_map, planar_embedding);
 	
-	return set_face_location(v, new_face_location, face_locations, face_location_sets);
+	return set_face_location(v, new_face_location, face_location_map, face_location_sets);
 }
 
 template<
-		typename index_graph, typename planar_embedding,
-		typename face_location_map, typename state_map,
-		typename neighbor_range_map,
-		typename color_list_map, typename color_map,
-		typename vertex_descriptor = typename boost::graph_traits<index_graph>::vertex_descriptor
+		typename graph_t, typename planar_embedding_t,
+		typename face_location_map_t, typename state_map_t,
+		typename neighbor_range_map_t,
+		typename color_list_map_t, typename color_map_t,
+		typename vertex_t = typename boost::graph_traits<graph_t>::vertex_descriptor
 	>
 static void hartman_skrekovski_choose_recursive(
-		const index_graph & graph, const planar_embedding & embedding,
-		face_location_map & face_locations, disjoint_set & face_location_sets,
-		state_map & states, neighbor_range_map & neighbor_ranges,
-		color_list_map & color_lists, color_map & coloring,
-		vertex_descriptor x, vertex_descriptor y, vertex_descriptor p,
+		const graph_t & graph, const planar_embedding_t & planar_embedding,
+		face_location_map_t & face_location_map, disjoint_set_t & face_location_sets,
+		state_map_t & state_map, neighbor_range_map_t & neighbor_range_map,
+		color_list_map_t & color_list_map, color_map_t & color_map,
+		vertex_t x, vertex_t y, vertex_t p,
 		int before_p, int before_y, int before_x
 	)
 {
-	auto range = neighbor_ranges[p];
+	auto neighbor_range = neighbor_range_map[p];
 	
-	if(states[p] != COLORED) {
-		states[p] = COLORED;
-		coloring[p] = color_lists[p].front();
+	if(state_map[p] != COLORED) {
+		state_map[p] = COLORED;
+		color_map[p] = color_list_map[p].front();
 	}
 	
-	vertex_descriptor new_x = x, new_y = y;
-	auto edge_iter = range.first;
+	vertex_t new_x = x, new_y = y;
+	auto edge_iter = neighbor_range.first;
 	
 	do {
-		if(edge_iter == embedding[p].end()) edge_iter = embedding[p].begin();
+		if(edge_iter == planar_embedding[p].end()) edge_iter = planar_embedding[p].begin();
 		
-		vertex_descriptor n = get_incident_vertex(p, *edge_iter, graph);
-		int n_location = face_locations[n];
+		vertex_t n = get_incident_vertex(p, *edge_iter, graph);
+		int n_location = face_location_map[n];
 		
-		if(states[n] == INTERIOR) {
-			auto back_iter = find_neighbor_iterator(n, p, embedding, graph);
-			before_p = initialize(n, back_iter, before_p, face_locations,
-				face_location_sets, states, neighbor_ranges, embedding);
+		if(state_map[n] == INTERIOR) {
+			auto back_iter = find_neighbor_iterator(n, p, planar_embedding, graph);
+			before_p = initialize(n, back_iter, before_p, face_location_map,
+				face_location_sets, state_map, neighbor_range_map, planar_embedding);
 			
-			color_lists[n].remove(coloring[p]);
+			color_list_map[n].remove(color_map[p]);
 			
-			remove_first_edge(n, neighbor_ranges, embedding);
+			remove_first_edge(n, neighbor_range_map, planar_embedding);
 		}
-		else if(edge_iter == range.first) {
-			if(edge_iter == range.second) {
+		else if(edge_iter == neighbor_range.first) {
+			if(edge_iter == neighbor_range.second) {
 				if(n != x && n != y) {
-					color_lists[n].remove(coloring[p]);
+					color_list_map[n].remove(color_map[p]);
 				}
 				
-				if(states[n] != COLORED) {
-					states[n] = COLORED;
-					coloring[n] = color_lists[n].front();
+				if(state_map[n] != COLORED) {
+					state_map[n] = COLORED;
+					color_map[n] = color_list_map[n].front();
 				}
 			
 				break;
 			}
 			else if(n == y) {
-				if(states[y] != COLORED) {
-					states[y] = COLORED;
-					coloring[y] = coloring[p];
+				if(state_map[y] != COLORED) {
+					state_map[y] = COLORED;
+					color_map[y] = color_map[p];
 				}
 				
 				if(x == p) new_x = y;
 				
 				hartman_skrekovski_choose_recursive(
-						graph, embedding,
-						face_locations, face_location_sets,
-						states, neighbor_ranges, 
-						color_lists, coloring,
+						graph, planar_embedding,
+						face_location_map, face_location_sets,
+						state_map, neighbor_range_map, 
+						color_list_map, color_map,
 						new_x, p, y,
 						-1, -1, before_y
 					);
@@ -164,46 +164,46 @@ static void hartman_skrekovski_choose_recursive(
 			else {
 				if(x == p) {
 					new_x = n;
-					before_p = set_face_location(n, before_p, face_locations, face_location_sets);
+					before_p = set_face_location(n, before_p, face_location_map, face_location_sets);
 				}
 				
-				color_lists[n].remove(coloring[p]);
+				color_list_map[n].remove(color_map[p]);
 		
-				remove_last_edge(n, neighbor_ranges, embedding);
+				remove_last_edge(n, neighbor_range_map, planar_embedding);
 			}
 		}
 		else {
-			auto back_iter = find_neighbor_iterator_restricted(n, p, neighbor_ranges[n].first,
-				neighbor_ranges[n].second, embedding, graph);
+			auto back_iter = find_neighbor_iterator_restricted(n, p, neighbor_range_map[n].first,
+				neighbor_range_map[n].second, planar_embedding, graph);
 			
-			auto p_ranges = split_range(p, edge_iter, neighbor_ranges);
-			auto n_ranges = split_range(n, back_iter, neighbor_ranges);
+			auto p_ranges = split_range(p, edge_iter, neighbor_range_map);
+			auto n_ranges = split_range(n, back_iter, neighbor_range_map);
 	
 			if(p == y) {
-				color_lists[n].remove(coloring[p]);
+				color_list_map[n].remove(color_map[p]);
 		
 				if(p == x) {
-					neighbor_ranges[n] = n_ranges.second;
-					remove_first_edge(n, neighbor_ranges, embedding);
+					neighbor_range_map[n] = n_ranges.second;
+					remove_first_edge(n, neighbor_range_map, planar_embedding);
 					
 					hartman_skrekovski_choose_recursive(
-							graph, embedding,
-							face_locations, face_location_sets,
-							states, neighbor_ranges, 
-							color_lists, coloring,
+							graph, planar_embedding,
+							face_location_map, face_location_sets,
+							state_map, neighbor_range_map, 
+							color_list_map, color_map,
 							new_x, n, new_x,
 							-1, before_p, before_y
 						);
 			
 					if(back_iter != n_ranges.first.first) {
-						neighbor_ranges[n] = n_ranges.first;
-						neighbor_ranges[p] = p_ranges.second;
+						neighbor_range_map[n] = n_ranges.first;
+						neighbor_range_map[p] = p_ranges.second;
 						
 						hartman_skrekovski_choose_recursive(
-								graph, embedding,
-								face_locations, face_location_sets,
-								states, neighbor_ranges, 
-								color_lists, coloring,
+								graph, planar_embedding,
+								face_location_map, face_location_sets,
+								state_map, neighbor_range_map, 
+								color_list_map, color_map,
 								n, p, p,
 								-1, -1, before_y
 							);
@@ -211,14 +211,14 @@ static void hartman_skrekovski_choose_recursive(
 					
 					break;
 				}
-				else if(edge_iter == range.second) {
-					remove_first_edge(n, neighbor_ranges, embedding);
+				else if(edge_iter == neighbor_range.second) {
+					remove_first_edge(n, neighbor_range_map, planar_embedding);
 					
 					hartman_skrekovski_choose_recursive(
-							graph, embedding,
-							face_locations, face_location_sets,
-							states, neighbor_ranges, 
-							color_lists, coloring,
+							graph, planar_embedding,
+							face_location_map, face_location_sets,
+							state_map, neighbor_range_map, 
+							color_list_map, color_map,
 							new_x, n, new_x,
 							-1, before_p, before_x
 						);
@@ -230,96 +230,96 @@ static void hartman_skrekovski_choose_recursive(
 			}
 			
 			if(face_location_sets.compare(n_location, before_y) || n == y) {
-				vertex_descriptor new_p = n;
+				vertex_t new_p = n;
 				
-				if(std::find(color_lists[n].begin(), color_lists[n].begin(), coloring[p])
-					!= color_lists[n].end() && states[n] != COLORED)
+				if(std::find(color_list_map[n].begin(), color_list_map[n].begin(), color_map[p])
+					!= color_list_map[n].end() && state_map[n] != COLORED)
 				{
-					coloring[n] = coloring[p];
-					states[n] = COLORED;
+					color_map[n] = color_map[p];
+					state_map[n] = COLORED;
 				}
-				else if(states[n] != COLORED || coloring[n] != coloring[p]) {
+				else if(state_map[n] != COLORED || color_map[n] != color_map[p]) {
 					new_p = new_x;
 					before_y = face_location_sets.take_union(before_p, before_y);
 					before_p = -1;
 				}
 	
-				neighbor_ranges[n] = n_ranges.second;
-				remove_first_edge(n, neighbor_ranges, embedding);
+				neighbor_range_map[n] = n_ranges.second;
+				remove_first_edge(n, neighbor_range_map, planar_embedding);
 				
 				hartman_skrekovski_choose_recursive(
-						graph, embedding,
-						face_locations, face_location_sets,
-						states, neighbor_ranges, 
-						color_lists, coloring,
+						graph, planar_embedding,
+						face_location_map, face_location_sets,
+						state_map, neighbor_range_map, 
+						color_list_map, color_map,
 						new_x, new_y, new_p,
 						before_p, before_y, before_x
 					);
 	
 				if(back_iter != n_ranges.first.first) {
-					neighbor_ranges[n] = n_ranges.first;
-					neighbor_ranges[p] = p_ranges.second;
+					neighbor_range_map[n] = n_ranges.first;
+					neighbor_range_map[p] = p_ranges.second;
 				
 					hartman_skrekovski_choose_recursive(
-							graph, embedding,
-							face_locations, face_location_sets,
-							states, neighbor_ranges, 
-							color_lists, coloring,
+							graph, planar_embedding,
+							face_location_map, face_location_sets,
+							state_map, neighbor_range_map, 
+							color_list_map, color_map,
 							p, n, p,
 							-1, before_y, -1
 						);
 				}
 			}
 			else if(face_location_sets.compare(n_location, before_x)) {
-				color_lists[n].remove(coloring[p]);
+				color_list_map[n].remove(color_map[p]);
 		
-				neighbor_ranges[n] = n_ranges.second;
-				remove_first_edge(n, neighbor_ranges, embedding);
+				neighbor_range_map[n] = n_ranges.second;
+				remove_first_edge(n, neighbor_range_map, planar_embedding);
 		
 				hartman_skrekovski_choose_recursive(
-						graph, embedding,
-						face_locations, face_location_sets,
-						states, neighbor_ranges, 
-						color_lists, coloring,
+						graph, planar_embedding,
+						face_location_map, face_location_sets,
+						state_map, neighbor_range_map, 
+						color_list_map, color_map,
 						new_x, n, new_x,
 						-1, before_p, before_x
 					);
 		
-				neighbor_ranges[n] = n_ranges.first;
-				neighbor_ranges[p] = p_ranges.second;
+				neighbor_range_map[n] = n_ranges.first;
+				neighbor_range_map[p] = p_ranges.second;
 		
 				hartman_skrekovski_choose_recursive(
-						graph, embedding,
-						face_locations, face_location_sets,
-						states, neighbor_ranges, 
-						color_lists, coloring,
+						graph, planar_embedding,
+						face_location_map, face_location_sets,
+						state_map, neighbor_range_map, 
+						color_list_map, color_map,
 						n, y, p,
 						-1, before_y, before_x
 					);
 			}
 			else {
-				color_lists[n].remove(coloring[p]);
+				color_list_map[n].remove(color_map[p]);
 		
-				neighbor_ranges[n] = n_ranges.first;
-				neighbor_ranges[p] = p_ranges.second;
+				neighbor_range_map[n] = n_ranges.first;
+				neighbor_range_map[p] = p_ranges.second;
 		
 				hartman_skrekovski_choose_recursive(
-						graph, embedding,
-						face_locations, face_location_sets,
-						states, neighbor_ranges, 
-						color_lists, coloring,
+						graph, planar_embedding,
+						face_location_map, face_location_sets,
+						state_map, neighbor_range_map, 
+						color_list_map, color_map,
 						x, y, p,
 						before_p, before_y, before_x
 					);
 				
-				neighbor_ranges[n] = n_ranges.second;
-				remove_first_edge(n, neighbor_ranges, embedding);
+				neighbor_range_map[n] = n_ranges.second;
+				remove_first_edge(n, neighbor_range_map, planar_embedding);
 				
 				hartman_skrekovski_choose_recursive(
-						graph, embedding,
-						face_locations, face_location_sets,
-						states, neighbor_ranges, 
-						color_lists, coloring,
+						graph, planar_embedding,
+						face_location_map, face_location_sets,
+						state_map, neighbor_range_map, 
+						color_list_map, color_map,
 						n, n, n,
 						-1, before_p, -1
 					);
@@ -327,7 +327,7 @@ static void hartman_skrekovski_choose_recursive(
 	
 			break;
 		}
-	} while(edge_iter++ != range.second);
+	} while(edge_iter++ != neighbor_range.second);
 }
 
 
@@ -345,55 +345,55 @@ static void hartman_skrekovski_choose_recursive(
  */
  
 template<
-		typename index_graph, typename planar_embedding,
-		typename color_list_map, typename color_map,
-		typename face_iterator
+		typename graph_t, typename planar_embedding_t,
+		typename color_list_map_t, typename color_map_t,
+		typename face_iterator_t
 	>
 void hartman_skrekovski_choose(
-		const index_graph & graph,
-		const planar_embedding & embedding,
-		const color_list_map & color_lists,
-		color_map & coloring,
-		face_iterator face_begin,
-		face_iterator face_end
+		const graph_t & graph,
+		const planar_embedding_t & planar_embedding,
+		const color_list_map_t & color_list_map,
+		color_map_t & color_map,
+		face_iterator_t face_begin,
+		face_iterator_t face_end
 	)
 {
-	typedef typename boost::graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
-	typedef typename color_map::value_type color_type;
-	typedef typename boost::graph_traits<index_graph>::vertex_iterator vertex_iterator;
-	typedef typename boost::property_traits<planar_embedding>::value_type::const_iterator edge_iterator;
+	typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
+	typedef typename color_map_t::value_type color_t;
+	typedef typename boost::graph_traits<graph_t>::vertex_iterator vertex_iterator_t;
+	typedef typename boost::property_traits<planar_embedding_t>::value_type::const_iterator edge_iterator_t;
 	
-	std::vector<std::pair<edge_iterator, edge_iterator>> neighbor_range_storage(boost::num_vertices(graph));
+	std::vector<std::pair<edge_iterator_t, edge_iterator_t>> neighbor_range_storage(boost::num_vertices(graph));
 	boost::iterator_property_map<
-			typename std::vector<std::pair<edge_iterator, edge_iterator>>::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
-		> neighbor_ranges(neighbor_range_storage.begin(), boost::get(boost::vertex_index, graph));
+			typename std::vector<std::pair<edge_iterator_t, edge_iterator_t>>::iterator,
+			typename boost::property_map<graph_t, boost::vertex_index_t>::const_type
+		> neighbor_range_map(neighbor_range_storage.begin(), boost::get(boost::vertex_index, graph));
 	
 	std::vector<int> face_location_storage(boost::num_vertices(graph));
 	boost::iterator_property_map<
 			std::vector<int>::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
-		> face_locations(face_location_storage.begin(), boost::get(boost::vertex_index, graph));
+			typename boost::property_map<graph_t, boost::vertex_index_t>::const_type
+		> face_location_map(face_location_storage.begin(), boost::get(boost::vertex_index, graph));
 		
 	std::vector<int> state_storage(boost::num_vertices(graph));
 	boost::iterator_property_map<
 			std::vector<int>::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
-		> states(state_storage.begin(), boost::get(boost::vertex_index, graph));
+			typename boost::property_map<graph_t, boost::vertex_index_t>::const_type
+		> state_map(state_storage.begin(), boost::get(boost::vertex_index, graph));
 	
-	std::vector<std::list<color_type>> color_list_storage(boost::num_vertices(graph));
+	std::vector<std::list<color_t>> color_list_storage(boost::num_vertices(graph));
 	boost::iterator_property_map<
-			typename std::vector<std::list<color_type>>::iterator,
-			typename boost::property_map<index_graph, boost::vertex_index_t>::const_type
-		> color_lists_copy(color_list_storage.begin(), boost::get(boost::vertex_index, graph));
+			typename std::vector<std::list<color_t>>::iterator,
+			typename boost::property_map<graph_t, boost::vertex_index_t>::const_type
+		> color_list_map_copy(color_list_storage.begin(), boost::get(boost::vertex_index, graph));
 		
-	vertex_iterator vertex_iter, vertex_end;
+	vertex_iterator_t vertex_iter, vertex_end;
 	for(boost::tie(vertex_iter, vertex_end) = vertices(graph); vertex_iter != vertex_end; vertex_iter++) {
-		vertex_descriptor v = *vertex_iter;
-		std::copy(color_lists[v].begin(), color_lists[v].end(), std::back_inserter(color_lists_copy[v]));
+		vertex_t v = *vertex_iter;
+		std::copy(color_list_map[v].begin(), color_list_map[v].end(), std::back_inserter(color_list_map_copy[v]));
 	}
 	
-	disjoint_set face_location_sets;
+	disjoint_set_t face_location_sets;
 	int before_y = -1;
 	
 	for(auto face_iter = face_begin; face_iter != face_end; ++face_iter)
@@ -401,21 +401,21 @@ void hartman_skrekovski_choose(
 		auto next = face_iter;
 		if(++next == face_end) next = face_begin;
 		
-		vertex_descriptor l = *face_iter;
-		vertex_descriptor v = *next;
+		vertex_t l = *face_iter;
+		vertex_t v = *next;
 		
-		auto back_iter = find_neighbor_iterator(v, l, embedding, graph);
-		before_y = initialize(v, back_iter, before_y, face_locations,
-			face_location_sets, states, neighbor_ranges, embedding);
+		auto back_iter = find_neighbor_iterator(v, l, planar_embedding, graph);
+		before_y = initialize(v, back_iter, before_y, face_location_map,
+			face_location_sets, state_map, neighbor_range_map, planar_embedding);
 	}
 	
-	vertex_descriptor x = *face_begin, y = *(--face_end);
+	vertex_t x = *face_begin, y = *(--face_end);
 	
 	hartman_skrekovski_choose_recursive(
-			graph, embedding,
-			face_locations, face_location_sets,
-			states, neighbor_ranges, 
-			color_lists_copy, coloring,
+			graph, planar_embedding,
+			face_location_map, face_location_sets,
+			state_map, neighbor_range_map, 
+			color_list_map_copy, color_map,
 			x, y, x,
 			-1, before_y, -1
 		);
