@@ -5,8 +5,8 @@
  * Implementation of a simple disjoint set data structure.
  */
 
-#ifndef __disjoint_set_HPP
-#define __disjoint_set_HPP
+#ifndef __DISJOINT_SET_HPP
+#define __DISJOINT_SET_HPP
 
 // STL headers
 #include <vector>
