@@ -23,7 +23,7 @@ class disjoint_set_t {
 		disjoint_set_t() : next(0) {}
 		
 		int make_next() {
-			sets.push_back(set_data(next));
+			sets.push_back(set_data_t(next));
 			return next++;
 		}
 		
@@ -67,12 +67,12 @@ class disjoint_set_t {
 		}
 		
 	private:
-		struct set_data {
+		struct set_data_t {
 			int parent, rank;
-			set_data(int parent) : parent(parent), rank(0) {}
+			set_data_t(int parent) : parent(parent), rank(0) {}
 		};
 		
-		std::vector<set_data> sets;
+		std::vector<set_data_t> sets;
 		int next;
 };
 
