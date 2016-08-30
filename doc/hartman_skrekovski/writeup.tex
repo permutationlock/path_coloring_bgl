@@ -29,7 +29,8 @@
 \begin{document}
 
 \title{Implementing Path 3-Coloring and Path 3-Choosing Algorithms on Plane Graphs}
-\date{August 2, 2016}
+\author{Aven Bross}
+\date{August 26, 2016}
 
 \maketitle
 
@@ -37,7 +38,7 @@
 
 Path coloring a graph partitions its vertices into sets inducing a disjoint union of paths. In this project
 we consider several algorithms to compute path colorings of graphs embedded in the plane. We
-first implement an algorithm path 3-color plane graphs from Poh's proof in [a]. Second, we present a linear time
+first implement an algorithm to path 3-color plane graphs from Poh's proof in [a]. Second, we present a linear time
 implementation of an algorithm to path 3-choose plane graphs from the independant work of Hartman [b] and
 Skrekovski [c].
 
@@ -48,8 +49,8 @@ be drawn in the plane without edge crossings. A $k$-coloring of a graph partitio
 its vertices into $k$ color classes. Such a coloring is called proper if each color class consists of
 nonadjacent vertices.\\
 
-\noindent In 1976 Appel and Haken [d,e] displayed that all planar graphs have a proper $4$-coloring.
-This result is best possible and solved the century old Four Color Conjecture.
+\noindent Appel and Haken [d,e] display that all planar graphs have a proper $4$-coloring.
+This result is best possible and is known as the Four Color Theorem.
 Generalizations of proper coloring were introduced in [f,g,h] allowing color classes to form forests, or allowing vertices
 to have some bounded number of same color neighbors. Cowen et al. ([j]) show a best possible result that planar
 graphs may be $3$-colored such that each vertex recieves at most two same color neighbors.\\
@@ -89,7 +90,7 @@ neighbor in $V(G)\setminus V(C)$.\\
 \end{adjustwidth}
 
 \begin{proof}
-\noindent If $|V(G)|\le 2$ the coloring follows trivially. Let $|V(G)|>2$ and suppose the theorem holds
+\noindent If $|V(G)|\le 3$ the coloring follows trivially. Let $|V(G)|>3$ and suppose the theorem holds
 for all graphs $H$ with $|V(H)|<|V(G)|$. Let $P=p_0\ldots p_n$ and $Q=q_0\ldots q_m$ denote the two induced paths from the $2$-coloring of $C$
 such that the edges $p_0q_0$ and $p_nq_m$ are in $C$. Suppose there exist uncolored vertices, that is
 $V(G)\setminus V(C)\ne\emptyset$.\\
@@ -108,17 +109,25 @@ $3$-coloring forms a path coloring of $G$.\\
 edge $p_iq_j\in E(G)\setminus E(C)$ with $p_i\in P$ and $q_j\in Q$. We separately apply the inductive hypothesis
 to the subgraph bounded by $p_0\ldots p_i$ and $q_0\ldots q_j$, and the subgraph bounded by $p_i\ldots p_n$ and
 $q_j\ldots q_m$. The two subgraphs only share the vertices $p_i$ and $q_j$, thus the combined $3$-coloring forms
-a path coloring of $G$.
+a path coloring of $G$.\\
 \end{proof}
 
-\subsection*{Implementing Poh's Algorithm}
+\begin{adjustwidth}{1.5em}{1.5em}
+\noindent\textbf{Corollary 2.} All plane graphs are path $3$-colorable.\\
+\end{adjustwidth}
 
-Let the plane graph $G$ be represented as an incidence list (or adjacency list) and an ordering of edges around
-each vertex following a
-combinatorial embedding. We track the paths $P$ and $Q$ by marking each vertex with its respective path and
-storing the path start and end vertices $p_0$, $p_n$, $q_0$, and $q_m$.
-We first find $t_1$ by looking through the ordered neighbors of $q_m$ and take the vertex counterclockwise past
-$p_n$. This step is repeated until the graph is colored or $t_1\not\in P\cup Q$.\\
+\begin{proof}
+Let $G$ be a plane graph. Since adding edges does not make $G$ easier to color, augment $G$ with edges until
+it is triangulated. Path $2$-color the outer triangle and apply Theorem 1 to path $3$-color $G$.\\
+\end{proof}
+
+\noindent Let $G$ be a weakly triangulated plane graph with outer face formed by the two monocolor paths $P$ and
+$Q$, each colored sdistinct color. Poh's path $3$-coloring algorithm proceeds as follows:
+
+\begin{enumerate}
+\item If all vertices in $G$ are colored, terminate;
+\item Locate the vertex $t_1$. If $t_1\in P$ remove $p_n$ and repeat. If $t_1\in Q$ remove $q_m$ and
+repeat;
 
 \begin{center}
 \begin{tikzpicture}[
@@ -126,22 +135,19 @@ $p_n$. This step is repeated until the graph is colored or $t_1\not\in P\cup Q$.
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
-  \node (p0) [label=above:$p_0$, fill] at (-2cm, 1cm) {};
-  \node (pn) [label=above:$p_n$, fill] at (2cm, 1cm) {};
-  \node (q0) [label=below:$q_0$, fill] at (-2cm, -1cm) {};
-  \node (qn) [label=below:$q_m$, fill] at (2cm, -1cm) {};
-  \node (t0) [label=above:$t_0$, fill] at (-1cm, 0cm) {};
-  \node (t1) [label=above:$t_1$, fill] at (1cm, 0cm) {};
-  \node (null) [draw=none] at (270:2cm) {};
-  \draw (p0) edge [bend left] (pn) [dashed];
+  \node (p0) [label=above:$p_0$, fill] at (-1.5cm, 0.5cm) {};
+  \node (pn) [label=above:$p_n$, fill] at (2cm, 0.5cm) {};
+  \node (q0) [label=below:$q_0$, fill] at (-1.5cm, -0.5cm) {};
+  \node (qn) [label=below:$q_m$, fill] at (2cm, -0.5cm) {};
+  \node (t) [label=above:{$t_1$, $p_{n-1}$}, fill] at (1cm, 1cm) {};
+  \node (null) [draw=none] at (270:1.5cm) {};
+  
+  \draw (t) edge (pn);
+  \draw (qn) edge (t);
+  \draw (p0) edge [bend left] (t) [dashed];
   \draw (q0) edge [bend right] (qn) [dashed];
   \draw (p0) edge (q0);
   \draw (pn) edge (qn);
-  \draw (p0) edge (t0);
-  \draw (q0) edge (t0);
-  \draw (pn) edge (t1);
-  \draw (qn) edge (t1);
-  \draw (t0) edge (t1) [dashed];
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
@@ -150,7 +156,7 @@ $\qquad$
 		every label/.append style={rectangle}
 	]
   \node (null) [draw=none] at (0cm, 0cm) {$\rightarrow$};
-  \node (null) [draw=none] at (270:2cm) {};
+  \node (null) [draw=none] at (270:1.5cm) {};
 \end{tikzpicture}
 $\qquad$
 \begin{tikzpicture}[
@@ -158,34 +164,36 @@ $\qquad$
 		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
 		every label/.append style={rectangle}
 	]
-  \node (p0) [label=above:$p_0$, fill] at (-2cm, 1.5cm) {};
-  \node (pn) [label=above:$p_n$, fill] at (2cm, 1.5cm) {};
-  \node (q0) [label=below:$q_0$, fill] at (-2cm, -1.5cm) {};
-  \node (qn) [label=below:$q_m$, fill] at (2cm, -1.5cm) {};
-  \node (t0) [label=above:$t_0$, fill] at (-1cm, 0.5cm) {};
-  \node (t1) [label=above:$t_1$, fill] at (1cm, 0.5cm) {};
-  \node (t0_1) [label=below:$t_0$, fill] at (-1cm, -0.5cm) {};
-  \node (t1_1) [label=below:$t_1$, fill] at (1cm, -0.5cm) {};
-  \node (null) [draw=none] at (270:2cm) {};
-  \draw (p0) edge [bend left] (pn) [dashed];
+  \node (p0) [label=above:$p_0$, fill] at (-1.5cm, 0.5cm) {};
+  \node (q0) [label=below:$q_0$, fill] at (-1.5cm, -0.5cm) {};
+  \node (qn) [label=below:$q_m$, fill] at (2cm, -0.5cm) {};
+  \node (t) [label=above:{$t_1$, $p_{n-1}$}, fill] at (1cm, 1cm) {};
+  \node (null) [draw=none] at (270:1.5cm) {};
+  
+  \node (pn_1) [label=above:$p_n$, fill] at (3.5cm, 0.5cm) {};
+  \node (qn_1) [label=below:$q_m$, fill] at (3.5cm, -0.5cm) {};
+  \node (t_1) [label=above:{$t_1$, $p_{n-1}$}, fill] at (2.5cm, 1cm) {};
+  
+  \draw (qn) edge (t);
+  \draw (p0) edge [bend left] (t) [dashed];
   \draw (q0) edge [bend right] (qn) [dashed];
-  \draw (p0) edge (t0);
-  \draw (q0) edge (t0_1);
-  \draw (pn) edge (t1);
-  \draw (qn) edge (t1_1);
-  \draw (t0) edge (t1) [dashed];
-  \draw (t0_1) edge (t1_1) [dashed];
+  \draw (p0) edge (q0);
+  
+  \draw (t_1) edge (pn_1);
+  \draw (pn_1) edge (qn_1);
+  \draw (qn_1) edge (t_1);
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 2.1} The case $p_i=p_0$ and $q_j=q_0$.
+
+\textbf{Figure 2.1} Finding $t_1$ in the case $t_1\in P$.
 \end{center}
 
-\noindent We perform a
-breadth first search starting at $t_1$ and storing parents for each vertex visited. Vertices marked to be in $P$
-or $Q$ will be ignored, in this way containing the search within the current bounded subgraph. The
-search terminates once a vertex $u$ with adjacent neighbors $p_i\in P$ and $q_j\in Q$ has been reached. An
-induced $ut_1$-path is produced by backtracking through the search from $u$. We color and mark each vertex on the
-new path with the remaining color not used to color $P$ or $Q$.
+\item Perform a breadth first search from $t_1$;
+\item Terminate the search when we find a vertex $u$ with adjacent neighbors $p_i$ and $q_j$;
+\item Color with the remaining color the induced $ut_1$-path determined by the breadth first search;
+\item Apply the algorithm to the subgraph bounded by the $p_0p_i$-path and $q_0q_i$-path, the subgraph
+bounded by the $p_ip_n$-path and $ut_1$-path, and the subgraph bounded by the $ut_1$-path and $q_jq_m$-path.
+\end{enumerate}
 
 \begin{center}
 \begin{tikzpicture}[
@@ -211,6 +219,7 @@ new path with the remaining color not used to color $P$ or $Q$.
   \draw (pi) edge (qj);
   \draw (pn) edge (t1);
   \draw (qn) edge (t1);
+
   \draw (t1) edge (t0) [dashed];
   \draw (pi) edge (t0);
   \draw (qj) edge (t0);
@@ -259,15 +268,31 @@ $\qquad$
   \draw (qj_1) edge (t0_1);
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 2.2} The case $p_i\ne p_0$ or $q_i\ne q_0$.
+\textbf{Figure 2.2} Dividing $G$ along $p_iq_j$ and the $ut_1$-path.
 \end{center}
+
+\subsection*{Implementing Poh's Algorithm}
+
+Let the plane graph $G$ be represented as an incidence list (or adjacency list) and an ordering of edges (neighbors) around
+each vertex following a
+combinatorial embedding. We track the paths $P$ and $Q$ by marking each vertex with its respective path and
+storing the path start and end vertices $p_0$, $p_n$, $q_0$, and $q_m$.
+We first find $t_1$ by looking through the ordered neighbors of $q_m$ and take the vertex counterclockwise past
+$p_n$. This step is repeated until the graph is colored or $t_1\not\in P\cup Q$.
+
+\noindent We perform a
+breadth first search starting at $t_1$ and storing parents for each vertex visited. Vertices marked to be in $P$
+or $Q$ will be ignored, in this way containing the search within the current bounded subgraph. The
+search terminates once a vertex $u$ with adjacent neighbors $p_i\in P$ and $q_j\in Q$ has been reached. An
+induced $ut_1$-path is produced by backtracking through the search from $u$. We color and mark each vertex on the
+new path with the remaining color not used to color $P$ or $Q$.\\
 
 \noindent To color the remaining graph we recurse on both the region
 bounded by the $p_ip_n$-path and $ut_1$-path, and the region bounded by the $ut_1$-path and $q_jp_m$-path.
 If $p_i=p_0$ and $q_j=q_0$ we are done and this mimicks the case of a $t_0t_1$ path in with $u=t_0$.
 If $p_i\ne p_0$ or $q_j\ne q_0$ we handle the remaining subgraph by recursing on the region bounded by the
-$p_0p_i$-path and $q_0p_j$-path. Note each recursive step is independant and vertex marks are shared,
-thus the algorithm may instead proceed iteratively by pushing paths, represented by their start and end
+$p_0p_i$-path and $q_0p_j$-path. Note each recursive step is independant and vertex marks are shared so the
+algorithm may instead proceed iteratively by pushing paths, represented by their start and end
 vertices, into a stack or queue.
 
 \subsection*{Time Complexity}
@@ -277,29 +302,30 @@ $O(|E|/|V|)$. Each vertex may be $t_1$ at most once so over the entire graph we 
 lookups. In planar graphs $|E|\le 3|V|-6$, and $O(|E|)=O(|V|)$. Therefore, the
 amortized complexity of this step is $O(|V|^2/|V|)=O(|V|)$. We also perform at most one breadth first
 search from each $t_1$ with complexity $O(|V|)$. Therefore the complexity of the serach step over the
-entire graph is $O(|V|^2)$. This gives us an overall amortized complexity of $O(|V|+|V|^2)=O(|V|^2)$.
+entire graph is $O(|V|^2)$. This gives an overall amortized complexity of $O(|V|+|V|^2)=O(|V|^2)$.
 
 \section{Path $3$-Choosing Plane Graphs}
 
 The following is a restatment of a theorem of Hartman [r] and Skrekovski [s]. We provide a modification of
-the proof that limits each inductive step to considering a single vertex and its set of neighbors. In this way
-the proof follows a similar process to that of Thomassen [n] and yields a linear time implementation as suggested
-by Hartman [r] detailed in following sections.\\
+the proof that wraps the path coloring and path removal portions of Hartman's proof into a single inductive
+step considering only the last vertex colored on the current path, which will be denoted $p$. This modification
+is motivated by the relative simplicity of removing a single outer face vertex, compared with removing an entire
+path. This proof yields a linear time algorithm and implementation, as claimed by Hartman in [r].\\
 
 \noindent Suppose $C$ is
-the outer cycle of a weakly triangulated plane graph $G$. Using notation from [r] for $u,v\in V(C)$ we
-let $C[u,v]$ denote the path from $u$ to $v$ clockwise along the outer face. If we wish to exclude $u$ or $v$
+the outer cycle of a $2$-connected weakly triangulated plane graph $G$. Using notation from [r] for $u,v\in V(C)$
+we let $C[u,v]$ denote the path from $u$ to $v$ clockwise along the outer face. If we wish to exclude $u$ or $v$
 from this path we will use parenthesis, $C(u,v)$. Similarly, for $v\in V(G)$ and
 $u,w\in N(v)$ we let $[u,w]_v$ denote the path from $u$ to $w$ clockwise around $v$, assuming triangulated
 faces.\\
 
 \noindent Note that in all figures solid circles denote vertices yet to be colored, and colored vertices will
-be labeled with their assigned color. We have $\alpha$ denote the current color and a label $\beta$ represent
+be labeled with their assigned color. We have $\alpha$ denote the current path color and a label $\beta$ represent
 coloring $v$ from $L(v)\setminus\{\alpha\}$. If a vertex $v$ is unlabled it represents arbitrary coloring from
 $L(v)$.\\
 
 \begin{adjustwidth}{1.5em}{1.5em}
-\noindent\textbf{Theorem 2.} Let $G$ be a $2$-connected weakly triangulated plane graph, or a complete graph
+\noindent\textbf{Theorem 3.} Let $G$ be a $2$-connected weakly triangulated plane graph, or a complete graph
 on one or two vertics, with outer face $C$. 
 Let $x,y\in V(C)$ be not necessarily distinct, potentially precolored vertices. Let $p\in C[x,y]$ be precolored some
 color $\alpha$. Suppose $L(v)$ assigns a list of colors to each $v\in V(G)$ that has not been precolored such that
@@ -329,7 +355,7 @@ $G_1$ be the sugbraph bounded by the cycle formed from $C[p,c_i]$ and the edge $
 3.1 $G=G_0\cup G_1$ and $V(G_0)\cap V(G_1)=\{c_i\}$.
 We will display in each case that the inductive hypothesis holds for each subgraph and their union still
 forms a path choosing of $G$ from $L$.
-If $c_i=c_1$ we will say $G_1$ does not exist and handle this case specially noting $G_0=G-p$.
+If $c_i=c_1$ we will say $G_1$ does not exist and handle this case specially, noting $G_0=G-p$.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -363,12 +389,55 @@ $v\in N(p)\cap V(G_0)$, and $L_0(v)=L(v)$ for $v\in V(G_0)\setminus N(p)$. Note 
 $v\in N(p)\cap V(G_0)$ will be on the outer face of $G_0$. Thus $|L_0(v)|\ge 3$ for all interior
 vertices $v$ of $G_0$. Except for a few special cases for $y$ mentioned below, $|L_0(v)|\ge 1$ for all
 $v\in\{x,y,c_i,c_n\}$. Finally, $|L_0(v)|\ge2$ for all other $v$ on the outer face of $G_0$. By choosing $G_0$ from
-$L_0$ we ensure either $p$ recieves no new $\alpha$ colored neighbors in $G_0$. If $c_i$ is colored $\alpha$
-then $p$ recieves no $\alpha$ colored neighbors in $G_1$ other than $c_i$.\\
+$L_0$ we ensure either $p$ recieves no $\alpha$ colored neighbors in $G_0$ unless $c_i$ is colored $\alpha$.
+If $c_i$ is colored $\alpha$ then $p$ recieves no $\alpha$ colored neighbors in $G_1$ other than $c_i$.
 
-\noindent If $\alpha\in L(y)$ and $y\in V(G_0)\cap N(p)$ it may be that $|L_0(y)|=0$. To handle this we
+\begin{center}
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (c_n) [label=above:{$c_n$, $y$}, fill] at (-1.5cm, 0cm) {};
+  \node (p) [label=above:{$x$, $p$}] at (1.5cm, 0cm) {};
+  \node (p_label) [draw=none, scale=0.8] at (1.5cm, 0cm) {$\alpha$};
+  \node (G) [draw=none, ] at (0cm, -0.5cm) {$G$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+  \draw (p) edge [bend left=90] (c_n) [dashed];
+  \draw (c_n) edge (p);
+\end{tikzpicture}
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (null) [draw=none] at (0cm, -0.5cm) {$\rightarrow$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+\end{tikzpicture}
+$\quad$
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (c_n) [label=above:{$x'$, $p'$}] at (-1.5cm, 0cm) {};
+  \node (c_n_label) [draw=none, scale=0.8] at (-1.5cm, 0cm) {$\alpha$};
+  \node (p) [label=above:{$y'$}] at (1.5cm, 0cm) {};
+  \node (p_label) [draw=none, scale=0.8] at (1.5cm, 0cm) {$\alpha$};
+  \node (G) [draw=none, ] at (0cm, -0.5cm) {$G$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+  \draw (p) edge [bend left=90] (c_n) [dashed];
+  \draw (c_n) edge (p);
+\end{tikzpicture}
+\hfill\\
+\textbf{Figure 3.2} The case $x=p$, $y=c_n$, and $\alpha\in L(y)$.
+\end{center}
+
+\noindent If $\alpha\in L(y)$ and $y\in V(G_0)\cap N(p)$ it may be that $|L_0(y)|=0$. Note that in the case $y$
+has been precolored a color distinct from $\alpha$ we will say $\alpha\not\in L(v)$. To handle this we
 first note $y\in\{c_n, c_i\}$. The case $y=c_i$ will require no special treatment as $c_i$ will
-naturally be colored $\alpha$. Suppose $\alpha\in L(y)$ and $y=c_n$. Then $x=p$ as otherwise $y\in C[x,p)$ and
+naturally be colored $\alpha$. Suppose $\alpha\in L(y)$ and $y=c_n$. Then $x=p$, since otherwise $y\in C[x,p)$ and
 $\alpha\not\in L(y)$. Color $y$ with $\alpha$ and apply the inductive hypothesis to choose
 $G$ from $L$ with $x'=y$, $y'=x$, and $p'=y$. Otherwise suppose if $\alpha\in L(y)$ then $y\ne c_n$.
 
@@ -439,7 +508,7 @@ $\quad$
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.2} The case $x=y=p$.
+\textbf{Figure 3.3} The case $x=y=p$.
 \end{center}
 
 \noindent Suppose $x=y=p$. Color $c_i$ from $L_0(c_i)$. Apply the inductive hypothesis to choose $G_0$ from
@@ -517,7 +586,7 @@ $\quad$
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.3} The case $y=p$, $x\ne p$, and $c_i\in C[x,p)$ (shown is the case $x\ne c_i$).
+\textbf{Figure 3.4} The case $y=p$, $x\ne p$, and $c_i\in C[x,p)$ (shown is the case $x\ne c_i$).
 \end{center}
 
 \noindent Suppose $y=p$, $x\ne p$, and $c_i\in C[x,p)$. If $G_1$ exists, apply
@@ -596,7 +665,7 @@ $\quad$
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.4} The case $y=p$, $x\ne p$, and $c_i\not\in C[x,p)$.
+\textbf{Figure 3.5} The case $y=p$, $x\ne p$, and $c_i\not\in C[x,p)$.
 \end{center}
 
 \noindent Suppose $y=p$, $x\ne p$, and $c_i\not\in C[x,p)$. Color $x$ from $L_0(x)$ and apply the inductive
@@ -676,7 +745,7 @@ $\quad$
   \draw (y) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.5} The case $x=p$, $y\ne p$, and $c_i\in C(y,x)$.
+\textbf{Figure 3.6} The case $x=p$, $y\ne p$, and $c_i\in C(y,x)$.
 \end{center}
 
 \noindent Suppose $x=p$, $y\ne p$, and $c_i\in C(y,x)$. Apply the
@@ -756,7 +825,7 @@ $\quad$
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.6} The case $x=p$, $y\ne p$, and $c_i\not\in C(y,x)$ (shown is the case $y\ne c_i$ and
+\textbf{Figure 3.7} The case $x=p$, $y\ne p$, and $c_i\not\in C(y,x)$ (shown is the case $y\ne c_i$ and
 $\alpha\in L(c_i)$).
 \end{center}
 
@@ -843,7 +912,7 @@ $\quad$
   \draw (c_n) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.7} The case $x\ne p$, $y\ne p$, and $c_i\in C[x,p)$ (shown is the case $x\ne c_i$).
+\textbf{Figure 3.8} The case $x\ne p$, $y\ne p$, and $c_i\in C[x,p)$ (shown is the case $x\ne c_i$).
 \end{center}
 
 \noindent Suppose $x\ne p$, $y\ne p$, and $c_i\in C[x,p)$. In this case $G_1$ must exist and we apply
@@ -926,7 +995,7 @@ $\quad$
   \draw (y) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.8} The case $x\ne p$, $y\ne p$, and $c_i\in C(y,x)$.
+\textbf{Figure 3.9} The case $x\ne p$, $y\ne p$, and $c_i\in C(y,x)$.
 \end{center}
 
 \noindent Suppose $x\ne p$, $y\ne p$, and $c_i\in C(y,x)$. Apply
@@ -1009,7 +1078,7 @@ $\quad$
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 3.9} The case $x\ne p$, $y\ne p$, and $c_i\in C(p,y]$ (shown is the case $y\ne c_i$ and
+\textbf{Figure 3.10} The case $x\ne p$, $y\ne p$, and $c_i\in C(p,y]$ (shown is the case $y\ne c_i$ and
 $\alpha\not\in L(c_i)$).
 \end{center}
 
@@ -1021,43 +1090,96 @@ hypothesis to choose $G_1$ from $L$ with $x_1=p_1=p$ and $y_1=c_i$. Note that $c
 choosing of $G_0$. If $p_0=c_i$, $c_i$ recieves at most one same
 color neighbor in $G_0$ and the single same color neighbor $p$ in $G_1$. Furthermore, $p$ will recieve no
 same color neighbor in $G_1$ other than $c_i$. If $p_0\ne c_i$, then $y_1=c_i$ is immediatley prior to
-$p_1=p$ and $\alpha\not\in L(c_i)$. Thus $c_i$ will recieve no same color neighbors in $G_1$.
+$p_1=p$ and $\alpha\not\in L(c_i)$. Thus $c_i$ will recieve no same color neighbors in $G_1$.\\
 \end{proof}
 
-\subsection*{Implementing Hartman and Skrekovski's Algorithm}
+\begin{adjustwidth}{1.5em}{1.5em}
+\noindent\textbf{Corollary 4.} All planar graphs are path $3$-choosable.\\
+\end{adjustwidth}
 
-Once again let the plane graph $G$ be represented as an incidence list and an ordering of edges around each
-vertex following a planar embedding. Let the vertices $x$, $y$, and $p$ be provided. We will track subgraphs by
-marking each vertex with a \emph{state} of \emph{interior},
-\emph{face}, or \emph{colored}. Vertices will only change in state from \emph{interior} to \emph{face} to
-\emph{colored}. We will also have a \emph{neighbor range} for all \emph{face} and \emph{colored} vertices
-that will track the subset of the ordered incidence list included in the current outer face. To walk clockwise
-along the outer face from some \emph{face} vertex we may simply proceed to the most counterclockwise neighbor in
-its \emph{neighbor range}. To be able to perform the proceedure from the proof above
-we must also determine where each \emph{face} vertex lies on the face in respect to $x$, $y$, and $p$. This
-\emph{face location} property is nontrivial and is discussed in the following section.\\
+\begin{proof}
+Let $G$ be a plane graph and $L$ an assignment of size $3$ color lists to each vertex of $G$. As adding edges does
+not make $G$ easier to color, augment $G$ with edges until it is triangulated (maximally planar).
+Assign $x$ and $y$ to be distinct vertices on the outer face. Color $x$ from $L(x)$
+and assign $p=x$. Apply Theorem 3 to path choose $G$ from $L$ accordingly.\\
+\end{proof}
 
-\noindent Suppose the afformentioned properties tracked for each vertex. Note \emph{neighbor range}
-for $p$ will begin at $c_i$ and proceed clockwise to $c_n$. We first check for the case $y=c_n$ and
-$\alpha\in L(y)$ and perform the necessary coloring of $y$ and renaming of $x$, $y$, and $p$. Next proceed
-counterclockwise through each $n\in N(p)$ starting with $c_n$. For each $n$ we perform the following:
+\noindent Let $G$ be a weakly triangulated plane graph with vertices $x$, $y$, and $p$ defineds and possibly
+precolored in accordance with Theorem 3. In the followin we will denote the outer face of $G$ as
+$C=c_0c_1\ldots c_n$ with $c_0=p$.
+We will denote the embedding ordered neighborhood $N(p)$ as $n_0\ldots n_k$, with $n_0=c_1$ and
+$n_k=c_n$. We will denote the parameters for an application of the algorithm as the tuple $(G, x, y, p)$.
+The path $3$-choosing algorithm proceeds as follows:
 
 \begin{enumerate}
-\item if $n$ is interior, initialize its \emph{neighbor range} and set its \emph{state} to \emph{face};
-\item contract the \emph{neighbor range} of $n$ to remove $p$ from its incidence list;
-\item if $n\in C$ and $n\ne c_n$ terminate;
-\item remove $\alpha$ from $L(n)$.
+\item If $p$ has not been colored, color $p$ from $L(p)$;
+\item If $n_k=y$ and $\alpha\in L(y)$, color $y$ with $\alpha$ and apply the algorithm to $G$ with $x'=p'=y$ and
+$y'=p$;
+\item Remove $\alpha$ from $L(n_k)$;
+\item For $j=k-1$ to $0$: if $n_j\in C$ terminate, otherwise remove $\alpha$ from $L(n_j)$;
+\item If $c_i\not\in C(p,y]$ remove $\alpha$ from $L(c_i)$;
+\item We now have $n_j=c_i\in C$ and define $G_0$ as the subgraph with outer face
+$C_0=c_i\ldots c_nn_{k-1}\ldots n_{j-1}$ and $G_1$ as the subgraph with outer face $c_0\ldots c_i$. If $c_i=c_1$
+we ignore $G_1$;
+\begin{enumerate}
+\item If $x=y=p$, apply the algorithm first to $(G_0, c_n, c_i, c_n)$ and then to $(G_1, c_i, p, p)$;
+\item If $y=p$, $x\ne p$, and $c_i\in C[x,p)$, apply the algorithm first to $(G_1, x, p, p)$ and then
+$(G_0, c_i, c_i, c_i)$;
+\item If $y=p$, $x\ne p$, and $c_i\in C(y,x)$, apply the algorithm first to $(G_0, x, c_i, x)$ and then to $(G_1, c_i, p, p)$;
+\item If $x=p$, $y\ne p$, and $c_i\in C(y,x)$, apply the algorithm first to $(G_0, c_n, c_i, c_n)$ and then to $(G_1, c_i, p, y)$;
+\item If $x=p$, $y\ne p$, $c_i\in C(p,y]$, and $\alpha\in L(c_i)$, color $c_i$ with $\alpha$ and apply the
+algorithm first to $(G_1, p, c_i, p)$ and then to $(G_0, c_n, y, c_i)$;
+\item If $x=p$, $y\ne p$, $c_i\in C(p,y]$, and $\alpha\not\in L(c_i)$, apply the
+algorithm first to $(G_1, p, c_i, p)$ and then to $(G_0, c_n, y, c_n)$;
+\item If $x\ne p$, $y\ne p$, $c_i\in C[x,p)$, apply the algorithm first to $(G_1, x, p, y)$ and then to
+$(G_0, c_i, c_i, c_i)$;
+\item If $x\ne p$, $y\ne p$, $c_i\in C(y,x)$, apply the algorithm first to $(G_0, x, c_i, x)$ and then to
+$(G_1, c_i, y, p)$;
+\item If $x\ne p$, $y\ne p$, $c_i\in C(p,y]$, and $\alpha\in L(c_i)$, color $c_i$ with $\alpha$ and apply the
+algorithm first to $(G_0, x, y, c_i)$ and then to $(G_1, p, c_i, p)$;
+\item If $x\ne p$, $y\ne p$, $c_i\in C(p,y]$, and $\alpha\not\in L(c_i)$, apply the
+algorithm first to $(G_0, x, y, x)$ and then to $(G_1, p, c_i, p)$.
+\end{enumerate}
 \end{enumerate}
 
-\noindent Once the above procedure terminates we will have located $c_i$. The tracking of the subgraphs $G_0$ and $G_1$
-are already almost complete by our tracking of \emph{state} and \emph{neighbor range}. It remains to determine
-\emph{neighbor range} for $c_i$ in $G_0$ and $G_1$. This can be achieved by locating $p$ in $c_i$'s incidence list
-and splitting the current \emph{neighbor range} of $c_i$ in two at the given edge. Comparing $c_i$, $x$, $y$, and
-$p$, along with the \emph{face location} and \emph{state} properties for each we may determine which case to
-apply and make the appropriate recursive calls on $G_0$ and $G_1$.
+\subsection*{Implementing the Path 3-Choosing Algorithm}
 
-\subsection*{Efficient Tracking of Outer Face Location}
+Let $G$ be a $2$-connected weakly triangulated plane graph represented as an incidence list (or adjacency list)
+and an ordering of edges around each vertex following a planar embedding.
+We will track subgraphs by marking each vertex with a \emph{state} of \emph{interior},
+\emph{face}, or \emph{colored}. Vertices will only change in state from \emph{interior} to \emph{face} to
+\emph{colored}. For each \emph{face} and \emph{colored} vertex we will have a \emph{neighbor range}
+that tracks the range of edges in its ordered incidence list that belong to the current subgraph. 
+Note we may walk clockwise along the outer face from some
+\emph{face} vertex $v$ by simply proceeding to the first vertex in its neighbor range.\\
 
+\noindent To be able to perform the procedure from the proof above we must also determine where each \emph{face} vertex
+lies on the outer face with respect to $x$, $y$, and $p$. Each vertex will recieve a mark associating it with a
+face segment. Each face segment may simply be represented by an integer type. The face segments for $C[x,p)$ and
+$C(p,y]$ will need to be joined in the case $\alpha\not\in L(c_i)$
+and $c_i\in C(p,y]$ since $p$ will be moved away to start a new path. We use a disjoint set data structure,
+as described in [u], to allow efficient union and find operations on face segments.\\
+
+\noindent In step (4) of the path 3-choosing algorithm we perform
+the following for each $n_j$ in addition to the regular steps of the algorithm:
+
+\begin{enumerate}
+\item if $n_j$ is interior, initialize its \emph{neighbor range} set its \emph{state} to \emph{face};
+\item set $n_j$'s \emph{face location} to the current $C[x,p)$ face segment, making a new face segment if none exists;
+\item contract the \emph{neighbor range} of $n_j$ to remove $p$ from its incidence list.
+\end{enumerate}
+
+\noindent Once the above procedure terminates we will have located $c_i$. We have almost determined $G_0$ and $G_1$
+by our tracking of \emph{state} and \emph{neighbor range}. It only remains to find
+the \emph{neighbor range} for $c_i$ in both $G_0$ and $G_1$. This can be achieved by locating $p$ in
+$c_i$'s incidence list and splitting the \emph{neighbor range} of $c_i$ at the $pc_i$ edge. Comparing $c_i$, $x$,
+$y$, and $p$, along with the \emph{face location} and \emph{state} properties for each we may determine which case
+to apply in step (6). In each recursive call we must also pass any face segments that appear and rename
+them accordding to their new positions with respect to the new assignments of $x$, $y$, and $p$.
+
+\subsection*{Time Complexity}
+
+First note that steps (1), (2), and (3) will 
 
 \begin{comment}
 \begin{algorithm}
