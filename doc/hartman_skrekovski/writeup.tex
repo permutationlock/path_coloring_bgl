@@ -14,6 +14,7 @@
 \usepackage{mathtools}
 \usepackage{tabularx}
 \usepackage{verbatim}
+\usepackage{enumitem}
 \usepackage{tikz}
 \usepackage[ruled,vlined]{algorithm2e}
 \geometry{letterpaper, portrait, margin=1in}
@@ -44,22 +45,25 @@ Skrekovski [c].
 
 \section{Introduction}
 
-All graphs discussed in this project will be simple, undirected, and finite. A graph is planar if it may
-be drawn in the plane without edge crossings. A $k$-coloring of a graph partitions
-its vertices into $k$ color classes. Such a coloring is called proper if each color class consists of
-nonadjacent vertices.\\
+All graphs discussed in this project will be simple, undirected, and finite. We say a graph is planar if it may
+be drawn in the plane without edge crossings, known as a plane drawing. A planar embedding of a graph is an
+ordering of the edges around each vertex according to a plane drawing. A plane graph is a graph with a
+planar embedding.
+A $k$-coloring of a graph partitions its vertices into $k$ color classes. Such a coloring is called proper
+if each color class consists of snonadjacent vertices.\\
 
 \noindent Appel and Haken [d,e] display that all planar graphs have a proper $4$-coloring.
-This result is best possible and is known as the Four Color Theorem.
-Generalizations of proper coloring were introduced in [f,g,h] allowing color classes to form forests, or allowing vertices
-to have some bounded number of same color neighbors. Cowen et al. ([j]) show a best possible result that planar
-graphs may be $3$-colored such that each vertex recieves at most two same color neighbors.\\
+This result is best possible and known as the Four Color Theorem.
+Generalizations of proper coloring were introduced in [f,g,h] allowing color classes to form forests, or allowing
+vertices share a color with some bounded number of neighbors. Cowen et al. ([j]) show all planar
+graphs may be $3$-colored such that each vertex shares a color with at most two neighbors.\\
 
 \noindent We will be considering the problem of path coloring, producing a $k$-coloring of a graph such that each color
-class induces a disjoint union of paths, or equivalently a forest where each component is a path. This coloring
+class induces a disjoint union of paths. A disjoint union of paths is equivalent to a linear forest, a forest
+where each component is a path. This coloring
 was introduced by Harary in [i]. Note that this is similar to the defective coloring of Cowen et al. above,
 with the added restriction that path coloring forbids cycles. In [l] Poh displayes that all
-planar graphs have a path $3$-coloring. Here we present an implementation of Poh's algorithm to path
+planar graphs have a path $3$-coloring. We present an implementation of Poh's algorithm to path
 $3$-color plane graphs.\\
 
 \noindent Given a list of $k$ colors for each vertex, a $k$-list-coloring, or $k$-choosing, assigns each vertex a
@@ -70,10 +74,10 @@ graphs that are not $4$-choosable are described by Mirzakhani in [o] and Voigt i
 is best possible. Jensen and Toft in [t] note that Thomassen's proof yields a linear algorithm for $5$-choosing
 plane graphs.\\
 
-\noindent Hull and Eaton in [q] prove planar graphs are $3$-choosable such that each vertex recieves at most two
-same color neighbors, and furthermore show this result is best possible. Hartman in [r] and Skrekovski in [s] independantly
-provide similar proofs that planar graphs are path $3$-choosable. Hartman claims the proof yields
-a linear time algorithm for path $3$-list-coloring, and thus path $3$-coloring, plane graphs. Here we present a
+\noindent Hull and Eaton in [q] prove planar graphs are $3$-choosable such that each vertex shares a color with
+at most two neighbors, and furthermore show this result is best possible. Hartman in [r] and Skrekovski in [s]
+independantly provide similar proofs that planar graphs are path $3$-choosable. Hartman claims the proof yields
+a linear time algorithm for path $3$-list-coloring, and thus path $3$-coloring, plane graphs. We present a
 linear time implementation of Hartman and Skrekovski's algorithm.
 
 \section{Path $3$-Coloring Plane Graphs}
@@ -120,6 +124,8 @@ a path coloring of $G$.\\
 Let $G$ be a plane graph. Since adding edges does not make $G$ easier to color, augment $G$ with edges until
 it is triangulated. Path $2$-color the outer triangle and apply Theorem 1 to path $3$-color $G$.\\
 \end{proof}
+
+\subsection*{Poh's Algorithm}
 
 \noindent Let $G$ be a weakly triangulated plane graph with outer face formed by the two monocolor paths $P$ and
 $Q$, each colored sdistinct color. Poh's path $3$-coloring algorithm proceeds as follows:
@@ -170,22 +176,14 @@ $\qquad$
   \node (t) [label=above:{$t_1$, $p_{n-1}$}, fill] at (1cm, 1cm) {};
   \node (null) [draw=none] at (270:1.5cm) {};
   
-  \node (pn_1) [label=above:$p_n$, fill] at (3.5cm, 0.5cm) {};
-  \node (qn_1) [label=below:$q_m$, fill] at (3.5cm, -0.5cm) {};
-  \node (t_1) [label=above:{$t_1$, $p_{n-1}$}, fill] at (2.5cm, 1cm) {};
-  
   \draw (qn) edge (t);
   \draw (p0) edge [bend left] (t) [dashed];
   \draw (q0) edge [bend right] (qn) [dashed];
   \draw (p0) edge (q0);
-  
-  \draw (t_1) edge (pn_1);
-  \draw (pn_1) edge (qn_1);
-  \draw (qn_1) edge (t_1);
 \end{tikzpicture}
 \hfill\\
 
-\textbf{Figure 2.1} Finding $t_1$ in the case $t_1\in P$.
+\textbf{Figure 2.1} The case $t_1\in P$.
 \end{center}
 
 \item Perform a breadth first search from $t_1$;
@@ -268,7 +266,7 @@ $\qquad$
   \draw (qj_1) edge (t0_1);
 \end{tikzpicture}
 \hfill\\
-\textbf{Figure 2.2} Dividing $G$ along $p_iq_j$ and the $ut_1$-path.
+\textbf{Figure 2.2} Dividing $G$ along the edge $p_iq_j$ and the $ut_1$-path.
 \end{center}
 
 \subsection*{Implementing Poh's Algorithm}
@@ -278,7 +276,7 @@ each vertex following a
 combinatorial embedding. We track the paths $P$ and $Q$ by marking each vertex with its respective path and
 storing the path start and end vertices $p_0$, $p_n$, $q_0$, and $q_m$.
 We first find $t_1$ by looking through the ordered neighbors of $q_m$ and take the vertex counterclockwise past
-$p_n$. This step is repeated until the graph is colored or $t_1\not\in P\cup Q$.
+$p_n$. This step is repeated until the graph is colored or $t_1\not\in P\cup Q$.\\
 
 \noindent We perform a
 breadth first search starting at $t_1$ and storing parents for each vertex visited. Vertices marked to be in $P$
@@ -306,11 +304,25 @@ entire graph is $O(|V|^2)$. This gives an overall amortized complexity of $O(|V|
 
 \section{Path $3$-Choosing Plane Graphs}
 
-The following is a restatment of a theorem of Hartman [r] and Skrekovski [s]. We provide a modification of
-the proof that wraps the path coloring and path removal portions of Hartman's proof into a single inductive
-step considering only the last vertex colored on the current path, which will be denoted $p$. This modification
-is motivated by the relative simplicity of removing a single outer face vertex, compared with removing an entire
-path. This proof yields a linear time algorithm and implementation, as claimed by Hartman in [r].\\
+The following is a restatment of a theorem of Hartman [r] and Skrekovski [s]. We provide a slight modification of
+the proof technique that wraps the path coloring and path removal portions of Hartman's proof into a single inductive
+step that considers only the last vertex colored on the current path, which will be denoted $p$.
+This modification is motivated by the relative simplicity of removing a single outer face vertex,
+compared with removing an entire path.
+We will show this proof yields a linear time algorithm and implementation, as claimed by Hartman in [r].\\
+
+\noindent The informal idea followed in both the proof and algorithm is to start with
+vertices $x$ and $y$ on the outer face and draw a path clockwise between them using vertices on the outer face.
+We mark the current color of the path with $\alpha$ and the current end of the path with $p$. At each step we will remove
+$p$ and look for a vertex between $p$ and $y$ on the outer face to color $\alpha$ and extend our path. If no
+such vertex is found, or we reach and remove $y$, we move $p$ back to $x$ and start a new path.\\
+
+\noindent To avoid dealing with disconnected graphs the algorithm will separately consider the $2$-connected
+components produced when removing
+$p$ results in cutvertices. In fact, we incrementally remove $p$ and halt once a single cutvertex is found.
+The algorithm then
+considers the two maximal $2$-connected components separately. We will continue to remove $p$ from the component
+it is contained in.\\
 
 \noindent Suppose $C$ is
 the outer cycle of a $2$-connected weakly triangulated plane graph $G$. Using notation from [r] for $u,v\in V(C)$
@@ -340,13 +352,13 @@ If $p\ne x$, let $\alpha\not\in L(v)$ for
 any $v\in V(C[x,p))$. Also assume the precoloring is a path coloring.\\
 
 \noindent The coloring may be extended to
-a path choosing of $G$ from $L$ such that $x$, $y$, and $p$ each recieve at most one same color neighbor. If
-$x=y$ then $x$ and $y$ recieve no same color neighbors. If $y=p$, or $y$ is immediately prior to
-$p$ on the outer face and $\alpha\not\in L(y)$, then $y$ recieves no same color neighbors.\\
+a path choosing of $G$ from $L$ such that $x$, $y$, and $p$ each share a color with at most one neighbor. If
+$x=y$ then $x$ and $y$ each share a color with none of their neighbors. If $y=p$, or $y$ is immediately prior to
+$p$ on the outer face and $\alpha\not\in L(y)$, then $y$ shares a color with none of its neighbors.\\
 \end{adjustwidth}
 
 \begin{proof}
-If $|V(G)\le 3$ the theorem easily follows. Suppose $|V(G)|>3$ and the theorem
+If $|V(G)\le 2$ the theorem easily follows. Suppose $|V(G)|>2$ and the theorem
 holds for all graphs $H$ with $|V(H)|<|V(G)|$. Let
 $C=c_0c_1\ldots c_n$ denote, in clockwise order, the outer face of $G$ with $p=c_0$.
 There are several cases to consider. Let $c_i$ be the next vertex in $V(C)\cap N(p)$ counterclockwise from $c_n$.
@@ -1104,10 +1116,12 @@ Assign $x$ and $y$ to be distinct vertices on the outer face. Color $x$ from $L(
 and assign $p=x$. Apply Theorem 3 to path choose $G$ from $L$ accordingly.\\
 \end{proof}
 
-\noindent Let $G$ be a weakly triangulated plane graph with vertices $x$, $y$, and $p$ defineds and possibly
-precolored in accordance with Theorem 3. In the followin we will denote the outer face of $G$ as
+\subsection*{Path 3-Choosing Algorithm}
+
+\noindent Let $G$ be a weakly triangulated plane graph with vertices $x$, $y$, and $p$ defined and
+colored in accordance with Theorem 3. We will again denote the outer face of $G$ as
 $C=c_0c_1\ldots c_n$ with $c_0=p$.
-We will denote the embedding ordered neighborhood $N(p)$ as $n_0\ldots n_k$, with $n_0=c_1$ and
+We will denote the embedding ordered $N(p)$ as $n_0\ldots n_k$, with $n_0=c_1$ and
 $n_k=c_n$. We will denote the parameters for an application of the algorithm as the tuple $(G, x, y, p)$.
 The path $3$-choosing algorithm proceeds as follows:
 
@@ -1148,38 +1162,85 @@ Let $G$ be a $2$-connected weakly triangulated plane graph represented as an inc
 and an ordering of edges around each vertex following a planar embedding.
 We will track subgraphs by marking each vertex with a \emph{state} of \emph{interior},
 \emph{face}, or \emph{colored}. Vertices will only change in state from \emph{interior} to \emph{face} to
-\emph{colored}. For each \emph{face} and \emph{colored} vertex we will have a \emph{neighbor range}
-that tracks the range of edges in its ordered incidence list that belong to the current subgraph. 
-Note we may walk clockwise along the outer face from some
-\emph{face} vertex $v$ by simply proceeding to the first vertex in its neighbor range.\\
+\emph{colored}. Each \emph{face} and \emph{colored} vertex will have a \emph{neighbor range}
+that tracks the range of edges in its ordered incidence list that belong to the current subgraph. This range
+will start with the next vertex on the outer face and end with the previous.
+Therefore we may walk clockwise along the outer face from a
+\emph{face} vertex $v$ simply by proceeding to the first vertex in its \emph{neighbor range}.\\
 
-\noindent To be able to perform the procedure from the proof above we must also determine where each \emph{face} vertex
-lies on the outer face with respect to $x$, $y$, and $p$. Each vertex will recieve a mark associating it with a
-face segment. Each face segment may simply be represented by an integer type. The face segments for $C[x,p)$ and
-$C(p,y]$ will need to be joined in the case $\alpha\not\in L(c_i)$
-and $c_i\in C(p,y]$ since $p$ will be moved away to start a new path. We use a disjoint set data structure,
-as described in [u], to allow efficient union and find operations on face segments.\\
+\noindent To be able to perform the path $3$-choosing algorithm above we must also determine where each
+\emph{face} vertex lies on the outer face with respect to $x$, $y$, and $p$. Each vertex will recieve a mark
+associating it with a face segment. We will denote $C[x,p)$ as $s_p$, $C(p,y]$ as $s_y$, and $C(y,x)$ as $s_x$.
+Each face segment may simply be represented by an integer type. The face
+segments $s_p$ and $s_y$ will need to be joined in the case $\alpha\not\in L(c_i)$
+and $c_i\in C(p,y]$ since $p$ will be moved away to start a new path. We utilize a disjoint set data structure,
+as described in [u], to allow efficient union and find operations on face segments.
 
-\noindent In step (4) of the path 3-choosing algorithm we perform
-the following for each $n_j$ in addition to the regular steps of the algorithm:
+\begin{center}
+\begin{tikzpicture}[
+		scale=1,
+		every node/.style={circle, draw, minimum size=1mm, scale=0.9},
+		every label/.append style={rectangle}
+	]
+  \node (p) [label=above:{$p$}, fill] at (90:1cm) {};
+  \node (x) [label=below left:{$x$}, fill] at (210:1cm) {};
+  \node (y) [label=below right:{$y$}, fill] at (330:1cm) {};
+  \node (sp) [draw=none] at (150:1.25cm) {$s_p$};
+  \node (sy) [draw=none] at (30:1.25cm) {$s_y$};
+  \node (sy) [draw=none] at (270:1.25cm) {$s_x$};
+  \node (null) [draw=none] at (270:1.5cm) {};
+  \draw (p) edge [bend left] (y) [dashed];
+  \draw (y) edge [bend left] (x) [dashed];
+  \draw (x) edge [bend left] (p) [dashed];
+\end{tikzpicture}
+\hfill\\
+\textbf{Figure 3.11} The face segments of $G$.
+\end{center}
+
+\noindent Some additional steps must be added to the path $3$-choosing algorithm to maintain each data structure
+during its operation. In the case that we color $y$ and rename vertices in step (2) we must also rename face
+segments to swap $s_x$ with $s_y$ (see figure 3.2). In step (4) we perform
+the following for each $n_j$, not including $c_i$, in addition to the regular steps of the algorithm:
 
 \begin{enumerate}
-\item if $n_j$ is interior, initialize its \emph{neighbor range} set its \emph{state} to \emph{face};
-\item set $n_j$'s \emph{face location} to the current $C[x,p)$ face segment, making a new face segment if none exists;
-\item contract the \emph{neighbor range} of $n_j$ to remove $p$ from its incidence list.
+\item Initialize $n_j$'s \emph{neighbor range} and set its \emph{state} to \emph{face};
+\item Set $n_j$'s \emph{face location} to $s_p$, creating $s_p$ if it doesn't exist;
+\item Contract the \emph{neighbor range} of $n_j$ to remove $p$ from its incidence list.
 \end{enumerate}
 
-\noindent Once the above procedure terminates we will have located $c_i$. We have almost determined $G_0$ and $G_1$
-by our tracking of \emph{state} and \emph{neighbor range}. It only remains to find
+\noindent Once the above procedure terminates we will have located $c_i$. We have almost fully determined $G_0$
+and $G_1$ by our tracking of \emph{state} and \emph{neighbor range}. It only remains to find
 the \emph{neighbor range} for $c_i$ in both $G_0$ and $G_1$. This can be achieved by locating $p$ in
 $c_i$'s incidence list and splitting the \emph{neighbor range} of $c_i$ at the $pc_i$ edge. Comparing $c_i$, $x$,
 $y$, and $p$, along with the \emph{face location} and \emph{state} properties for each we may determine which case
 to apply in step (6). In each recursive call we must also pass any face segments that appear and rename
-them accordding to their new positions with respect to the new assignments of $x$, $y$, and $p$.
+each accordding to their position with respect to the new assignments of $x$, $y$, and $p$. As noted earlier,
+in (6e) and (6j) for $G_0$ we set $s_y$ to be the union of $s_p$ and $s_y$ (see figure 3.10).
 
 \subsection*{Time Complexity}
 
-First note that steps (1), (2), and (3) will 
+First note that $G$ is planar so $O(|E|)=O(|V|)$. When a vertex is assigned as $p$ we will iterate through
+its incidence list at most once. This is due to the fact that when each neighbor $n_j$ is hit, we remove $p$ from $n_j$'s
+\emph{neighbor range}. Once each neighbor has been hit, $p$ has been effectively removed from the graph.
+Therefore step (4) iterates through each edge in $E(G)$ at most twice, once for each incident vertex. Furthermore,
+steps (1) through (3) will occur at most once for each iteration of step (4). Thus this process has complexity
+$O(|E|)=O(|V|)$.\\
+
+\noindent We will be performing numerous unions and finds throughout the operation of the algorithm, but no more
+than $O(|V|)$ by the same reasoning as above. The only unions that will be made are between $s_p$ and
+$s_y$. We may also notice that the segment $s_p$ is always a singleton in our disjoint set structure, only created
+when new \emph{interior} vertices are added to the outer face while removing $p$. Therefore the complexity of
+each union and find operation is $O(1)$ and the complexity of maintaining our face segment 
+disjoint set structure over the entire operation of the algorithm is $O(|V|)$.\\
+
+\noindent The remaining expensive operation
+is locating the edge $c_ip$ in $c_i$'s incidence list. If $c_ip$ is an edge on the outer face, $c_i=c_1$ and
+this lookup is constant time using the tracked \emph{neighbor range}. Otherwise, $c_ip$ is not an edge in
+the outer face. We perform a neighbor lookup to find the edge with amortized complexity $O(|E|/|V|)$.
+After this step $c_ip$ will be in the outer face of both $G_0$ and $G_1$. Therefore we perform at most one lookup
+for each edge in $E(G)$. This gives an amortized complexity of $O(|E||E|/|V|)=O(|V|)$.\\
+
+\noindent Therefore the amortized complexity of the path $3$-choosing algorithm is $O(|V|)$.
 
 \begin{comment}
 \begin{algorithm}
@@ -1221,7 +1282,6 @@ First note that steps (1), (2), and (3) will
 }
 \caption{Path 3-Color}
 \end{algorithm}
-\end{comment}
 
 \section*{References}
 
@@ -1241,5 +1301,7 @@ Utrecht University, 1993.\\\relax
 [6] & Tarjan, R., "Depth-first search and linear graph algorithms," SIAM Journal on Computing, vol. 1, pp.
 146-160, 1972.\\\relax
 \end{tabularx}
+
+\end{comment}
 
 \end{document}
