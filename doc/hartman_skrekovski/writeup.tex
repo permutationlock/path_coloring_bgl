@@ -295,12 +295,12 @@ vertices, into a stack or queue.
 
 \subsection*{Time Complexity}
 
-\noindent Locating $t_1$ requires a single neighbor lookup. The amortized complexity of a neighbor lookup is
+\noindent Locating $t_1$ requires a single neighbor lookup. The average complexity of a neighbor lookup is
 $O(|E|/|V|)$. Each vertex may be $t_1$ at most once so over the entire graph we perform at most $|V|$ neighbor
 lookups. In planar graphs $|E|\le 3|V|-6$, and $O(|E|)=O(|V|)$. Therefore, the
-amortized complexity of this step is $O(|V|^2/|V|)=O(|V|)$. We also perform at most one breadth first
+complexity of this step is $O(|V|^2/|V|)=O(|V|)$. We also perform at most one breadth first
 search from each $t_1$ with complexity $O(|V|)$. Therefore the complexity of the serach step over the
-entire graph is $O(|V|^2)$. This gives an overall amortized complexity of $O(|V|+|V|^2)=O(|V|^2)$.
+entire graph is $O(|V|^2)$. This gives an overall complexity of $O(|V|+|V|^2)=O(|V|^2)$.
 
 \section{Path $3$-Choosing Plane Graphs}
 
@@ -1236,11 +1236,11 @@ disjoint set structure over the entire operation of the algorithm is $O(|V|)$.\\
 \noindent The remaining expensive operation
 is locating the edge $c_ip$ in $c_i$'s incidence list. If $c_ip$ is an edge on the outer face, $c_i=c_1$ and
 this lookup is constant time using the tracked \emph{neighbor range}. Otherwise, $c_ip$ is not an edge in
-the outer face. We perform a neighbor lookup to find the edge with amortized complexity $O(|E|/|V|)$.
+the outer face. We perform a neighbor lookup to find the edge with complexity $O(|E|/|V|)$.
 After this step $c_ip$ will be in the outer face of both $G_0$ and $G_1$. Therefore we perform at most one lookup
-for each edge in $E(G)$. This gives an amortized complexity of $O(|E||E|/|V|)=O(|V|)$.\\
+for each edge in $E(G)$. This gives a complexity of $O(|E||E|/|V|)=O(|V|)$.\\
 
-\noindent Therefore the amortized complexity of the path $3$-choosing algorithm is $O(|V|)$.
+\noindent Therefore the complexity of the path $3$-choosing algorithm is $O(|V|)$.
 
 \begin{comment}
 \begin{algorithm}
