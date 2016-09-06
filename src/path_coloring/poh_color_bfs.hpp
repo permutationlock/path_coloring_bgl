@@ -2,11 +2,12 @@
  * poh_color.hpp
  * Author: Aven Bross
  * 
- * Implementation of Poh path 3-coloring algorithm for triangulated plane graphs.
+ * Implementation of Poh path 3-coloring algorithm for triangulated plane graphs
+ * that uses a breadth first search to find chordless paths.
  */
 
-#ifndef __POH_COLOR_HPP
-#define __POH_COLOR_HPP
+#ifndef __POH_COLOR_BFS_HPP
+#define __POH_COLOR_BFS_HPP
 
 // STL headers
 #include <vector>
@@ -27,7 +28,7 @@ template<
 		typename mark_map_t, typename parent_map_t, typename color_t,
 		typename vertex_t = typename boost::graph_traits<graph_t>::vertex_descriptor
 	>
-static void poh_color_recursive(
+static void poh_color_bfs_recursive(
 		const graph_t & graph, const planar_embedding_t & planar_embedding,
 		color_map_t & color_map, mark_map_t & mark_map, parent_map_t & parent_map,
 		vertex_t p_0, vertex_t p_n,
@@ -96,7 +97,7 @@ static void poh_color_recursive(
 					vertex_t q_j = neighbor;
 					
 					if(p_i != p_0 || q_j != q_0) {
-						poh_color_recursive(
+						poh_color_bfs_recursive(
 								graph, planar_embedding, color_map, mark_map, parent_map,
 								p_0, p_i, q_0, q_j,
 								count, p_mark, q_mark, new_color
@@ -128,13 +129,13 @@ static void poh_color_recursive(
 		mark_map[current_vertex] = new_mark;
 	}
 	
-	poh_color_recursive(
+	poh_color_bfs_recursive(
 			graph, planar_embedding, color_map, mark_map, parent_map,
 			p_0, p_n, t_0, t_1,
 			count, p_mark, new_mark, color_map[q_0]
 		);
 	
-	poh_color_recursive(
+	poh_color_bfs_recursive(
 			graph, planar_embedding, color_map, mark_map, parent_map,
 			t_0, t_1, q_0, q_m,
 			count, new_mark, q_mark, color_map[p_0]
@@ -145,7 +146,7 @@ template<
 		typename graph_t, typename planar_embedding_t,
 		typename color_map_t, typename vertex_iterator_t, typename color_t
 	>
-void poh_color(
+void poh_color_bfs(
 		const graph_t & graph, const planar_embedding_t & planar_embedding,
 		color_map_t & color_map, vertex_iterator_t p_begin, vertex_iterator_t p_end,
 		vertex_iterator_t q_begin, vertex_iterator_t q_end,
@@ -178,7 +179,7 @@ void poh_color(
 	
 	std::size_t count = 3;
 	
-	poh_color_recursive(
+	poh_color_bfs_recursive(
 			graph, planar_embedding, color_map, mark_map, parent_map,
 			*p_begin, *(--p_end), *q_begin, *(--q_end),
 			count, 1, 2, c_2

@@ -38,7 +38,7 @@
 #include <boost/graph/make_maximal_planar.hpp>
 
 // Local project headers
-#include "../path_coloring/poh_color.hpp"
+#include "../path_coloring/poh_color_bfs.hpp"
 #include "../path_coloring/hartman_skrekovski_choose.hpp"
 #include "../visualization/draw_tikz_graph.hpp"
 
@@ -291,7 +291,7 @@ void test_path_coloring(const index_graph & graph, const color_map & coloring) {
 
 // Apply Poh algorithm to given graph and verify it works
 template<typename index_graph>
-void poh_color_test(const index_graph & graph) {
+void poh_color_bfs_test(const index_graph & graph) {
 	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
 	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
 	
@@ -337,13 +337,13 @@ void poh_color_test(const index_graph & graph) {
 		auto start = nanosecond_timer::now();
 		
 		for(std::size_t i = 0; i < 1000; ++i) {
-			poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
+			poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
 		}
 	
 		auto end = nanosecond_timer::now();
 		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
 	#else
-		poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
+		poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
 	#endif
 	
 	#ifdef SHOW_VISUALIZATION
@@ -451,7 +451,7 @@ void path_choose_test(const index_graph & graph, std::size_t num_colors) {
 	test_path_coloring(graph, coloring);
 }
 
-void test_poh_color() {
+void test_poh_color_bfs() {
 	std::cout<<"Path 3-coloring"<<std::endl;
 	
 	// Define graph properties
@@ -488,7 +488,7 @@ void test_poh_color() {
 				//draw_graph_no_color(graph);
 		
 				//std::cout << "Testing planarity.\n";
-				poh_color_test(graph);
+				poh_color_bfs_test(graph);
 		
 				#ifdef SHOW_PASSES
 					std::cout<<"    PASS " << order << " vertex path 3-color."<<std::endl;
@@ -574,7 +574,7 @@ void test_path_choose()
 }
 
 int main() {
-	test_poh_color();
+	test_poh_color_bfs();
 	test_path_choose();
 
 	if(failed)
