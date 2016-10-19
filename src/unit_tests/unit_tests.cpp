@@ -46,13 +46,13 @@
 using namespace boost;
 
 // Comment line below to hide passing tests.
-#define SHOW_PASSES
+//#define SHOW_PASSES
 
 // Comment line below to hide tikz drawing printouts
 //#define SHOW_VISUALIZATION
 
 // Comment line below to hide test timings.
-#define SHOW_TIMINGS
+//#define SHOW_TIMINGS
 
 // Comment line below to hide color list assignment printouts
 //#define SHOW_COLOR_LISTS
@@ -541,19 +541,16 @@ void test_poh_color_bfs() {
 		while(!found_planar) {
 			try {
 				// Construct a random trriangulated graph
-				//std::cout << "Generating graph.\n";
 				index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 		
 				++count;
 				
-				//std::cout << "Triangulating graph.\n";
 				make_triangulated(graph);
 		
 				found_planar = true;
 		
 				//draw_graph_no_color(graph);
 		
-				//std::cout << "Testing planarity.\n";
 				poh_color_bfs_test(graph);
 		
 				#ifdef SHOW_PASSES
@@ -576,7 +573,7 @@ void test_poh_color_bfs() {
 }
 
 void test_poh_color() {
-	std::cout<<"Path 3-coloring (Poh w/face tracing)"<<std::endl;
+	std::cout<<"Path 3-coloring (Poh w/outer face tracing)"<<std::endl;
 	
 	// Define graph properties
 	typedef adjacency_list
@@ -599,19 +596,16 @@ void test_poh_color() {
 		while(!found_planar) {
 			try {
 				// Construct a random trriangulated graph
-				//std::cout << "Generating graph.\n";
 				index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 		
 				++count;
 				
-				//std::cout << "Triangulating graph.\n";
 				make_triangulated(graph);
 		
 				found_planar = true;
 		
 				//draw_graph_no_color(graph);
 		
-				//std::cout << "Testing planarity.\n";
 				poh_color_test(graph);
 		
 				#ifdef SHOW_PASSES
@@ -659,19 +653,16 @@ void test_path_choose()
 			while(!found_planar) {
 				try {
 					// Construct a random trriangulated graph
-					//std::cout << "Generating graph.\n";
 					index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 					
 					++count;
 					
-					//std::cout << "Triangulating graph.\n";
 					make_triangulated(graph);
 			
 					found_planar = true;
 			
 					//draw_graph_no_color(graph);
 			
-					//std::cout << "Testing planarity.\n";
 					path_choose_test(graph, colors);
 			
 					#ifdef SHOW_PASSES
