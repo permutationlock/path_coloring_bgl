@@ -38,6 +38,7 @@
 #include <boost/graph/make_maximal_planar.hpp>
 
 // Local project headers
+#include "../path_coloring/poh_color.hpp"
 #include "../path_coloring/poh_color_bfs.hpp"
 #include "../path_coloring/hartman_skrekovski_choose.hpp"
 #include "../visualization/draw_tikz_graph.hpp"
@@ -45,10 +46,10 @@
 using namespace boost;
 
 // Comment line below to hide passing tests.
-//#define SHOW_PASSES
+#define SHOW_PASSES
 
 // Comment line below to hide tikz drawing printouts
-//#define SHOW_VISUALIZATION
+#define SHOW_VISUALIZATION
 
 // Comment line below to hide test timings.
 //#define SHOW_TIMINGS
@@ -354,6 +355,71 @@ void poh_color_bfs_test(const index_graph & graph) {
 	test_path_coloring(graph, color_property_map);
 }
 
+// Apply Poh algorithm to given graph and verify it works
+template<typename index_graph>
+void poh_color_test(const index_graph & graph) {
+	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
+	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
+	
+	// Define the storage type for the planar embedding
+	typedef std::vector<
+			std::vector<edge_descriptor>
+		> embedding_storage_t;
+
+	typedef iterator_property_map
+		< typename embedding_storage_t::iterator, 
+			typename property_map<index_graph, vertex_index_t>::type
+		> embedding_t;
+	
+	// Create the planar embedding
+	embedding_storage_t embedding_storage(num_vertices(graph));
+	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
+	
+	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
+		boyer_myrvold_params::embedding = embedding);
+	
+	// Find a canonical ordering
+	std::vector<vertex_descriptor> ordering;
+	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
+	
+	// Create property map to hold the coloring
+	std::map<vertex_descriptor, int> color_map;
+	associative_property_map< std::map<vertex_descriptor, int> >
+		color_property_map(color_map);
+	
+	// Create vectors to hold chordless paths
+	std::vector<vertex_descriptor> p;
+	std::vector<vertex_descriptor> q;
+	
+	// Initialize path p with top vertex of outer face
+	p.push_back(ordering[0]);
+
+	// Initialize path q with bottom vertices of outer face
+	q.push_back(ordering[1]);
+	q.push_back(ordering.back());
+	
+	// Call Poh algorithm
+	#ifdef SHOW_TIMINGS
+		auto start = nanosecond_timer::now();
+		
+		for(std::size_t i = 0; i < 1000; ++i) {
+			poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
+		}
+	
+		auto end = nanosecond_timer::now();
+		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
+	#else
+		poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
+	#endif
+	
+	#ifdef SHOW_VISUALIZATION
+		draw_graph_color(graph, color_property_map);
+	#endif
+	
+	// Test correctness of path coloring
+	test_path_coloring(graph, color_property_map);
+}
+
 // Apply Hartman-Skrekovski algorithm to given graph and verify it works
 template<typename index_graph>
 void path_choose_test(const index_graph & graph, std::size_t num_colors) {
@@ -452,7 +518,7 @@ void path_choose_test(const index_graph & graph, std::size_t num_colors) {
 }
 
 void test_poh_color_bfs() {
-	std::cout<<"Path 3-coloring"<<std::endl;
+	std::cout<<"Path 3-coloring (Poh w/ BFS)"<<std::endl;
 	
 	// Define graph properties
 	typedef adjacency_list
@@ -509,6 +575,64 @@ void test_poh_color_bfs() {
 	}
 }
 
+void test_poh_color() {
+	std::cout<<"Path 3-coloring (Poh w/face tracing)"<<std::endl;
+	
+	// Define graph properties
+	typedef adjacency_list
+		<	setS,
+			vecS,
+			undirectedS,
+			property<vertex_index_t, std::size_t>,
+			property<edge_index_t, std::size_t>
+		> index_graph;
+	
+	typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
+	
+	boost::minstd_rand gen;
+	gen.seed(8573);
+	
+	for(std::size_t order = 4; order <= 100; ++order) {
+		bool found_planar = false;
+		std::size_t count = 4;
+		
+		while(!found_planar) {
+			try {
+				// Construct a random trriangulated graph
+				//std::cout << "Generating graph.\n";
+				index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+		
+				++count;
+				
+				//std::cout << "Triangulating graph.\n";
+				make_triangulated(graph);
+		
+				found_planar = true;
+		
+				draw_graph_no_color(graph);
+		
+				//std::cout << "Testing planarity.\n";
+				poh_color_test(graph);
+		
+				#ifdef SHOW_PASSES
+					std::cout<<"    PASS " << order << " vertex path 3-color."<<std::endl;
+				#endif
+			}
+			catch(std::logic_error error) {
+				// Generated a non-planar graph, ignore this case
+			}
+			catch(std::exception& error) {
+				std::cout<<"    FAIL " << order << " vertex path 3-color ("<<error.what()<<")."<<std::endl;
+				failed=true;
+			}
+			catch(...) {
+				std::cout<<"    FAIL " << order << " vertex path 3-color (unknown error)."<<std::endl;
+				failed=true;
+			}
+		}
+	}
+}
+
 void test_path_choose()
 {
 	// Define graph properties
@@ -526,7 +650,7 @@ void test_path_choose()
 	gen.seed(8573);
 	
 	for(std::size_t colors = 3; colors < 9; ++colors) {
-		std::cout << "Path 3-choosing with " << colors << " colors" << std::endl;
+		std::cout << "Path 3-choosing (Hartman-Skrekovski) with " << colors << " colors" << std::endl;
 	
 		for(std::size_t order = 4; order <= 100; ++order) {
 			bool found_planar = false;
@@ -574,8 +698,9 @@ void test_path_choose()
 }
 
 int main() {
-	test_poh_color_bfs();
-	test_path_choose();
+	//test_poh_color_bfs();
+	test_poh_color();
+	//test_path_choose();
 
 	if(failed)
 		std::cout<<"THERE ARE FAILING TESTS"<<std::endl;
