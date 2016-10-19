@@ -221,10 +221,7 @@ static void hartman_skrekovski_choose_recursive(
 					color_map[n] = color_map[p];
 					state_map[n] = COLORED;
 				}
-				else if(state_map[n] != COLORED
-						|| color_map[n] != color_map[p]
-					)
-				{
+				else if(state_map[n] != COLORED || color_map[n] != color_map[p]){
 					new_p = new_x;
 					
 					before_y = face_location_sets.take_union(
@@ -425,7 +422,6 @@ void hartman_skrekovski_choose(
 			);
 		
 		auto back_iter = find_neighbor_iterator(v, l, planar_embedding, graph);
-		
 		initialize(v, back_iter, neighbor_range_map, planar_embedding);
 	}
 	

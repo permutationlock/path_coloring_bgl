@@ -49,10 +49,10 @@ using namespace boost;
 #define SHOW_PASSES
 
 // Comment line below to hide tikz drawing printouts
-#define SHOW_VISUALIZATION
+//#define SHOW_VISUALIZATION
 
 // Comment line below to hide test timings.
-//#define SHOW_TIMINGS
+#define SHOW_TIMINGS
 
 // Comment line below to hide color list assignment printouts
 //#define SHOW_COLOR_LISTS
@@ -609,7 +609,7 @@ void test_poh_color() {
 		
 				found_planar = true;
 		
-				draw_graph_no_color(graph);
+				//draw_graph_no_color(graph);
 		
 				//std::cout << "Testing planarity.\n";
 				poh_color_test(graph);
@@ -698,9 +698,9 @@ void test_path_choose()
 }
 
 int main() {
-	//test_poh_color_bfs();
+	test_poh_color_bfs();
 	test_poh_color();
-	//test_path_choose();
+	test_path_choose();
 
 	if(failed)
 		std::cout<<"THERE ARE FAILING TESTS"<<std::endl;
