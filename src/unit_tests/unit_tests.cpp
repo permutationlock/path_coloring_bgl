@@ -518,7 +518,7 @@ void path_choose_test(const index_graph & graph, std::size_t num_colors) {
 }
 
 void test_poh_color_bfs() {
-	std::cout<<"Path 3-coloring (Poh w/ BFS)"<<std::endl;
+	std::cout<<"Path 3-coloring (Poh w/BFS)"<<std::endl;
 	
 	// Define graph properties
 	typedef adjacency_list
