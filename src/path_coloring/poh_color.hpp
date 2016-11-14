@@ -37,7 +37,6 @@ static void poh_color_recursive(
 		std::size_t count, color_t p_color, color_t t_color, color_t q_color
 	)
 {
-	std::cout << "poh_color_recursive(" << p_0 << ") START\n";
 	vertex_t p = p_0, t_0 = p_0;
 	auto edge_iter = neighbor_range_map[p].first;
 	std::size_t p_mark = count++;
@@ -46,7 +45,6 @@ static void poh_color_recursive(
 	mark_map[p] = p_mark;
 	
 	if(neighbor_range_map[p_0].first == neighbor_range_map[p_0].second){
-		std::cout << "poh_color_recursive(" << p_0 << ") END\n";
 		return;
 	}
 	
@@ -57,14 +55,13 @@ static void poh_color_recursive(
 		
 		vertex_t n = get_incident_vertex(p, *edge_iter, graph);
 		
-		std::cout << "\t(" << p << " -> " << n << ")\n";
+		bool continue_path = (mark_map[n] == face_mark);
 		
-		if(mark_map[n] == face_mark) {
-			std::cout << "\t\t" << "adding edge (" << p << " -> " << n
-				<< ") to the path\n";
-			
-			color_map[n] = p_color;
-			mark_map[n] = p_mark;
+		if(continue_path || mark_map[n] == old_p_mark) {
+			if(continue_path) {
+				color_map[n] = p_color;
+				mark_map[n] = p_mark;
+			}
 			
 			vertex_t l = n;
 			
@@ -73,13 +70,10 @@ static void poh_color_recursive(
 					edge_iter = planar_embedding[p].begin();
 				
 				vertex_t t = get_incident_vertex(p, *edge_iter, graph);
-				
-				std::cout << "\t(" << p << " -> " << t << ")\n";
 					
 				if(mark_map[t] == old_p_mark)
 				{
 					if(mark_map[l] == face_mark) {
-						std::cout << "\t\t" << "handling vertex " << l << " above path\n";
 						poh_color_recursive(
 								graph, planar_embedding, color_map, mark_map,
 								neighbor_range_map, l, face_mark, p_mark,
@@ -89,7 +83,6 @@ static void poh_color_recursive(
 				}
 				if(edge_iter == neighbor_range_map[p].second) {
 					if(mark_map[t] == face_mark) {
-						std::cout << "\t\t" << "handling vertex " << t << " above path\n";
 						poh_color_recursive(
 								graph, planar_embedding, color_map, mark_map,
 								neighbor_range_map, t, face_mark, p_mark,
@@ -101,19 +94,21 @@ static void poh_color_recursive(
 				l = t;
 			}
 			
-			auto n_back_iter = find_neighbor_iterator(
-					n, p, planar_embedding, graph
-				);
+			if(continue_path) {
+				auto n_back_iter = find_neighbor_iterator(
+						n, p, planar_embedding, graph
+					);
 			
-			neighbor_range_map[n].first = n_back_iter;
-			edge_iter = neighbor_range_map[n].first;
-			p = n;
+				neighbor_range_map[n].first = n_back_iter;
+				edge_iter = neighbor_range_map[n].first;
+				p = n;
+			}
+			else {
+				return;
+			}
 		}
 		else if(mark_map[n] == q_mark) {
-			std::cout << "\t\t" << "hit Q at " << n << "\n";
-			
 			if(t_0 != p_0) {
-				std::cout << "\t\t\t" << "handling below path \n";
 				poh_color_recursive(
 						graph, planar_embedding, color_map, mark_map,
 						neighbor_range_map, t_0, below_p_mark, q_mark, p_mark,
@@ -124,53 +119,11 @@ static void poh_color_recursive(
 				t_0 = p;
 			}
 		}
-		else if(mark_map[n] == old_p_mark) {
-			std::cout << "\t\t" << "hit upper path at " << n << "\n";
-			
-			vertex_t l = n;
-			
-			while(edge_iter++ != neighbor_range_map[p].second) {
-				if(edge_iter == planar_embedding[p].end())
-					edge_iter = planar_embedding[p].begin();
-				
-				vertex_t t = get_incident_vertex(p, *edge_iter, graph);
-				
-				std::cout << "\t(" << p << " -> " << t << ")\n";
-					
-				if(mark_map[t] == old_p_mark)
-				{
-					if(mark_map[l] == face_mark) {
-						std::cout << "\t\t" << "handling vertex " << l << " above path\n";
-						poh_color_recursive(
-								graph, planar_embedding, color_map, mark_map,
-								neighbor_range_map, l, face_mark, p_mark,
-								old_p_mark, count, q_color, t_color, p_color
-							);
-					}
-				}
-				if(edge_iter == neighbor_range_map[p].second) {
-					if(mark_map[t] == face_mark) {
-						std::cout << "\t\t" << "handling vertex " << t << " above path\n";
-						poh_color_recursive(
-								graph, planar_embedding, color_map, mark_map,
-								neighbor_range_map, t, face_mark, p_mark,
-								old_p_mark, count, q_color, t_color, p_color
-							);
-					}
-				}
-				
-				l = t;
-			}
-			
-			break;
-		}
 		else if(mark_map[n] != below_p_mark) {
 			auto back_iter = find_neighbor_iterator(
 					n, p, planar_embedding, graph
 				);
 			
-			
-			std::cout << "\t\t" << "adding " << n << " to face\n";
 			if(t_0 == p_0) {
 				t_0 = n;
 			}
@@ -180,8 +133,6 @@ static void poh_color_recursive(
 			mark_map[n] = below_p_mark;
 		}
 	}
-	
-	std::cout << "poh_color_recursive(" << p_0 << ") END\n";
 }
 
 template<
