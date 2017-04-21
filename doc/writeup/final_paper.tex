@@ -132,14 +132,7 @@ A \textit{drawing} of a graph maps each vertex to a point in the
 plane and each edge to a curve connecting its endpoints. A \textit{planar
 embedding} is a drawing where edge curves intersect only at their
 endpoints. We say a graph is \textit{planar} if it admits a planar embedding. A
-planar graph together with a planar embedding is a \textit{plane graph}. In a
-plane graph we shall assume all edge curves are line segments, which is
-allowable due to the following result by F\'ary.
-
-\begin{theorem}[F\'ary]
-Every planar graph admits a planar embedding in which each edge curve is a line
-segment.
-\end{theorem}
+planar graph together with a planar embedding is a \textit{plane graph}.
 
 Let $G$ be a plane graph. A \textit{face} of $G$ is a maximal region
 of the plane not containing any point used in the embedding. The unbounded face
@@ -650,22 +643,70 @@ In the next step we perform a breadth first search from the vertex $u$.
 A breadth first search requires at most $n$ lookups. Moreover, the vertex will
 $u$ will be colored following the search. Thus we perform at most one breadth
 first search from each vertex, requiring at most $n^2$ operations.
-
 Therefore the complexity of the algorithm is at most
 $\mathcal{O}(2m + n^2)=\mathcal{O}(n^2)$.
 
-We define the collection of graphs $\{G_k \ : \ k\in\mathbb{N}\}$, depicted in \ref{poh_exmpl}.
+We define the collection of graphs $\{G_k\}_{k\in\mathbb{N}}$, depicted in \ref{poh_example}.
 Note $G_k$ has $n=\frac{k^2+k}{2}+3$. The number of operations required will be
 $\mathcal{O}\left(\sum_{i=1}^k \frac{k^2+k}{2}\right)=\mathcal{O}(n^{3/2})$.
-
 Thus the complexity of the algorithm is at best $\mathcal{O}(n^{3/2})$. In
 particular, the algorithm is not linear.\\
+
+\begin{figure}
+\begin{tikzpicture}
+  \node (t1) at (0cm, 3.5cm) {};
+  \node (t2) at (2.45cm, 0cm) {};
+  \node (t3) at (-2.45cm, 0cm) {};
+  
+  \node (k1) [label=below:$1$, label=above left:$1$] at (-1.25cm, 0.65cm) {};
+  \node (k2) [label=below:$2$]  at (-0.5cm, 0.65cm) {};
+  \node (k3) [label=below:$3$]  at (0.25cm, 0.65cm) {};
+  \node (kn) [label=below:$k$]  at (1.25cm, 0.65cm) {};
+  
+  \node (l1) [label=above left:$2$]  at (-0.88cm, 1.15cm) {};
+  \node (l2) at (-0.12cm, 1.15cm) {};
+  \node (ln) at (0.88cm, 1.15cm) {};
+  
+  \node (j1) [label=above left:$3$] at (-0.5cm, 1.65cm) {};
+  \node (jn) at (0.5cm, 1.65cm) {};
+  
+  \node (p) [label=above left:$k$]  at (0cm, 2.4cm) {};
+  
+  \draw (t1) edge (t2); \draw (t3) edge (t2); \draw (t1) edge (t3);
+  \draw (k1) edge (k2); \draw (k3) edge (k2);
+  \draw (k3) edge (kn) [dashed];
+  
+  \draw (l1) edge (l2);
+  \draw (l2) edge (ln) [dashed];
+  
+  \draw (j1) edge (jn) [dashed];
+  
+  \draw (j1) edge (p) [dashed];
+  \draw (jn) edge (p) [dashed];
+  
+  \draw (t1) edge (k1); \draw (t1) edge (kn);
+  \draw (t1) edge (l1); \draw (t1) edge (ln);
+  \draw (t1) edge (p);
+  \draw (t2) edge (kn); \draw (t3) edge (k1);
+  
+  \draw (k1) edge (l1); \draw (k2) edge (l1);
+  \draw (k2) edge (l2); \draw (k3) edge (l2);
+  \draw (kn) edge (ln);
+  
+  \draw (l1) edge (j1); \draw (l2) edge (j1);
+  \draw (jn) edge (ln);
+  
+\end{tikzpicture}
+
+\caption{The collection of graphs $\{G_k\}$ on which Poh performs poorly.}
+\label{poh_example}
+\end{figure}
 
 Any implementation of Poh's algorithm must find the shortest $uv$-path
 within the cycle.
 Thus Poh's algorithm does not appear to admit a linear time implementation.
 
-Recall however, that the correctness of Poh's algorithm did not require that $T$
+However, that the correctness of Poh's algorithm does not require that $T$
 be the shortest $uw$-path, only that $T$ be an induced $uw$-path. We will show that a
 linear time implementation exists if we alter Poh's algorithm to instead construct
 an induced path by walking along the existing path $P$.\\
@@ -704,8 +745,7 @@ has at least one neighbor in $P$.
 We first apply \textit{Face Walk} (4.4) to color $\text{Int}(C_2)$. It remains
 to color any unocolored vertices in $\text{Int}(C_1)$.
 
- Let
-$T=t_1t_2\ldots t_d$ be the path constructed above.
+Let $T=t_1t_2\ldots t_d$ be the path constructed above.
 For each $p$ from $1$ to $d$ let us iterate through
 $\text{Adj}[t_p]$, starting with $t_{p+1}$. In the case $p=d$ we will define
 $t_{p+1}=v_l$. Let $j$ be the smallest integer such that $t_{p+1}v_j$ is an edge. Suppose
