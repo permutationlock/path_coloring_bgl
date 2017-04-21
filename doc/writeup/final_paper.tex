@@ -40,7 +40,7 @@
 A \textit{(simple) graph} $G=(V,E)$ consists of a finite set $V$ of
 \textit{vertices} and a set $E$ of two element subsets of $V$ known as
 \textit{edges}. We will often refer to the graph as $G$ and the vertex and
-edge sets as $V(G)$ and $E(G)$ respectively. As shortand we will denote an edge
+edge sets as $V(G)$ and $E(G)$ respectively. As shorthand we will denote an edge
 $\{u,v\}\in E(G)$ simply as $uv$. Two vertices $u,v\in V(G)$ are
 \textit{adjacent} if $uv\in E(G)$. Vertices $u$ and $v$ are known as the
 \textit{endpoints} of $uv$. The edge $uv$ is said to be incident to the vertices
@@ -207,7 +207,7 @@ their induced rotation scheme.
 A $k$\textit{-coloring} of a graph maps each vertex to one of $k$ possible
 colors. Equivalently, a $k$-coloring partitions the vertices of a graph into $k$
 disjoint sets called \textit{color classes}. 
-A coloring is \textit{proper} if no pair of adjacent vertices recieve the same
+A coloring is \textit{proper} if no pair of adjacent vertices receive the same
 color, or equivalently, if the color classes each consist of nonadjacent vertices. It
 is clear not all planar graphs admit a proper $3$-coloring since $K_4$ is planar
 and requires $4$ colors. Whether all planar graphs admit a proper coloring with
@@ -218,7 +218,7 @@ in graph theory until it was verified by Appel and Haken in 1976
 An $(k,l)$-coloring, or a $k$-coloring with defect $l$, is a
 $k$-coloring such that each vertex has at most $l$ same color neighbors.
 Generalizations of proper colorings were first introduced by Chartrand et al. in
-\cite{chartrand}, while defective, or improper colorings in prticular were introduced
+\cite{chartrand}, while defective, or improper colorings in particular were introduced
 simultaneously by Cowen et al. \cite{cowen}, Jones et al. \cite{jones}, and
 Jacobson et al. \cite{jacobson}. It was shown in \cite{cowen} that all
 planar graphs admit a $(3,2)$-coloring.
@@ -235,17 +235,17 @@ time, as well as a more in depth implementation that runs in $\mathcal{O}(n)$.
 Let $G$ be a graph and suppose $L$ is a map assigning each vertex $v\in V(G)$ a
 list of colors. Then a \textit{$k$-list-coloring} of $G$, first introduced
 by Erd{\"o}s et al. in \cite{erdos}, maps each $v\in V(G)$ to a color in $L(v)$.
-In \cite{thomassen} Thomassen proved tht all planar graphs may be properly
+In \cite{thomassen} Thomassen proved that all planar graphs may be properly
 $5$-list-colored. A planar graph that may not be properly $4$-list colored was
 described by Voigt in \cite{voigt}, so Thomassen's result is best possible.
 
 We may equivalently define the defective $(k,l)$-list-colorings and path
 $k$-list-colorings. Hull and Eaton \cite{hull} and Skrekovski \cite{skrekovski}
-independantly proved that planar graphs are $(3,2)$-list-colorable. Hartman
-\cite{hartman}, also independant, described a procedure for path
+independently proved that planar graphs are $(3,2)$-list-colorable. Hartman
+\cite{hartman}, also independent, described a procedure for path
 $3$-list-coloring plane graphs. Interestingly, the proofs of Hartman and
 Skrekovski follow the same coloring algorithm, and thus Skrekovski
-unknowningly showed the stronger path $3$-list-coloring result. Here we present
+unknowingly showed the stronger path $3$-list-coloring result. Here we present
 an $\mathcal{O}(n)$ implementation of Hartman and Skrekovski's algorithm.
 
 \section{Graph Representations and Time Complexity}
@@ -253,7 +253,7 @@ an $\mathcal{O}(n)$ implementation of Hartman and Skrekovski's algorithm.
 The basic operation for all time complexity discussions shall be a single memory
 reference lookup, integer assignment, or comparison between integers. Memory
 references are assumed to be integers. We will also treat the allocation of an
-array as a basic operation, although the operations for intializing its
+array as a basic operation, although the operations for initializing its
 elements are counted separately. In accordance with our assumptions above,
 removing an element from a linked list or from the back of an array will be
 considered to be $\mathcal{O}(1)$.
@@ -288,10 +288,10 @@ Glenn Chappell.\\
 \noindent\textbf{Input:} An adjacency list representation $\text{Adj}$ of a
 graph $G$.
 
-\noindent\textbf{Output:} An augmented adacency list representation
+\noindent\textbf{Output:} An augmented adjacency list representation
 $\text{Adj}'$ of $G$.
 
-\noindent\textbf{Descritpion:} We will begin by using $\text{Adj}$ to construct
+\noindent\textbf{Description:} We will begin by using $\text{Adj}$ to construct
 an augmented adjacency list representation $\text{Adj}'$ of $G$ with the
 reference portion of each node uninitialized.
 Next we construct an array $\text{Wrk}[v]$ of size $\text{deg}(v)$ for each
@@ -331,7 +331,7 @@ $\mathcal{O}\left(\sum_{k=1}^m 1\right)=\mathcal{O}(m)$.\\
 If $G$ is a planar graph without a given embedding we may still construct an
 adjacency list representation of $G$, with neighbors simply listed in arbitrary
 order. There exist numerous algorithms to then simultaneously find an embedding
-of $G$ and construct an embedding ordered adacency list representation of the
+of $G$ and construct an embedding ordered adjacency list representation of the
 corresponding plane graph in $\mathcal{O}(n)$ time \cite{tarjan, lempel, boyer,
 booth}. Moreover, there exist $\mathcal{O}(n)$ algorithms to add edges
 to the adjacency list representation in order to connect, $2$-connect, or
@@ -354,8 +354,8 @@ in a cyclic manner, that is we consider $v_{0}=v_k$, $v_1=v_{k+1}$, and so on.
 Many of the algorithms considered will work by removing one vertex at a time,
 and considering the remaining graph using the maximal $2$-connected
 subgraphs. If $v$ on the outer face, we may remove $v$ from $G$ by contracting
-the neighhbor ranges for its neighboring vertices on the outer face exclude $v$.
-Interior neighborrs will be If one of the
+the neighbor ranges for its neighboring vertices on the outer face exclude $v$.
+Interior neighbors will be If one of the
 neighbors of $v$ is a cutvertex once $G$ is removed, we will split into two
 \end{comment}
 
@@ -406,7 +406,7 @@ color classes induce the paths $P=v_1v_2\ldots v_l$ and
 $Q=v_{k}v_{k-1}\ldots v_{l+1}$.
 
 \noindent\textbf{Output:} A path $3$-coloring of $G$ such that no vertex in
-$C$ recieves a same color neighbor in $G-C$.
+$C$ receives a same color neighbor in $G-C$.
 
 \noindent\textbf{Description:} If $G-C$ is empty there are no vertices remaining
 to color. Otherwise the algorithm proceeds as follows.
@@ -515,9 +515,9 @@ will have the same mark only if they are segments of a larger induced path and
 are either disjoint or intersect at a single endpoints.
 
 All paths and cycles discussed as input will be assumed to be subgraphs of a
-weakly triangulated plane graph $G$ which we are working to color. We will now
-describe our first implementation of Poh's algorithm which uses a breadth first
-search to find induced paths and chords.\\
+$2$-connected weakly triangulated plane graph $G$ which we are working to color.
+We will now describe our first implementation of Poh's algorithm which uses a
+breadth first search to find induced paths and chords.\\
 
 \noindent\textbf{Implementation 4.2.} (Poh -- Breadth First Search)
 
@@ -530,7 +530,7 @@ path has been colored with a distinct color.
 
 \noindent\textbf{Output:} We find an extension of the path $2$-coloring of $C$ to
 a path $3$-coloring of $\text{Int}(C)$ such that
-no vertex in $C$ recieves a same color neighbor in $\text{Int}(C)-C$.
+no vertex in $C$ receives a same color neighbor in $\text{Int}(C)-C$.
 
 \begin{figure}
 \begin{tikzpicture}
@@ -727,10 +727,10 @@ from $P$ and $Q$, where $w$ is the vertex in $\text{Int}(C)$ such that the cycle
 $wv_lv_{l+1}$ is a triangle.
 Let $C_1$ and $C_2$ be defined as usual by splitting along $T$.
 We produce a path $3$-coloring of $\text{Int}(C_1)$ such that
-no vertex in $C_1$ recieves a same color neighbor in $\text{Int}(C_1)-C_1$,
+no vertex in $C_1$ receives a same color neighbor in $\text{Int}(C_1)-C_1$,
 and similarly for $\text{Int}(C_2)$.
 
-\noindent\textbf{Description:} Intialize $T$ as the path consisting of the
+\noindent\textbf{Description:} Initialize $T$ as the path consisting of the
 single vertex $u$, coloring $u$ with the designated color. We will recursively
 add vertices to $T$ until we reach the vertex $w$.
 
@@ -743,7 +743,7 @@ the algorithm terminates. Note one of these two cases must occur since $t_d$
 has at least one neighbor in $P$.
 
 We first apply \textit{Face Walk} (4.4) to color $\text{Int}(C_2)$. It remains
-to color any unocolored vertices in $\text{Int}(C_1)$.
+to color any uncolored vertices in $\text{Int}(C_1)$.
 
 Let $T=t_1t_2\ldots t_d$ be the path constructed above.
 For each $p$ from $1$ to $d$ let us iterate through
@@ -762,9 +762,9 @@ marked.\\
 $Q=v_kv_{k-1}\ldots v_{l+1}$ forming a cycle $C=v_1v_2\ldots v_k$ satisfying
 the requirements of Poh.
 
-\noindent\textbf{Ouptut:} We find an extension of the path coloring of $C$ to
+\noindent\textbf{Output:} We find an extension of the path coloring of $C$ to
 a path $3$-coloring of $\text{Int}(C)$ such that
-no vertex in $C$ recieves a same color neighbor in $\text{Int}(C)-C$.
+no vertex in $C$ receives a same color neighbor in $\text{Int}(C)-C$.
 
 \noindent\textbf{Description:} If $\text{Int}(C)-C$ is empty there is nothing to
 color and the algorithm terminates. Otherwise, we proceed as follows.
@@ -797,7 +797,7 @@ $\mathcal{O}\left(\sum_{v=1}^n3\cdot\text{deg}(v)\right)=\mathcal{O}(6m)=\mathca
 
 In this section we describe an implementation of an algorithm for path
 $3$-list-coloring plane graphs. The following general algorithm is due to the
-independant work of Hartman \cite{hartman} and Skrekovski \cite{skrekovski}.\\
+independent work of Hartman \cite{hartman} and Skrekovski \cite{skrekovski}.\\
 
 \noindent\textbf{Algorithm 5.1.} (Hartman-Skrekovski -- Path Color)
 
@@ -814,7 +814,7 @@ for each vertex $v\in G$
 \]
 
 \noindent\textbf{Output:} A path $L$-list-coloring of $G$ such that
-$x$ and $y$ each recieve at most one same color neighbor.
+$x$ and $y$ each receive at most one same color neighbor.
 
 \noindent\textbf{Description:} Select an arbitrary $c\in L(x)$. We will construct an induced
 path $P$ consisting of vertices of $C$, that begins at $x$ and proceeds
@@ -844,8 +844,8 @@ $y\not\in P$, suppose for every $v\in C[v_{l+1},y]$, if $v$ has a neighbor in $P
 then $c\not\in L(v)$.
 
 \noindent\textbf{Output:} A path $L$-list-coloring of $G$ such that $v_k$ and
-$y$ each recieve at most one same color neighbor, and no vertex in
-$G-P$ with a neighbor in $P$ recieves the color $c$.
+$y$ each receive at most one same color neighbor, and no vertex in
+$G-P$ with a neighbor in $P$ receives the color $c$.
 
 \noindent\textbf{Description:}
 Note $G$ is $2$-connected and weakly triangulated. Thus to disconnect $G$ by
@@ -862,7 +862,7 @@ the cycle consisting of $C[v_i,v_j]$ and the edge $v_iv_j$.
 
 We may apply
 \textit{Remove Path} (5.2) to $\text{Int}(C_1)$ with $P_{C_1}=v_1v_2\ldots v_i$, $y_{C_1}=v_i$,
-and $L_{C_1}=L$. Similalry we may apply (5.2) to $\text{Int}(C_2)$ with
+and $L_{C_1}=L$. Similarly we may apply (5.2) to $\text{Int}(C_2)$ with
 $P_{C_2}=v_iv_{i+1}\ldots v_l$, $y_{C_2}=y$, and $L_{C_2}=L$. Note by our assumptions 
 
 Suppose there are no chords of $C$ with endpoints in $P$.
@@ -905,7 +905,7 @@ $C=p_1p_2\ldots p_kq_lq_{l-1}\ldots q_1$. Moreover, suppose all vertices in $P$
 have been colored $c_1$ and all vertices in $Q$ have been colored a color $c_2$,
 distinct from $c_1$.
 
-We will color $\text{Int}(C)$ such that no vertex in $C$ recieves a same
+We will color $\text{Int}(C)$ such that no vertex in $C$ receives a same
 color neighbor in $\text{Int}(C)-C$. Locate $u_1$ in $a[v_1]$ by iterating
 through the list. Proceeding one vertex further gives us a vertex $w$
 such that $p_1q_1w$ is a triangle with no interior vertices. If $w$ is in $P$,
@@ -928,7 +928,7 @@ $c_3$.
 Let us define the paths $P_1=p_1p_2\ldots p_j$, $P_2=p_jp_{j+1}\ldots p_k$,
 $Q_1=q_1q_2\ldots q_j$, and $Q_2=q_jq_{j+1}\ldots q_l$. Observe we then have
 the cycle $C_P$ consisting of $P_1$, $T$, and the edges $p_1t_1$ and $p_jt_r$.
-Similarly we have the cycle $C_Q$ consisting of $T$, $Q_1$, and the edgess $q_1t_1$ and
+Similarly we have the cycle $C_Q$ consisting of $T$, $Q_1$, and the edges $q_1t_1$ and
 $q_jt_r$. We apply the algorithm to $P_1$ and $T$ to color $\text{Int}(C_P)$
 and similarly to $T$ and $Q_1$ to color $\text{Int}(C_Q)$. If $i=k$ and
 $j=l$ we are done. Otherwise, we have the cycle $C'$ consisting of $P_2$,
@@ -937,6 +937,8 @@ and $Q_2$ to color $\text{Int}(C')$.
 
 \end{comment}
 
+\section{Boost Graph Implementation}
+
 
 \begin{thebibliography}{21}  % "2" because there are two references
 \bibitem{west}
@@ -944,77 +946,77 @@ and $Q_2$ to color $\text{Int}(C')$.
 	2nd ed., Pearson, 2001.
 \bibitem{hartman}
 	Hartman, C.,
-	"Extremal Problems in Graph Theory," Ph.D. Thesis, Department of
-	Mathematicsm University of Illinois at Urbana-Champaign, 1997.
+	``Extremal Problems in Graph Theory," Ph.D. Thesis, Department of
+	Mathematics University of Illinois at Urbana-Champaign, 1997.
 \bibitem{skrekovski}
-	Skrekovski, R., "List Improper Colourings of Planar Graphs,"
+	Skrekovski, R., ``List Improper Colourings of Planar Graphs,"
 	\textit{Combinatorics, Probability, and Computing}, vol. 8, pp. 293-299,
 	1999.
 \bibitem{hull}
-	Eaton, N., Hull, N., "Defective list colorings of planar graphs,"
+	Eaton, N., Hull, N., ``Defective list colorings of planar graphs,"
 	\emph{Bulletin of the Institute for Combinatorics and its Applications},
 	1999.
 \bibitem{thomassen}
-	Thomassen, C., "Every planar graph is 4-choosable,"
+	Thomassen, C., ``Every planar graph is 4-choosable,"
 	\emph{Journal of Combinatorial Theory Series B}, 1994.
 \bibitem{poh}
-	Poh, K., "On the linear vertex-arboricity of a planar graph,"
+	Poh, K., ``On the linear vertex-arboricity of a planar graph,"
 	\emph{Journal of Graph Theory}, vol. 14, pp. 73-75, 1990.
 \bibitem{appel1}
-	Appel, K., Haken, W., "Every planar map is four colorable. Part I:
+	Appel, K., Haken, W., ``Every planar map is four colorable. Part I:
 	Discharging," \textit{Illinois Journal of Mathematics}, vol. 21, pp. 429-490,
 	1977.
 \bibitem{appel2}
-	Appel, K., Haken, W., "Every planar map is four colorable. Part II:
+	Appel, K., Haken, W., ``Every planar map is four colorable. Part II:
 	Reducibility," \textit{Illinois Journal of Mathematics}, vol. 21, pp.
 	491-567, 1977.
 \bibitem{chartrand}
-	Chartrand, G., Geller, D. P., Hedetniemi, S., "A generalization of the
+	Chartrand, G., Geller, D. P., Hedetniemi, S., ``A generalization of the
 	chromatic number," \textit{Mathematical Proceedings of the Cambridge
 	Philosophical Society}, vol. 64, Cambridge University Press, 1968.
 \bibitem{jacobson}
-	Andrews, J., Jacobson, M., "On a generalization of chromatic number,"
+	Andrews, J., Jacobson, M., ``On a generalization of chromatic number,"
 	\textit{Congressus Numerantium}, vol. 47, pp. 33-48, 1989.
 \bibitem{harary}
-	Akiyama, J., Exoo, G., Harary, F., "Covering and packing in graphs IV: Linear arboricity,"
+	Akiyama, J., Exoo, G., Harary, F., ``Covering and packing in graphs IV: Linear arboricity,"
 	\textit{Networks}, vol. 11, pp. 69-72, 1981.
 \bibitem{jones}
-	Harary, F., Jones, K., "Conditional colorability II: bipartite variations,"
+	Harary, F., Jones, K., ``Conditional colorability II: bipartite variations,"
 	\textit{Congressus Numerantium}, vol. 50, pp. 205-218, 1985.
 \bibitem{cowen}
-	Cowen, L., Cowen, R., Woodall, D., "Defective colorings of graphs in
+	Cowen, L., Cowen, R., Woodall, D., ``Defective colorings of graphs in
 	surfaces: partitions into subgraphs of bounded valency,"
 	\textit{Journal of Graph Theory}, vol. 10, pp. 187-195, 1986.
 \bibitem{erdos}
-	Erd{\"o}s, P., Rubin, A., Taylor, H., "Choosability in graphs,"
+	Erd{\"o}s, P., Rubin, A., Taylor, H., ``Choosability in graphs,"
 	\textit{Congressus Numerantium}, vol. 26, pp. 125-157, 1979.
 \bibitem{voigt}
-	Voigt, M., "List colorings of planar graphs,"
+	Voigt, M., ``List colorings of planar graphs,"
 	\textit{Discrete Mathematics}, vol. 120, pp. 215-219, 1993.
 \bibitem{tarjan}
-	Hopcroft, J., Tarjan, E., "Efficient planarity testing," \textit{Journal of
+	Hopcroft, J., Tarjan, E., ``Efficient planarity testing," \textit{Journal of
 	the ACM}, vol. 21, pp. 549-568, 1974.
 \bibitem{lempel}
-	Lempel, A., Even, S., Cederbaum, I., "An algorithm for planarity testing of
+	Lempel, A., Even, S., Cederbaum, I., ``An algorithm for planarity testing of
 	graphs," \textit{Theory of graphs: International Symposium}, pp.215-232,
 	1967.
 \bibitem{booth}
-	Booth, K., Lueker, C., "Testing for the consecutive ones property interval
+	Booth, K., Lueker, C., ``Testing for the consecutive ones property interval
 	graphs and graph planarity using PQ-tree algorithms," \textit{Journal of
 	Computer and System Sciences}, vol. 13, pp. 335-379, 1976.
 \bibitem{boyer}
-	Boyer, J., Myrvold, W., "On the cutting edge: simplified $\mathcal{O}(n)$ planarity by
+	Boyer, J., Myrvold, W., ``On the cutting edge: simplified $\mathcal{O}(n)$ planarity by
 	edge addition," \textit{Journal of Graph Algorithms and Applications}, vol.
 	8, pp. 241-273, 2004.
 \bibitem{eswaran}
-	Eswaran, K., Tarjan, R., "Augmentation problems," \textit{SIAM Journal of
+	Eswaran, K., Tarjan, R., ``Augmentation problems," \textit{SIAM Journal of
 	Computing}, vol. 5, pp. 653-665, 1976.
 \bibitem{reed}
-	Reed, R., "A new method for drawing a graph given the cyclic order of the
+	Reed, R., ``A new method for drawing a graph given the cyclic order of the
 	edges at each vertex," \textit{Congressus Numerantium}, vol. 56, pp.31-44,
 	1987.
 \bibitem{hagerup}
-	Hagerup, T., Uhrig, C., "Triangulating a planar graph," \textit{Library of
+	Hagerup, T., Uhrig, C., ``Triangulating a planar graph," \textit{Library of
 	Efficient Datatypes and Algorithms}, software package, Max Planck Institute
 	for Informatics, Saarbr{\"u}cken, 1991.
 \end{thebibliography}
