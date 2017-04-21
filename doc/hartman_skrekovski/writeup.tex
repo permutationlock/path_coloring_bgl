@@ -39,9 +39,9 @@
 
 Path coloring a graph partitions its vertices into sets inducing a disjoint union of paths. In this project
 we consider several algorithms to compute path colorings of graphs embedded in the plane. We
-first implement an algorithm to path 3-color plane graphs from Poh's proof in [a]. Second, we present a linear time
-implementation of an algorithm to path 3-choose plane graphs from the independant work of Hartman [b] and
-Skrekovski [c].
+first implement an algorithm to path 3-color plane graphs from Poh's proof in [4]. Second, we present a linear time
+implementation of an algorithm to path 3-choose plane graphs from the independant work of Hartman [1] and
+Skrekovski [2].
 
 \section{Introduction}
 
@@ -62,27 +62,27 @@ graphs may be $3$-colored such that each vertex shares a color with at most two 
 class induces a disjoint union of paths. A disjoint union of paths is equivalent to a linear forest, a forest
 where each component is a path. This coloring
 was introduced by Harary in [i]. Note that this is similar to the defective coloring of Cowen et al. above,
-with the added restriction that path coloring forbids cycles. In [l] Poh displayes that all
+with the added restriction that path coloring forbids cycles. In [4] Poh displayes that all
 planar graphs have a path $3$-coloring. We present an implementation of Poh's algorithm to path
 $3$-color plane graphs.\\
 
 \noindent Given a list of $k$ colors for each vertex, a $k$-list-coloring, or $k$-choosing, assigns each vertex a
 color from its list.
 If a graph has a proper $k$-choosing it is said to be $k$-choosable. List-coloring was first introduced by
-Erd{\"o}s et al. in [m]. Thomassen in [n] proves that all planar graphs are $5$-choosable. Planar
+Erd{\"o}s et al. in [m]. Thomassen in [5] proves that all planar graphs are $5$-choosable. Planar
 graphs that are not $4$-choosable are described by Mirzakhani in [o] and Voigt in [p], so Thomassen's result
 is best possible. Jensen and Toft in [t] note that Thomassen's proof yields a linear algorithm for $5$-choosing
 plane graphs.\\
 
-\noindent Hull and Eaton in [q] prove planar graphs are $3$-choosable such that each vertex shares a color with
-at most two neighbors, and furthermore show this result is best possible. Hartman in [r] and Skrekovski in [s]
+\noindent Hull and Eaton in [3] prove planar graphs are $3$-choosable such that each vertex shares a color with
+at most two neighbors, and furthermore show this result is best possible. Hartman in [1] and Skrekovski in [2]
 independantly provide similar proofs that planar graphs are path $3$-choosable. Hartman claims the proof yields
 a linear time algorithm for path $3$-list-coloring, and thus path $3$-coloring, plane graphs. We present a
 linear time implementation of Hartman and Skrekovski's algorithm.
 
 \section{Path $3$-Coloring Plane Graphs}
 
-We first restate the theorem and proof of Poh [l]. This proof yields a simple algorithm for path $3$-coloring
+We first restate the theorem and proof of Poh [4]. This proof yields a simple algorithm for path $3$-coloring
 plane graphs.\\
 
 \begin{adjustwidth}{1.5em}{1.5em}
@@ -304,12 +304,12 @@ entire graph is $O(|V|^2)$. This gives an overall complexity of $O(|V|+|V|^2)=O(
 
 \section{Path $3$-Choosing Plane Graphs}
 
-The following is a restatment of a theorem of Hartman [r] and Skrekovski [s]. We provide a slight modification of
+The following is a restatment of a theorem of Hartman [1] and Skrekovski [2]. We provide a slight modification of
 the proof technique that wraps the path coloring and path removal portions of Hartman's proof into a single inductive
 step that considers only the last vertex colored on the current path, which will be denoted $p$.
 This modification is motivated by the relative simplicity of removing a single outer face vertex,
 compared with removing an entire path.
-We will show this proof yields a linear time algorithm and implementation, as claimed by Hartman in [r].\\
+We will show this proof yields a linear time algorithm and implementation, as claimed by Hartman in [1].\\
 
 \noindent The informal idea followed in both the proof and algorithm is to start with
 vertices $x$ and $y$ on the outer face and draw a path clockwise between them using vertices on the outer face.
@@ -325,7 +325,7 @@ considers the two maximal $2$-connected components separately. We will continue 
 it is contained in.\\
 
 \noindent Suppose $C$ is
-the outer cycle of a $2$-connected weakly triangulated plane graph $G$. Using notation from [r] for $u,v\in V(C)$
+the outer cycle of a $2$-connected weakly triangulated plane graph $G$. Using notation from [1] for $u,v\in V(C)$
 we let $C[u,v]$ denote the path from $u$ to $v$ clockwise along the outer face. If we wish to exclude $u$ or $v$
 from this path we will use parenthesis, $C(u,v)$. Similarly, for $v\in V(G)$ and
 $u,w\in N(v)$ we let $[u,w]_v$ denote the path from $u$ to $w$ clockwise around $v$, assuming triangulated
@@ -362,7 +362,7 @@ If $|V(G)\le 2$ the theorem easily follows. Suppose $|V(G)|>2$ and the theorem
 holds for all graphs $H$ with $|V(H)|<|V(G)|$. Let
 $C=c_0c_1\ldots c_n$ denote, in clockwise order, the outer face of $G$ with $p=c_0$.
 There are several cases to consider. Let $c_i$ be the next vertex in $V(C)\cap N(p)$ counterclockwise from $c_n$.
-Let $G_0$ be the subgraph bounded by the cycle formed from $C[c_i,c_n]$ and $[c_n,c_i]_p$. If $c_i\ne c_1$ let
+Let $G_0$ be the subgraph bounded by the cycle formed from $C[2_i,c_n]$ and $[2_n,c_i]_p$. If $c_i\ne c_1$ let
 $G_1$ be the sugbraph bounded by the cycle formed from $C[p,c_i]$ and the edge $pc_i$. As seen in Figure
 3.1 $G=G_0\cup G_1$ and $V(G_0)\cap V(G_1)=\{c_i\}$.
 We will display in each case that the inductive hypothesis holds for each subgraph and their union still
@@ -539,7 +539,7 @@ combined coloring forms a path choosing of $G$ from $L$.
   \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {$\alpha$};
   \node (x) [label=right:$x$, fill] at (1.5cm, 0.5cm) {};
   \node (c_i) [label=below:$c_i$, fill] at (0cm, -1cm) {};
-  \node (G_0) [draw=none, ] at (-0.75cm, 0.12cm) {$G_0$};
+  \node (G_0) [draw=none] at (-0.75cm, 0.12cm) {$G_0$};
   \node (G_1) [draw=none] at (0.7cm, 0.5cm) {$G_1$};
   \node (null) [draw=none] at (270:1.5cm) {};
   \draw (c_i) edge [bend left] (c_n) [dashed];
@@ -1283,6 +1283,8 @@ for each edge in $E(G)$. This gives a complexity of $O(|E||E|/|V|)=O(|V|)$.\\
 \caption{Path 3-Color}
 \end{algorithm}
 
+\end{comment}
+
 \section*{References}
 
 \begin{tabularx}{\linewidth}{lX}
@@ -1294,14 +1296,15 @@ University of Illinois at Urbana-Champaign, 1997.\\\relax
 \emph{Bulletin of the Institute for Combinatorics and its Applications}, 1999.\\\relax
 [4] & Poh, K., "On the linear vertex-arboricity of a planar graph," \emph{Journal of Graph Theory},
 vol. 14, pp. 73-75, 1990\\\relax
-[5] & Kant, G., "Algorithms for drawing planar graphs," Ph.D. thesis, Department of Computer Science,
-Utrecht University, 1993.\\\relax
-[6] & Tarjan, R., "Depth-first search and linear graph algorithms," SIAM Journal on Computing, vol. 1, pp.
-146-160, 1972.\\\relax
-[6] & Tarjan, R., "Depth-first search and linear graph algorithms," SIAM Journal on Computing, vol. 1, pp.
-146-160, 1972.\\\relax
+[5] & Thomassen, C., "Every planar graph is 4-choosable," \emph{Journal of Combinatorial Theory},
+Series B, 1994\\\relax
+
+%[5] & Kant, G., "Algorithms for drawing planar graphs," Ph.D. thesis, Department of Computer Science,
+%Utrecht University, 1993.\\\relax
+%[6] & Tarjan, R., "Depth-first search and linear graph algorithms," SIAM Journal on Computing, vol. 1, pp.
+%146-160, 1972.\\\relax
 \end{tabularx}
 
-\end{comment}
+
 
 \end{document}
