@@ -23,6 +23,25 @@
 // Local project headers
 #include "incidence_list_helpers.hpp"
 
+
+/* poh_color_bfs_recursive
+ * 
+ * inputs: A weakly triangulated planar graph with vertex indices (predfined
+ *     boost property), a valid planar embedding of the graph modeling the boost
+ *     PlanarEmbedding concept, a read-write-able vertex property map to store
+ *     vertex colors, a read-write-able vertex property map to store integer
+ *     marks for BFS, a read-write-able vertex property map to store the parent
+ *     vertex for backtracking after the BFS, the first and last vertex of two
+ *     disjoint colored paths P=p_0...p_n and Q=q_0...q_m such that p_0...p_nq_m
+ *     ...q_0 is a cycle, an unsigned int count such that all vertex marks
+ *     assigned so far are less than count, and finally the third color that has
+ *     not been used on the paths P and Q.
+ *
+ * output: The coloring vertex property will contain a valid path 3-coloring of
+ *     the subgraph bounded by p_0...p_nq_m...q_0 such that no interior vertex
+ *     shares a color with a neighbor in P or Q.
+ */
+
 template<
 		typename graph_t, typename planar_embedding_t, typename color_map_t,
 		typename mark_map_t, typename parent_map_t, typename color_t,
@@ -33,19 +52,21 @@ static void poh_color_bfs_recursive(
 		const graph_t & graph, const planar_embedding_t & planar_embedding,
 		color_map_t & color_map, mark_map_t & mark_map,
 		parent_map_t & parent_map, vertex_t p_0, vertex_t p_n, vertex_t q_0,
-		vertex_t q_m, std::size_t & count, std::size_t p_mark,
-		std::size_t q_mark, color_t new_color
+		vertex_t q_m, std::size_t & count, color_t new_color
 	)
 {
 	vertex_t t_0 = p_0, t_1 = p_n;
 	
+	// Remove triangles from the end until we find an interior vertex t_1
 	do {
 		if(p_0 == p_n && q_0 == q_m) return;
 		
+		// Find the edge between p_n and q_m in q_m's incidence list
 		auto edge_iter = find_neighbor_iterator(
 				q_m, p_n, planar_embedding, graph
 			);
-			
+		
+		// Find the neighbor t_1 counterclockwise from p_n around q_m
 		if(edge_iter == planar_embedding[q_m].end()) {
 			throw std::runtime_error("No edge between p_n and q_m).");
 		}
@@ -58,16 +79,19 @@ static void poh_color_bfs_recursive(
 			t_1 = get_incident_vertex(q_m, *edge_iter, graph);
 		}
 		
-		if(mark_map[t_1] == p_mark) {
+		// If t_1 is in P or Q we have found a colored triangle and remove it
+		if(color_map[t_1] == color_map[p_0]) {
 			p_n = t_1;
 		}
-		else if(mark_map[t_1] == q_mark) {
+		else if(color_map[t_1] == color_map[q_0]) {
 			q_m = t_1;
 		}
-	} while(mark_map[t_1] == p_mark || mark_map[t_1] == q_mark);
+	}
+	while(color_map[t_1] == color_map[p_0] || color_map[t_1] == color_map[q_0]);
 	
 	vertex_t current_vertex;
 	
+	// Perform a BFS from t_1 to find and color a path T between P and Q
 	{
 		std::queue<vertex_t> bfs_queue;
 		std::size_t bfs_mark = count++;
@@ -84,7 +108,9 @@ static void poh_color_bfs_recursive(
 					current_vertex, *edge_iter, graph
 				);
 			
+			// Loop through the neighbors of current_vertex
 			do {
+				// If we hit the end of the incidence list, wrap to the start
 				if(++edge_iter == planar_embedding[current_vertex].end())
 					edge_iter = planar_embedding[current_vertex].begin();
 				
@@ -93,63 +119,83 @@ static void poh_color_bfs_recursive(
 					);
 				
 				std::size_t mark = mark_map[neighbor];
-				std::size_t last_mark = mark_map[last_neighbor];
+				color_t color = color_map[neighbor]
+				color_t last_color = color_map[last_neighbor];
 				
-				if(mark != bfs_mark && mark != p_mark && mark != q_mark) {
+				// If we hit an unmarked interior vertex, add it to the queue
+				if(mark != bfs_mark && color != color_map[p_0]
+					&& color != color_map[q_0])
+				{
 					parent_map[neighbor] = current_vertex;
 					mark_map[neighbor] = bfs_mark;
 					bfs_queue.push(neighbor);
 				}
-				else if(mark == q_mark && last_mark == p_mark) {
+				// If we find an edge P to Q, we have found t_0 and completed T
+				else if(color == color_map[q_0] &&
+					last_color == color_map[p_0])
+				{
 					t_0 = current_vertex;
 					vertex_t p_i = last_neighbor;
 					vertex_t q_j = neighbor;
 					
+					// If the edge is a chord we must color the rest
 					if(p_i != p_0 || q_j != q_0) {
 						poh_color_bfs_recursive(
 								graph, planar_embedding, color_map, mark_map,
 								parent_map, p_0, p_i, q_0, q_j,
-								count, p_mark, q_mark, new_color
+								count, new_color
 							);
-				
+						
 						p_0 = p_i;
 						q_0 = q_j;
 					}
-				
+					
 					break;
 				}
-			
+				
 				last_neighbor = neighbor;
-			} while(edge_iter != planar_embedding[current_vertex].begin());
-		}
-		
-		if(t_0 == p_0) {
-			throw std::runtime_error("BFS failed to find edge between paths.");
+			}
+			while(edge_iter != planar_embedding[current_vertex].begin());
 		}
 	}
 	
-	std::size_t new_mark = count++;
 	color_map[current_vertex] = new_color;
-	mark_map[current_vertex] = new_mark;
 	
+	// Backtrack through BFS tree from t_0 to color the path T
 	while(parent_map[current_vertex] != current_vertex) {
 		current_vertex = parent_map[current_vertex];
 		color_map[current_vertex] = new_color;
-		mark_map[current_vertex] = new_mark;
 	}
 	
+	// Color the subgraph bounded by P and T
 	poh_color_bfs_recursive(
 			graph, planar_embedding, color_map, mark_map, parent_map,
-			p_0, p_n, t_0, t_1,
-			count, p_mark, new_mark, color_map[q_0]
+			p_0, p_n, t_0, t_1, count, color_map[q_0]
 		);
 	
+	// Color the subgraph bounded by T and Q
 	poh_color_bfs_recursive(
 			graph, planar_embedding, color_map, mark_map, parent_map,
-			t_0, t_1, q_0, q_m,
-			count, new_mark, q_mark, color_map[p_0]
+			t_0, t_1, q_0, q_m, count, color_map[p_0]
 		);
 }
+
+
+
+/* poh_color_bfs
+ * 
+ * inputs: A weakly triangulated planar graph with vertex indices (predfined
+ *     boost property), a valid planar embedding of the graph modeling the boost
+ *     PlanarEmbedding concept, a read-write-able vertex property map to store
+ *     vertex colors, pairs of bidirectional iterators for lists of vertices
+ *     of two disjoint colored paths P=p_0...p_n and Q=q_0...q_m such that
+ *     p_0...p_nq_m...q_0 is a cycle, and three colors for the path 3-coloring.
+ *
+ * output: The coloring vertex property will contain a valid path 3-coloring of
+ *     the subgraph bounded by p_0...p_nq_m...q_0 such that vertices in P are
+ *     recieve the first color, vertices in Q the second color, and no interior
+ *     vertex shares a color with a neighbor in P or Q.
+ */
 
 template<
 		typename graph_t, typename planar_embedding_t,
@@ -162,6 +208,9 @@ void poh_color_bfs(
 		vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
 	)
 {
+	typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
+	
+	// Construct a vertex property for marking vertices
 	std::vector<std::size_t> mark_storage(boost::num_vertices(graph));
 	typename boost::iterator_property_map<
 			std::vector<std::size_t>::iterator,
@@ -171,8 +220,7 @@ void poh_color_bfs(
 				mark_storage.begin(), boost::get(boost::vertex_index, graph)
 			);
 	
-	typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
-	
+	// Construct a vertex property for storing parents to track the BFS tree
 	std::vector<vertex_t> parent_storage(boost::num_vertices(graph));
 	typename boost::iterator_property_map<
 			typename std::vector<vertex_t>::iterator,
@@ -182,22 +230,22 @@ void poh_color_bfs(
 				parent_storage.begin(), boost::get(boost::vertex_index, graph)
 			);
 	
+	// Color the path P
 	for(vertex_iterator_t p_iter = p_begin; p_iter != p_end; ++p_iter) {
-		mark_map[*p_iter] = 1;
 		color_map[*p_iter] = c_0;
 	}
 	
+	// Color the path Q
 	for(vertex_iterator_t q_iter = q_begin; q_iter != q_end; ++q_iter) {
-		mark_map[*q_iter] = 2;
 		color_map[*q_iter] = c_1;
 	}
 	
-	std::size_t count = 3;
+	std::size_t count = 1;
 	
+	// Construct the path 3-coloring
 	poh_color_bfs_recursive(
 			graph, planar_embedding, color_map, mark_map, parent_map,
-			*p_begin, *(--p_end), *q_begin, *(--q_end),
-			count, 1, 2, c_2
+			*p_begin, *(--p_end), *q_begin, *(--q_end), count, c_2
 		);
 }
 
