@@ -119,7 +119,7 @@ static void poh_color_bfs_recursive(
 					);
 				
 				std::size_t mark = mark_map[neighbor];
-				color_t color = color_map[neighbor]
+				color_t color = color_map[neighbor];
 				color_t last_color = color_map[last_neighbor];
 				
 				// If we hit an unmarked interior vertex, add it to the queue
@@ -189,7 +189,9 @@ static void poh_color_bfs_recursive(
  *     PlanarEmbedding concept, a read-write-able vertex property map to store
  *     vertex colors, pairs of bidirectional iterators for lists of vertices
  *     of two disjoint colored paths P=p_0...p_n and Q=q_0...q_m such that
- *     p_0...p_nq_m...q_0 is a cycle, and three colors for the path 3-coloring.
+ *     p_0...p_nq_m...q_0 is a cycle, and three colors for the path 3-coloring
+ *     (no vertex should be assigned any of these three colors before calling
+ *     this function).
  *
  * output: The coloring vertex property will contain a valid path 3-coloring of
  *     the subgraph bounded by p_0...p_nq_m...q_0 such that vertices in P are
@@ -208,6 +210,7 @@ void poh_color_bfs(
 		vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
 	)
 {
+	// Typdefinitions
 	typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
 	
 	// Construct a vertex property for marking vertices
