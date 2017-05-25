@@ -25,10 +25,16 @@
 \newtheorem{algorithm}{Algorithm}[section]
 
 
+\pgfdeclarelayer{bg}    % declare background layer
+\pgfsetlayers{bg,main}  % set the order of the layers
 
-\tikzset{%
+\tikzset{
     every node/.style={circle, fill, draw, minimum size=1mm, scale=.5,
     	font=\LARGE}
+}
+
+\tikzset{
+    every label/.append style={fill=white}
 }
 
 \begin{document}
@@ -58,9 +64,9 @@ and its incident edges from $G$. Similarly, if $H$ is a subgraph of a graph $G$,
 we define $G-H$ to be the subgraph obtained by removing from $G$ all vertices in
 $H$ and all edges incident to a vertex in $H$.
 
-A length $n$ path consists of the vertices $v_1,v_2,\ldots,v_n$ and the edges $v_1v_2,
-v_2v_3,\ldots,v_{n-1}v_n$. A length $n$ cycle, or $n$-cycle, consists of a
-length $n$ path and the additional edge $v_1v_n$. We will often denote a path
+A length $n$ path consists of the vertices $v_1,v_2,\ldots,v_n$ and the edges
+$v_1v_2,v_2v_3,\ldots,v_{n-1}v_n$. A length $n$ cycle, or $n$-cycle, consists of
+a length $n$ path and the additional edge $v_1v_n$. We will often denote a path
 or cycle $G$ by simply listing its vertices in order, i.e. $G=v_1v_2\ldots v_n$.
 If a path $P=v_1v_2\ldots v_n$ is a subgraph of a graph $G$, we say $P$ is a
 \textit{$v_1v_n$-path} in $G$. A graph $G$ is \textit{connected} if for every
@@ -335,9 +341,10 @@ of $G$ and construct an embedding ordered adjacency list representation of the
 corresponding plane graph in $\mathcal{O}(n)$ time \cite{tarjan, lempel, boyer,
 booth}. Moreover, there exist $\mathcal{O}(n)$ algorithms to add edges
 to the adjacency list representation in order to connect, $2$-connect, or
-triangulate $G$ while maintaining planarity \cite{hagerup,reed,eswaran}. Thus while algorithms will
-often assume input graphs are triangulated and plane embedded, arbitrary planar
-graphs may be modified in linear time to fit these criteria.
+triangulate $G$ while maintaining planarity \cite{hagerup,reed,eswaran}. Thus
+while algorithms will often assume input graphs are triangulated and plane
+embedded, arbitrary planar graphs may be modified in linear time to fit these
+criteria.
 
 Finally, for each vertex $v$ we will also store a pair of references to nodes in
 $\text{Adj}[v]$. Because the rotation scheme is meant to be a cyclic ordering,
@@ -646,14 +653,8 @@ first search from each vertex, requiring at most $n^2$ operations.
 Therefore the complexity of the algorithm is at most
 $\mathcal{O}(2m + n^2)=\mathcal{O}(n^2)$.
 
-We define the collection of graphs $\{G_k\}_{k\in\mathbb{N}}$, depicted in \ref{poh_example}.
-Note $G_k$ has $n=\frac{k^2+k}{2}+3$. The number of operations required will be
-$\mathcal{O}\left(\sum_{i=1}^k \frac{k^2+k}{2}\right)=\mathcal{O}(n^{3/2})$.
-Thus the complexity of the algorithm is at best $\mathcal{O}(n^{3/2})$. In
-particular, the algorithm is not linear.\\
-
 \begin{figure}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale = 1.3]
   \node (t1) at (0cm, 3.5cm) {};
   \node (t2) at (2.45cm, 0cm) {};
   \node (t3) at (-2.45cm, 0cm) {};
@@ -672,35 +673,46 @@ particular, the algorithm is not linear.\\
   
   \node (p) [label=above left:$k$]  at (0cm, 2.4cm) {};
   
-  \draw (t1) edge (t2); \draw (t3) edge (t2); \draw (t1) edge (t3);
-  \draw (k1) edge (k2); \draw (k3) edge (k2);
-  \draw (k3) edge (kn) [dashed];
-  
-  \draw (l1) edge (l2);
-  \draw (l2) edge (ln) [dashed];
-  
-  \draw (j1) edge (jn) [dashed];
-  
-  \draw (j1) edge (p) [dashed];
-  \draw (jn) edge (p) [dashed];
-  
-  \draw (t1) edge (k1); \draw (t1) edge (kn);
-  \draw (t1) edge (l1); \draw (t1) edge (ln);
-  \draw (t1) edge (p);
-  \draw (t2) edge (kn); \draw (t3) edge (k1);
-  
-  \draw (k1) edge (l1); \draw (k2) edge (l1);
-  \draw (k2) edge (l2); \draw (k3) edge (l2);
-  \draw (kn) edge (ln);
-  
-  \draw (l1) edge (j1); \draw (l2) edge (j1);
-  \draw (jn) edge (ln);
+  \begin{pgfonlayer}{bg}
+	  \draw (t1) edge (t2); \draw (t3) edge (t2); \draw (t1) edge (t3);
+	  \draw (k1) edge (k2); \draw (k3) edge (k2);
+	  \draw (k3) edge (kn) [dashed];
+	  
+	  \draw (l1) edge (l2);
+	  \draw (l2) edge (ln) [dashed];
+	  
+	  \draw (j1) edge (jn) [dashed];
+	  
+	  \draw (j1) edge (p) [dashed];
+	  \draw (jn) edge (p) [dashed];
+	  
+	  \draw (t1) edge (k1); \draw (t1) edge (kn);
+	  \draw (t1) edge (l1); \draw (t1) edge (ln);
+	  \draw (t1) edge (p);
+	  \draw (t2) edge (kn); \draw (t3) edge (k1);
+	  
+	  \draw (k1) edge (l1); \draw (k2) edge (l1);
+	  \draw (k2) edge (l2); \draw (k3) edge (l2);
+	  \draw (kn) edge (ln);
+	  
+	  \draw (l1) edge (j1); \draw (l2) edge (j1);
+	  \draw (jn) edge (ln);
+	  
+	  \draw (t3) edge (k1); \draw (t3) edge (k2);
+	  \draw (t3) edge (k3); \draw (t3) edge (kn);
+  \end{pgfonlayer}
   
 \end{tikzpicture}
 
 \caption{The collection of graphs $\{G_k\}$ on which Poh performs poorly.}
 \label{poh_example}
 \end{figure}
+
+We define the collection of graphs $\{G_k\}_{k\in\mathbb{N}}$, depicted in \ref{poh_example}.
+Note $G_k$ has $n=\frac{k^2+k}{2}+3$. The number of operations required will be
+$\mathcal{O}\left(\sum_{i=1}^k \frac{k^2+k}{2}\right)=\mathcal{O}(n^{3/2})$.
+Thus the complexity of the algorithm is at best $\mathcal{O}(n^{3/2})$. In
+particular, the algorithm is not linear.\\
 
 Any implementation of Poh's algorithm must find the shortest $uv$-path
 within the cycle.
