@@ -52,7 +52,7 @@ static void poh_color_bfs_recursive(
 		const graph_t & graph, const planar_embedding_t & planar_embedding,
 		color_map_t & color_map, mark_map_t & mark_map,
 		parent_map_t & parent_map, vertex_t p_0, vertex_t p_n, vertex_t q_0,
-		vertex_t q_m, std::size_t & count, color_t new_color
+		vertex_t q_m, std::size_t count, color_t new_color
 	)
 {
 	vertex_t t_0 = p_0, t_1 = p_n;
@@ -243,12 +243,10 @@ void poh_color_bfs(
 		color_map[*q_iter] = c_1;
 	}
 	
-	std::size_t count = 1;
-	
 	// Construct the path 3-coloring
 	poh_color_bfs_recursive(
 			graph, planar_embedding, color_map, mark_map, parent_map,
-			*p_begin, *(--p_end), *q_begin, *(--q_end), count, c_2
+			*p_begin, *(--p_end), *q_begin, *(--q_end), 1, c_2
 		);
 }
 

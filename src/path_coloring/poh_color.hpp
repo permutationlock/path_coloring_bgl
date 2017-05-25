@@ -20,8 +20,6 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
-#include <iostream>
-
 // Local project headers
 #include "incidence_list_helpers.hpp"
 
