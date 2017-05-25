@@ -74,7 +74,7 @@ static void poh_color_recursive(
 		return;
 	}
 	
-	// Construct the path T
+	// Construct the path T one vertex at a time, with t_i the last vertex added
 	while(edge_iter++ != neighbor_range_map[t_i].second)
 	{
 		// If we hit the end of the incidence list, wrap to the start
@@ -120,7 +120,7 @@ static void poh_color_recursive(
 				l = v;
 			}
 			
-			// If we are adding n to T, setup next loop with p=n
+			// If we are adding n to T, setup next loop with t_i = n
 			if(continue_path) {
 				auto n_back_iter = find_neighbor_iterator_restricted(
 						n, t_i, neighbor_range_map[n].first,
@@ -136,9 +136,9 @@ static void poh_color_recursive(
 				return;
 			}
 		}
-		// If n is in P we have found a chord
+		// If n is in Q we have an edge T to Q and may split along it
 		else if(color_map[n] == q_color) {
-			// If we hit an uncolored vertex, we must color the left cycle
+			// If we have hit an uncolored vertex, we must color the left cycle
 			if(s_0 != u) {
 				poh_color_recursive(
 						graph, planar_embedding, color_map, mark_map,
@@ -150,17 +150,18 @@ static void poh_color_recursive(
 				s_0 = t_i;
 			}
 		}
-		// If n is interior and not yet setup, mark it and initialize it
+		// If n is interior and has not been visited, mark it and initialize it
 		else if(mark_map[n] != below_t_mark) {
 			auto back_iter = find_neighbor_iterator(
 					n, t_i, planar_embedding, graph
 				);
 			
-			// If this is the first interior vertex hit, save it
+			// If this is the first interior vertex hit, save it as s_0
 			if(s_0 == u) {
 				s_0 = n;
 			}
 			
+			// Increment back_iter counterclockwise, wrapping in incidence list 
 			if(++back_iter == planar_embedding[n].end()) {
 				back_iter = planar_embedding[n].begin();
 			}

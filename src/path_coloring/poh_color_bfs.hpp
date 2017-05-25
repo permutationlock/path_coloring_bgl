@@ -55,9 +55,10 @@ static void poh_color_bfs_recursive(
 		vertex_t q_m, std::size_t count, color_t new_color
 	)
 {
-	vertex_t t_0 = p_0, t_1 = p_n;
+	color_t p_color = color_map[p_0], q_color = color_map[q_0];
+	vertex_t t_0 = p_0, t_l = p_n;
 	
-	// Remove triangles from the end until we find an interior vertex t_1
+	// Remove triangles from the end until we find an interior vertex t_l
 	do {
 		if(p_0 == p_n && q_0 == q_m) return;
 		
@@ -66,38 +67,37 @@ static void poh_color_bfs_recursive(
 				q_m, p_n, planar_embedding, graph
 			);
 		
-		// Find the neighbor t_1 counterclockwise from p_n around q_m
+		// Find the neighbor t_l counterclockwise from p_n around q_m
 		if(edge_iter == planar_embedding[q_m].end()) {
 			throw std::runtime_error("No edge between p_n and q_m).");
 		}
 		else if(++edge_iter == planar_embedding[q_m].end()) {
-			t_1 = get_incident_vertex(
+			t_l = get_incident_vertex(
 					q_m, *planar_embedding[q_m].begin(), graph
 				);
 		}
 		else {
-			t_1 = get_incident_vertex(q_m, *edge_iter, graph);
+			t_l = get_incident_vertex(q_m, *edge_iter, graph);
 		}
 		
-		// If t_1 is in P or Q we have found a colored triangle and remove it
-		if(color_map[t_1] == color_map[p_0]) {
-			p_n = t_1;
+		// If t_l is in P or Q we have found a colored triangle and remove it
+		if(color_map[t_l] == p_color) {
+			p_n = t_l;
 		}
-		else if(color_map[t_1] == color_map[q_0]) {
-			q_m = t_1;
+		else if(color_map[t_l] == q_color) {
+			q_m = t_l;
 		}
-	}
-	while(color_map[t_1] == color_map[p_0] || color_map[t_1] == color_map[q_0]);
+	} while(color_map[t_l] == p_color || color_map[t_l] == q_color);
 	
 	vertex_t current_vertex;
 	
-	// Perform a BFS from t_1 to find and color a path T between P and Q
+	// Perform a BFS from t_l to find and color a path T between P and Q
 	{
 		std::queue<vertex_t> bfs_queue;
 		std::size_t bfs_mark = count++;
-		bfs_queue.push(t_1);
-		mark_map[t_1] = bfs_mark;
-		parent_map[t_1] = t_1;
+		bfs_queue.push(t_l);
+		mark_map[t_l] = bfs_mark;
+		parent_map[t_l] = t_l;
 	
 		while(t_0 == p_0 && !bfs_queue.empty()) {
 			current_vertex = bfs_queue.front();
@@ -123,17 +123,13 @@ static void poh_color_bfs_recursive(
 				color_t last_color = color_map[last_neighbor];
 				
 				// If we hit an unmarked interior vertex, add it to the queue
-				if(mark != bfs_mark && color != color_map[p_0]
-					&& color != color_map[q_0])
-				{
+				if(mark != bfs_mark && color != p_color && color != q_color) {
 					parent_map[neighbor] = current_vertex;
 					mark_map[neighbor] = bfs_mark;
 					bfs_queue.push(neighbor);
 				}
 				// If we find an edge P to Q, we have found t_0 and completed T
-				else if(color == color_map[q_0] &&
-					last_color == color_map[p_0])
-				{
+				else if(color == q_color && last_color == p_color) {
 					t_0 = current_vertex;
 					vertex_t p_i = last_neighbor;
 					vertex_t q_j = neighbor;
@@ -154,8 +150,11 @@ static void poh_color_bfs_recursive(
 				}
 				
 				last_neighbor = neighbor;
-			}
-			while(edge_iter != planar_embedding[current_vertex].begin());
+			} while(edge_iter != planar_embedding[current_vertex].begin());
+		}
+		
+		if(t_0 == p_0) {
+			throw std::runtime_error("BFS failed to find edge between paths.");
 		}
 	}
 	
@@ -170,13 +169,13 @@ static void poh_color_bfs_recursive(
 	// Color the subgraph bounded by P and T
 	poh_color_bfs_recursive(
 			graph, planar_embedding, color_map, mark_map, parent_map,
-			p_0, p_n, t_0, t_1, count, color_map[q_0]
+			p_0, p_n, t_0, t_l, count, q_color
 		);
 	
 	// Color the subgraph bounded by T and Q
 	poh_color_bfs_recursive(
 			graph, planar_embedding, color_map, mark_map, parent_map,
-			t_0, t_1, q_0, q_m, count, color_map[p_0]
+			q_m, q_0, t_l, t_0, count, p_color
 		);
 }
 
@@ -210,7 +209,7 @@ void poh_color_bfs(
 		vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
 	)
 {
-	// Typdefinitions
+	// Type definitions
 	typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
 	
 	// Construct a vertex property for marking vertices
