@@ -40,7 +40,8 @@
 // Local project headers
 #include "../path_coloring/poh_color.hpp"
 #include "../path_coloring/poh_color_bfs.hpp"
-#include "../path_coloring/hartman_skrekovski_choose.hpp"
+#include "../path_coloring/augmented_embedding.hpp"
+//#include "../path_coloring/hartman_skrekovski_choose.hpp"
 #include "../visualization/draw_tikz_graph.hpp"
 
 using namespace boost;
@@ -195,7 +196,7 @@ void draw_graph_color(const index_graph & graph, const color_map & coloring) {
 	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
 
 	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-						   boyer_myrvold_params::embedding = embedding);
+		boyer_myrvold_params::embedding = embedding);
 		
 	// Find a canonical ordering
 	std::vector<vertex_descriptor> ordering;
@@ -224,6 +225,96 @@ void draw_graph_color(const index_graph & graph, const color_map & coloring) {
 		);
 	
 	std::cout << draw_tikz_graph(graph, coloring, straight_line_drawing) << "\n";
+}
+
+template<
+		typename graph_t, typename planar_embedding_t,
+		typename augmented_embedding_t
+	>
+void test_augmented_embedding(
+		const graph_t & graph, const planar_embedding_t & planar_embedding,
+		const augmented_embedding_t & augmented_embedding
+	)
+{
+	// Type definitions
+	typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
+	typedef typename graph_traits<graph_t>::vertex_iterator vertex_iterator_t;
+	
+	// Iterate over each vertex
+	vertex_iterator_t v_iter, v_end;
+	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+		vertex_t v = *v_iter;
+		
+		auto edge_iter = planar_embedding[v].begin();
+		auto adjacency_node_iter = augmented_embedding[v].begin();
+		
+		while(edge_iter != planar_embedding[v].end() &&
+			adjacency_node_iter != augmented_embedding[v].end())
+		{
+			vertex_t u_0 = get_incident_vertex(v, *edge_iter, graph);
+			vertex_t u_1 = adjacency_node_iter -> vertex;
+			
+			if(u_0 != u_1) {
+				std::string error = "vertex " + std::to_string(v) + " has neighbor "
+					+ std::to_string(u_0) + " in embedding, but neighbor "
+					+ std::to_string(u_1) + " in augmented_embedding.";
+				throw std::runtime_error(error);
+			}
+			
+			vertex_t v_0 = adjacency_node_iter -> iterator -> vertex;
+			
+			if(v_0 != v) {
+				std::string error = "edge " + std::to_string(v) + " to "
+					+ std::to_string(u_0) + " back iterator points to "
+					+ std::to_string(v_0) + " in augmented_embedding.";
+				throw std::runtime_error(error);
+			}
+			
+			++edge_iter;
+			++adjacency_node_iter;
+		}
+		
+		if(edge_iter != planar_embedding[v].end()) {
+			std::string error = "vertex " + std::to_string(v)
+				+ " augmented adjacency list too long.";
+			throw std::runtime_error(error);
+		}
+		else if(adjacency_node_iter != augmented_embedding[v].end()) {
+			std::string error = "vertex " + std::to_string(v)
+				+ " augmented adjacency list too short.";
+			throw std::runtime_error(error);
+		}
+	}
+}
+
+template<typename graph_t, typename planar_embedding_t>
+void test_augmented_embedding_construction(
+		const graph_t & graph, const planar_embedding_t & planar_embedding
+	)
+{
+	typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
+	
+	struct adjacency_node_t {
+		vertex_t vertex;
+		typename std::vector<adjacency_node_t>::iterator iterator;
+	};
+	
+	typedef boost::iterator_property_map<
+			typename std::vector<std::vector<adjacency_node_t>>::iterator,
+			typename boost::property_map<graph_t, boost::vertex_index_t>
+				::const_type
+		> augmented_embedding_t;
+	
+	std::vector<std::vector<adjacency_node_t>>
+		adjacency_node_storage(boost::num_vertices(graph));
+	augmented_embedding_t augmented_embedding(
+			adjacency_node_storage.begin(),
+			boost::get(boost::vertex_index, graph)
+		);
+	
+	augment_embedding(graph, planar_embedding, augmented_embedding);
+	
+	test_augmented_embedding(graph, planar_embedding, augmented_embedding);
 }
 
 template<typename index_graph, typename color_map>
@@ -338,13 +429,13 @@ void poh_color_bfs_test(const index_graph & graph) {
 		auto start = nanosecond_timer::now();
 		
 		for(std::size_t i = 0; i < 1000; ++i) {
-			poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
+			poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3);
 		}
 	
 		auto end = nanosecond_timer::now();
 		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
 	#else
-		poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
+		poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3);
 	#endif
 	
 	#ifdef SHOW_VISUALIZATION
@@ -403,13 +494,13 @@ void poh_color_test(const index_graph & graph) {
 		auto start = nanosecond_timer::now();
 		
 		for(std::size_t i = 0; i < 1000; ++i) {
-			poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
+			poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3);
 		}
 	
 		auto end = nanosecond_timer::now();
 		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
 	#else
-		poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 0, 1, 2);
+		poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3);
 	#endif
 	
 	#ifdef SHOW_VISUALIZATION
@@ -420,6 +511,7 @@ void poh_color_test(const index_graph & graph) {
 	test_path_coloring(graph, color_property_map);
 }
 
+/*
 // Apply Hartman-Skrekovski algorithm to given graph and verify it works
 template<typename index_graph>
 void path_choose_test(const index_graph & graph, std::size_t num_colors) {
@@ -516,6 +608,80 @@ void path_choose_test(const index_graph & graph, std::size_t num_colors) {
 	// Test correctness of path coloring
 	test_path_coloring(graph, coloring);
 }
+*/
+
+void test_augmenting_embeddings() {
+	std::cout << "Augmenting Planar Embeddings" << std::endl;
+	
+	// Define graph properties
+	typedef adjacency_list
+		<	setS,
+			vecS,
+			undirectedS,
+			property<vertex_index_t, std::size_t>,
+			property<edge_index_t, std::size_t>
+		> index_graph;
+	
+	typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
+	
+	typedef typename graph_traits<index_graph>::edge_descriptor edge_t;
+	
+	typedef std::vector<
+			std::vector<edge_t>
+		> embedding_storage_t;
+
+	typedef iterator_property_map
+		< typename embedding_storage_t::iterator, 
+			typename property_map<index_graph, vertex_index_t>::type
+		> embedding_t;
+	
+	boost::minstd_rand gen;
+	gen.seed(8573);
+	
+	for(std::size_t order = 4; order <= 100; ++order) {
+		bool found_planar = false;
+		std::size_t count = 4;
+		
+		while(!found_planar) {
+			try {
+				// Construct a random trriangulated graph
+				index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+		
+				++count;
+				
+				make_triangulated(graph);
+		
+				found_planar = true;
+				
+				// Create the planar embedding
+				embedding_storage_t embedding_storage(num_vertices(graph));
+				embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
+	
+				boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
+					boyer_myrvold_params::embedding = embedding);
+		
+				//draw_graph_no_color(graph);
+		
+				test_augmented_embedding_construction(graph, embedding);
+		
+				#ifdef SHOW_PASSES
+					std::cout<<"    PASS " << order << " vertex augmented embedding construction."<<std::endl;
+				#endif
+			}
+			catch(std::logic_error error) {
+				// Generated a non-planar graph, ignore this case
+			}
+			catch(std::exception& error) {
+				std::cout<<"    FAIL " << order << "vertex augmented embedding construction ("<<error.what()<<")."<<std::endl;
+				failed=true;
+			}
+			catch(...) {
+				std::cout<<"    FAIL " << order << " vertex augmented embedding construction (unknown error)."<<std::endl;
+				failed=true;
+			}
+		}
+	}
+}
 
 void test_poh_color_bfs() {
 	std::cout<<"Path 3-coloring (Poh w/BFS)"<<std::endl;
@@ -597,15 +763,15 @@ void test_poh_color() {
 			try {
 				// Construct a random trriangulated graph
 				index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
-		
+				
 				++count;
 				
 				make_triangulated(graph);
-		
+				
 				found_planar = true;
-		
+				
 				//draw_graph_no_color(graph);
-		
+				
 				poh_color_test(graph);
 		
 				#ifdef SHOW_PASSES
@@ -627,6 +793,7 @@ void test_poh_color() {
 	}
 }
 
+/*
 void test_path_choose()
 {
 	// Define graph properties
@@ -687,11 +854,13 @@ void test_path_choose()
 		}
 	}
 }
+*/
 
 int main() {
+	test_augmenting_embeddings();
 	test_poh_color_bfs();
 	test_poh_color();
-	test_path_choose();
+	//test_path_choose();
 
 	if(failed)
 		std::cout<<"THERE ARE FAILING TESTS"<<std::endl;
