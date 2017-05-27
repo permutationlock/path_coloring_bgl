@@ -41,7 +41,7 @@
 #include "../path_coloring/poh_color.hpp"
 #include "../path_coloring/poh_color_bfs.hpp"
 #include "../path_coloring/augmented_embedding.hpp"
-//#include "../path_coloring/hartman_skrekovski_choose.hpp"
+#include "../path_coloring/hartman_skrekovski_choose.hpp"
 #include "../visualization/draw_tikz_graph.hpp"
 
 using namespace boost;
@@ -511,13 +511,13 @@ void poh_color_test(const index_graph & graph) {
 	test_path_coloring(graph, color_property_map);
 }
 
-/*
+
 // Apply Hartman-Skrekovski algorithm to given graph and verify it works
-template<typename index_graph>
-void path_choose_test(const index_graph & graph, std::size_t num_colors) {
-	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<index_graph>::vertex_iterator vertex_iterator;
-	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
+template<typename graph_t>
+void path_choose_test(const graph_t & graph, std::size_t num_colors) {
+	typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
+	typedef typename graph_traits<graph_t>::vertex_iterator vertex_iterator;
+	typedef typename graph_traits<graph_t>::edge_descriptor edge_descriptor;
 	
 	// Define the storage type for the planar embedding
 	typedef std::vector<
@@ -526,8 +526,20 @@ void path_choose_test(const index_graph & graph, std::size_t num_colors) {
 
 	typedef iterator_property_map
 		< typename embedding_storage_t::iterator, 
-			typename property_map<index_graph, vertex_index_t>::type
+			typename property_map<graph_t, vertex_index_t>::type
 		> embedding_t;
+	
+	// Define the storage type for the augmented embedding
+	struct adjacency_node_t {
+		vertex_t vertex;
+		typename std::vector<adjacency_node_t>::iterator iterator;
+	};
+	
+	typedef boost::iterator_property_map<
+			typename std::vector<std::vector<adjacency_node_t>>::iterator,
+			typename boost::property_map<graph_t, boost::vertex_index_t>
+				::const_type
+		> augmented_embedding_t;
 	
 	// Create the planar embedding
 	embedding_storage_t embedding_storage(num_vertices(graph));
@@ -537,24 +549,33 @@ void path_choose_test(const index_graph & graph, std::size_t num_colors) {
 		boyer_myrvold_params::embedding = embedding);
 	
 	// Find a canonical ordering
-	std::vector<vertex_descriptor> ordering;
+	std::vector<vertex_t> ordering;
 	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
+	
+	std::vector<std::vector<adjacency_node_t>>
+		adjacency_node_storage(boost::num_vertices(graph));
+	augmented_embedding_t augmented_embedding(
+			adjacency_node_storage.begin(),
+			boost::get(boost::vertex_index, graph)
+		);
+	
+	augment_embedding(graph, embedding, augmented_embedding);
 	
 	// Create property map to hold the coloring
 	typedef iterator_property_map<
 			typename std::vector<int>::iterator,
-			typename property_map<index_graph, vertex_index_t>::type
+			typename property_map<graph_t, vertex_index_t>::type
 		> color_property_map;
 	std::vector<int> color_storage(num_vertices(graph));
 	color_property_map coloring(color_storage.begin(), get(vertex_index, graph));
 	
 	// Set up clockwise outer face using properties of a canonical ordering
-	std::vector<vertex_descriptor> outer_face = { ordering[1], ordering[0], ordering.back() };
+	std::vector<vertex_t> outer_face = { ordering[1], ordering[0], ordering.back() };
 	
 	// Create property map to hold the coloring
 	typedef iterator_property_map<
 			typename std::vector<std::list<int> >::iterator,
-			typename property_map<index_graph, vertex_index_t>::type
+			typename property_map<graph_t, vertex_index_t>::type
 		> color_list_property_map;
 	std::vector<std::list<int> > color_list_storage(num_vertices(graph));
 	color_list_property_map color_list(color_list_storage.begin(), get(vertex_index, graph));
@@ -590,15 +611,15 @@ void path_choose_test(const index_graph & graph, std::size_t num_colors) {
 		auto start = nanosecond_timer::now();
 		
 		for(std::size_t i = 0; i < 1000; ++i) {
-			hartman_skrekovski_choose(graph, embedding, color_list, coloring,
-				outer_face.begin(), outer_face.end());
+			hartman_skrekovski_choose(graph, augmented_embedding, color_list,
+				coloring, outer_face.begin(), outer_face.end());
 		}
 	
 		auto end = nanosecond_timer::now();
 		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
 	#else
-		hartman_skrekovski_choose(graph, embedding, color_list, coloring,
-				outer_face.begin(), outer_face.end());
+		hartman_skrekovski_choose(graph, augmented_embedding, color_list,
+				coloring, outer_face.begin(), outer_face.end());
 	#endif
 	
 	#ifdef SHOW_VISUALIZATION
@@ -608,7 +629,7 @@ void path_choose_test(const index_graph & graph, std::size_t num_colors) {
 	// Test correctness of path coloring
 	test_path_coloring(graph, coloring);
 }
-*/
+
 
 void test_augmenting_embeddings() {
 	std::cout << "Augmenting Planar Embeddings" << std::endl;
@@ -793,7 +814,7 @@ void test_poh_color() {
 	}
 }
 
-/*
+
 void test_path_choose()
 {
 	// Define graph properties
@@ -854,13 +875,12 @@ void test_path_choose()
 		}
 	}
 }
-*/
 
 int main() {
 	test_augmenting_embeddings();
 	test_poh_color_bfs();
 	test_poh_color();
-	//test_path_choose();
+	test_path_choose();
 
 	if(failed)
 		std::cout<<"THERE ARE FAILING TESTS"<<std::endl;

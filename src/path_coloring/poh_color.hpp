@@ -166,7 +166,7 @@ static void poh_color_recursive(
 				back_iter = planar_embedding[n].begin();
 			}
 			
-			initialize_embedding_neighbor_range(
+			initialize_neighbor_range(
 					n, back_iter, neighbor_range_map, planar_embedding
 				);
 			mark_map[n] = below_t_mark;
@@ -237,7 +237,7 @@ void poh_color(
 		vertex_t v = *p_iter;
 		
 		auto back_iter = find_edge_iterator(v, l, planar_embedding, graph);
-		initialize_embedding_neighbor_range(
+		initialize_neighbor_range(
 				v, back_iter, neighbor_range_map, planar_embedding
 			);
 		

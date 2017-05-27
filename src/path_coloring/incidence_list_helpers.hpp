@@ -76,53 +76,53 @@ inline edge_iterator_t find_edge_iterator_restricted(
 }
 
 template<
-		typename graph_t, typename embedding_t, typename vertex_t
+		typename graph_t, typename augmented_embedding_t, typename vertex_t
 			= typename boost::graph_traits<graph_t>::vertex_descriptor,
 		typename neighbor_iterator_t = typename boost
-			::property_traits<embedding_t>::value_type::const_iterator
+			::property_traits<augmented_embedding_t>::value_type::const_iterator
 	>
 inline neighbor_iterator_t find_neighbor_iterator(
 		vertex_t v, vertex_t u,
-		const embedding_t & embedding, const graph_t & graph
+		const augmented_embedding_t & augmented_embedding, const graph_t & graph
 	)
 {
-	for(auto neighbor_iter = embedding[v].begin();
-			neighbor_iter != embedding[v].end(); ++neighbor_iter
+	for(auto neighbor_iter = augmented_embedding[v].begin();
+			neighbor_iter != augmented_embedding[v].end(); ++neighbor_iter
 		)
 	{
-		vertex_t n = *neighbor_iter;
+		vertex_t n = neighbor_iter -> vertex;
 		if(n == u) {
 			return neighbor_iter;
 		}
 	}
-	return embedding[v].end();
+	return augmented_embedding[v].end();
 }
 
 template<
-		typename graph_t, typename embedding_t, typename vertex_t
+		typename graph_t, typename augmented_embedding_t, typename vertex_t
 			= typename boost::graph_traits<graph_t>::vertex_descriptor,
 		typename neighbor_iterator_t = typename boost
-			::property_traits<embedding_t>::value_type::const_iterator
+			::property_traits<augmented_embedding_t>::value_type::const_iterator
 	>
 inline neighbor_iterator_t find_neighbor_iterator_restricted(
 		vertex_t v, vertex_t u, neighbor_iterator_t begin,
-		neighbor_iterator_t end, const embedding_t & embedding,
-		const graph_t & graph
+		neighbor_iterator_t end,
+		const augmented_embedding_t & augmented_embedding, const graph_t & graph
 	)
 {
 	for(neighbor_iterator_t neighbor_iter = begin; neighbor_iter != end;
 			++neighbor_iter
 		)
 	{
-		if(neighbor_iter == embedding[v].end())
-			neighbor_iter = embedding[v].begin();
+		if(neighbor_iter == augmented_embedding[v].end())
+			neighbor_iter = augmented_embedding[v].begin();
 		
-		vertex_t n = *neighbor_iter;
+		vertex_t n = neighbor_iter -> vertex;
 		if(n == u) {
 			return neighbor_iter;
 		}
 	}
-	return embedding[v].end();
+	return augmented_embedding[v].end();
 }
 
 template<
@@ -161,7 +161,6 @@ template<
 		    	::const_iterator,
 		typename neighbor_range_map_t, typename neighbor_range_t
 		    = typename boost::property_traits<neighbor_range_map_t>::value_type
-		    	::value_type
 	>
 inline std::pair<neighbor_range_t, neighbor_range_t> split_neighbor_range(
 		vertex_t v, neighbor_iterator_t mid_iter,
@@ -188,7 +187,7 @@ template<
 		    = typename boost::property_traits<embedding_t>::value_type
 		    	::const_iterator
 	>
-inline void initialize_embedding_neighbor_range(
+inline void initialize_neighbor_range(
 		vertex_t v, neighbor_iterator_t start_iter,
 		neighbor_range_map_t & neighbor_range_map,
 		const embedding_t & embedding
