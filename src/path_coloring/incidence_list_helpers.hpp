@@ -33,7 +33,7 @@ template<
 		typename edge_iterator_t = typename boost
 			::property_traits<planar_embedding_t>::value_type::const_iterator
 	>
-inline edge_iterator_t find_neighbor_iterator(
+inline edge_iterator_t find_edge_iterator(
 		vertex_t vertex, vertex_t target,
 		const planar_embedding_t & planar_embedding, const graph_t & graph
 	)
@@ -56,7 +56,7 @@ template<
 		typename edge_iterator_t = typename boost
 			::property_traits<planar_embedding_t>::value_type::const_iterator
 	>
-inline edge_iterator_t find_neighbor_iterator_restricted(
+inline edge_iterator_t find_edge_iterator_restricted(
 		vertex_t vertex, vertex_t target, edge_iterator_t begin,
 		edge_iterator_t end, const planar_embedding_t & planar_embedding,
 		const graph_t & graph
@@ -76,70 +76,127 @@ inline edge_iterator_t find_neighbor_iterator_restricted(
 }
 
 template<
-		typename vertex_t, typename neighbor_range_map_t,
-		typename planar_embedding_t
+		typename graph_t, typename embedding_t, typename vertex_t
+			= typename boost::graph_traits<graph_t>::vertex_descriptor,
+		typename neighbor_iterator_t = typename boost
+			::property_traits<embedding_t>::value_type::const_iterator
 	>
-inline void remove_first_edge(
-		vertex_t v, neighbor_range_map_t & neighbor_range_map,
-		const planar_embedding_t & planar_embedding
+inline neighbor_iterator_t find_neighbor_iterator(
+		vertex_t v, vertex_t u,
+		const embedding_t & embedding, const graph_t & graph
 	)
 {
-	if(++neighbor_range_map[v].first == planar_embedding[v].end()) {
-		neighbor_range_map[v].first = planar_embedding[v].begin();
+	for(auto neighbor_iter = embedding[v].begin();
+			neighbor_iter != embedding[v].end(); ++neighbor_iter
+		)
+	{
+		vertex_t n = *neighbor_iter;
+		if(n == u) {
+			return neighbor_iter;
+		}
+	}
+	return embedding[v].end();
+}
+
+template<
+		typename graph_t, typename embedding_t, typename vertex_t
+			= typename boost::graph_traits<graph_t>::vertex_descriptor,
+		typename neighbor_iterator_t = typename boost
+			::property_traits<embedding_t>::value_type::const_iterator
+	>
+inline neighbor_iterator_t find_neighbor_iterator_restricted(
+		vertex_t v, vertex_t u, neighbor_iterator_t begin,
+		neighbor_iterator_t end, const embedding_t & embedding,
+		const graph_t & graph
+	)
+{
+	for(neighbor_iterator_t neighbor_iter = begin; neighbor_iter != end;
+			++neighbor_iter
+		)
+	{
+		if(neighbor_iter == embedding[v].end())
+			neighbor_iter = embedding[v].begin();
+		
+		vertex_t n = *neighbor_iter;
+		if(n == u) {
+			return neighbor_iter;
+		}
+	}
+	return embedding[v].end();
+}
+
+template<
+		typename vertex_t, typename neighbor_range_map_t,
+		typename embedding_t
+	>
+inline void remove_first_neighbor(
+		vertex_t v, neighbor_range_map_t & neighbor_range_map,
+		const embedding_t & embedding
+	)
+{
+	if(++neighbor_range_map[v].first == embedding[v].end()) {
+		neighbor_range_map[v].first = embedding[v].begin();
 	}
 }
 
 template<
 		typename vertex_t, typename neighbor_range_map_t,
-		typename planar_embedding_t
+		typename embedding_t
 	>
-inline void remove_last_edge(
+inline void remove_last_neighbor(
 		vertex_t v, neighbor_range_map_t & neighbor_range_map,
-		const planar_embedding_t & planar_embedding
+		const embedding_t & embedding
 	)
 {
-	if(neighbor_range_map[v].second == planar_embedding[v].begin()) {
-		neighbor_range_map[v].second = planar_embedding[v].end();
+	if(neighbor_range_map[v].second == embedding[v].begin()) {
+		neighbor_range_map[v].second = embedding[v].end();
 	}
 	--neighbor_range_map[v].second;
 }
 
 template<
-		typename vertex_t, typename edge_iterator_t,
-		typename neighbor_range_map_t, typename planar_embedding_t,
-		typename neighbor_range_t
-			= typename std::pair<edge_iterator_t, edge_iterator_t>
+		typename vertex_t, typename embedding_t,
+		typename neighbor_iterator_t
+			= typename boost::property_traits<embedding_t>::value_type
+		    	::const_iterator,
+		typename neighbor_range_map_t, typename neighbor_range_t
+		    = typename boost::property_traits<neighbor_range_map_t>::value_type
+		    	::value_type
 	>
-inline std::pair<neighbor_range_t, neighbor_range_t> split_range(
-		vertex_t v, edge_iterator_t mid_iter,
+inline std::pair<neighbor_range_t, neighbor_range_t> split_neighbor_range(
+		vertex_t v, neighbor_iterator_t mid_iter,
 		neighbor_range_map_t & neighbor_range_map,
-		planar_embedding_t & planar_embedding
+		embedding_t & embedding
 	)
 {
-	neighbor_range_t first(neighbor_range_map[v].first, mid_iter);
+	neighbor_range_t range_0, range_1;
+	range_0.first = neighbor_range_map[v].first;
+	range_0.second = mid_iter;
 	
-	if(++mid_iter == planar_embedding[v].end())
-		mid_iter = planar_embedding[v].begin();
-	neighbor_range_t second(mid_iter, neighbor_range_map[v].second);
+	if(++mid_iter == embedding[v].end())
+		mid_iter = embedding[v].begin();
+		
+	range_1.first = mid_iter;
+	range_1.second = neighbor_range_map[v].second;
 	
-	return std::pair<neighbor_range_t, neighbor_range_t>(first, second);
+	return std::pair<neighbor_range_t, neighbor_range_t>(range_0, range_1);
 }
 
 template<
 		typename vertex_t, typename neighbor_range_map_t,
-		typename planar_embedding_t, typename edge_iterator_t
-		    = typename boost::property_traits<planar_embedding_t>::value_type
+		typename embedding_t, typename neighbor_iterator_t
+		    = typename boost::property_traits<embedding_t>::value_type
 		    	::const_iterator
 	>
-static inline void initialize(
-		vertex_t v, edge_iterator_t start_iter,
+inline void initialize_embedding_neighbor_range(
+		vertex_t v, neighbor_iterator_t start_iter,
 		neighbor_range_map_t & neighbor_range_map,
-		const planar_embedding_t & planar_embedding
+		const embedding_t & embedding
 	)
 {
 	neighbor_range_map[v].first = start_iter;
 	neighbor_range_map[v].second = start_iter;
-	remove_last_edge(v, neighbor_range_map, planar_embedding);
+	remove_last_neighbor(v, neighbor_range_map, embedding);
 }
 
 #endif

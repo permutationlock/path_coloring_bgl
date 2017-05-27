@@ -10,6 +10,7 @@
 
 // STL headers
 #include <vector>
+
 // Basic graph headers
 #include <boost/graph/properties.hpp>
 #include <boost/graph/graph_traits.hpp>
@@ -41,7 +42,8 @@ void augment_embedding(
 	
 	// Create the embedding ordered adjacency list with uninitialized iterators
 	for(boost::tie(v_iter, v_end) = boost::vertices(graph); v_iter != v_end;
-		v_iter++)
+			v_iter++
+		)
 	{
 		vertex_t v = *v_iter;
 		
@@ -71,7 +73,8 @@ void augment_embedding(
 	
 	// Construct the worklist for each vertex
 	for(boost::tie(v_iter, v_end) = boost::vertices(graph); v_iter != v_end;
-		v_iter++)
+			v_iter++
+		)
 	{
 		vertex_t v = *v_iter;
 		
@@ -121,5 +124,5 @@ void augment_embedding(
 }
 
 
-
 #endif
+

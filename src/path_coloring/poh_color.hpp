@@ -122,7 +122,7 @@ static void poh_color_recursive(
 			
 			// If we are adding n to T, setup next loop with t_i = n
 			if(continue_path) {
-				auto n_back_iter = find_neighbor_iterator_restricted(
+				auto n_back_iter = find_edge_iterator_restricted(
 						n, t_i, neighbor_range_map[n].first,
 						neighbor_range_map[n].second, planar_embedding, graph
 					);
@@ -152,7 +152,7 @@ static void poh_color_recursive(
 		}
 		// If n is interior and has not been visited, mark it and initialize it
 		else if(mark_map[n] != below_t_mark) {
-			auto back_iter = find_neighbor_iterator(
+			auto back_iter = find_edge_iterator(
 					n, t_i, planar_embedding, graph
 				);
 			
@@ -166,7 +166,9 @@ static void poh_color_recursive(
 				back_iter = planar_embedding[n].begin();
 			}
 			
-			initialize(n, back_iter, neighbor_range_map, planar_embedding);
+			initialize_embedding_neighbor_range(
+					n, back_iter, neighbor_range_map, planar_embedding
+				);
 			mark_map[n] = below_t_mark;
 		}
 	}
@@ -234,8 +236,10 @@ void poh_color(
 	for(vertex_iterator_t p_iter = p_begin; p_iter != p_end; ++p_iter) {
 		vertex_t v = *p_iter;
 		
-		auto back_iter = find_neighbor_iterator(v, l, planar_embedding, graph);
-		initialize(v, back_iter, neighbor_range_map, planar_embedding);
+		auto back_iter = find_edge_iterator(v, l, planar_embedding, graph);
+		initialize_embedding_neighbor_range(
+				v, back_iter, neighbor_range_map, planar_embedding
+			);
 		
 		l = v;
 	}

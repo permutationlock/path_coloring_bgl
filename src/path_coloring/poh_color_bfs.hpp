@@ -63,7 +63,7 @@ static void poh_color_bfs_recursive(
 		if(p_0 == p_n && q_0 == q_m) return;
 		
 		// Find the edge between p_n and q_m in q_m's incidence list
-		auto edge_iter = find_neighbor_iterator(
+		auto edge_iter = find_edge_iterator(
 				q_m, p_n, planar_embedding, graph
 			);
 		
