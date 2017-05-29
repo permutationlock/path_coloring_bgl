@@ -71,6 +71,15 @@ void augment_embedding(
 				boost::get(boost::vertex_index, graph)
 			);
 	
+	// Reserve deg(v) space for each v in G
+	for(boost::tie(v_iter, v_end) = boost::vertices(graph); v_iter != v_end;
+			v_iter++
+		)
+	{
+		vertex_t v = *v_iter;
+		work_list_map[v].reserve(out_degree(v, graph));
+	}
+	
 	// Construct the worklist for each vertex
 	for(boost::tie(v_iter, v_end) = boost::vertices(graph); v_iter != v_end;
 			v_iter++

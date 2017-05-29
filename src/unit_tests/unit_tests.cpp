@@ -516,7 +516,7 @@ void poh_color_test(const index_graph & graph) {
 template<typename graph_t>
 void path_choose_test(const graph_t & graph, std::size_t num_colors) {
 	typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
-	typedef typename graph_traits<graph_t>::vertex_iterator vertex_iterator;
+	typedef typename graph_traits<graph_t>::vertex_iterator vertex_iterator_t;
 	typedef typename graph_traits<graph_t>::edge_descriptor edge_descriptor;
 	
 	// Define the storage type for the planar embedding
@@ -529,7 +529,7 @@ void path_choose_test(const graph_t & graph, std::size_t num_colors) {
 			typename property_map<graph_t, vertex_index_t>::type
 		> embedding_t;
 	
-	// Define the storage type for the augmented embedding
+	// Define the storage type for nodes in the augmented embedding
 	struct adjacency_node_t {
 		vertex_t vertex;
 		typename std::vector<adjacency_node_t>::iterator iterator;
@@ -559,6 +559,17 @@ void path_choose_test(const graph_t & graph, std::size_t num_colors) {
 			boost::get(boost::vertex_index, graph)
 		);
 	
+	vertex_iterator_t v_iter, v_end;
+	
+	// Reserve deg(v) space for each v in G
+	for(boost::tie(v_iter, v_end) = boost::vertices(graph); v_iter != v_end;
+			v_iter++
+		)
+	{
+		vertex_t v = *v_iter;
+		augmented_embedding[v].reserve(out_degree(v, graph));
+	}
+	
 	augment_embedding(graph, embedding, augmented_embedding);
 	
 	// Create property map to hold the coloring
@@ -584,7 +595,6 @@ void path_choose_test(const graph_t & graph, std::size_t num_colors) {
 	std::uniform_int_distribution<int> distribution(0, num_colors - 1);
 	
 	// Iterate over each vertex
-	vertex_iterator v_iter, v_end;
 	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
 		std::vector<int> random_colors(3);
 		while(random_colors[0] == random_colors[1] || random_colors[0] == random_colors[2] ||
