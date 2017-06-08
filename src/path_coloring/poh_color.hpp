@@ -62,8 +62,8 @@ namespace {
 			color_t t_color, color_t p_color, color_t q_color
 		)
 	{
-		// Let t_i be the last vertex of T, and s_0 the last interior vertex
-		vertex_t t_i = u, s_0 = u;
+		// Let t_i be the last vertex of T, and w the first interior vertex
+		vertex_t t_i = u, w = u;
 	
 		// Initialize remaining variables for the loop constructing T
 		auto edge_iter = neighbor_range_map[u].first;
@@ -133,7 +133,7 @@ namespace {
 					edge_iter = n_back_iter;
 					t_i = n;
 				}
-				// Otherwise we are done
+				// Otherwise we have completed T and we are done
 				else {
 					return;
 				}
@@ -141,15 +141,15 @@ namespace {
 			// If n is in Q we have an edge T to Q and may split along it
 			else if(color_map[n] == q_color) {
 				// Color the left cycle if it has uncolored vertices
-				if(s_0 != u) {
+				if(w != u) {
 					poh_color_recursive(
 							graph, planar_embedding, color_map, mark_map,
-							neighbor_range_map, s_0, below_t_mark, count,
+							neighbor_range_map, w, below_t_mark, count,
 							p_color, t_color, q_color
 						);
 				
 					u = t_i;
-					s_0 = t_i;
+					w = t_i;
 				}
 			}
 			// If n is interior and has not been visited, mark and initialize it
@@ -158,9 +158,9 @@ namespace {
 						n, t_i, planar_embedding, graph
 					);
 			
-				// If this is the first interior vertex hit, save it as s_0
-				if(s_0 == u) {
-					s_0 = n;
+				// If this is the first interior vertex hit, save it as w
+				if(w == u) {
+					w = n;
 				}
 			
 				// Increment back_iter counterclockwise, wrapping in list 
