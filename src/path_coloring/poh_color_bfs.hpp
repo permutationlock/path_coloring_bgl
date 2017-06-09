@@ -90,7 +90,7 @@ namespace {
 			}
 		} while(color_map[t_l] == p_color || color_map[t_l] == q_color);
 	
-		vertex_t current_vertex;
+		vertex_t current_vertex, p_i = p_0, q_j = q_0;
 	
 		// Perform a BFS from t_l to find and color a path T between P and Q
 		{
@@ -136,20 +136,8 @@ namespace {
 					// If we find an edge P to Q, we have completed T
 					else if(color == q_color && last_color == p_color) {
 						t_0 = current_vertex;
-						vertex_t p_i = last_neighbor;
-						vertex_t q_j = neighbor;
-					
-						// If the edge is a chord we must color the rest
-						if(p_i != p_0 || q_j != q_0) {
-							poh_color_bfs_recursive(
-									graph, planar_embedding, color_map,
-									mark_map, parent_map, p_0, p_i, q_0, q_j,
-									count, new_color
-								);
-						
-							p_0 = p_i;
-							q_0 = q_j;
-						}
+						p_i = last_neighbor;
+						q_j = neighbor;
 					
 						break;
 					}
@@ -164,6 +152,15 @@ namespace {
 					);
 			}
 		}
+		
+		// If the edge p_iq_j is a chord we must color the rest
+		if(p_i != p_0 || q_j != q_0) {
+			poh_color_bfs_recursive(
+					graph, planar_embedding, color_map,
+					mark_map, parent_map, p_0, p_i, q_0, q_j,
+					count, new_color
+				);
+		}
 	
 		color_map[current_vertex] = new_color;
 	
@@ -173,16 +170,16 @@ namespace {
 			color_map[current_vertex] = new_color;
 		}
 	
-		// Color the subgraph bounded by P and T
+		// Color the subgraph bounded by p_i...p_n and T
 		poh_color_bfs_recursive(
 				graph, planar_embedding, color_map, mark_map, parent_map,
-				p_0, p_n, t_0, t_l, count, q_color
+				p_i, p_n, t_0, t_l, count, q_color
 			);
 	
-		// Color the subgraph bounded by T and Q
+		// Color the subgraph bounded by T and q_m...q_j
 		poh_color_bfs_recursive(
 				graph, planar_embedding, color_map, mark_map, parent_map,
-				q_m, q_0, t_l, t_0, count, p_color
+				q_m, q_j, t_l, t_0, count, p_color
 			);
 	}
 }
