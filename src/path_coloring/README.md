@@ -9,23 +9,23 @@
  paths to color.
 
  ```c++
-template<
-        typename graph_t, typename planar_embedding_t, typename color_map_t,
-        typename mark_map_t, typename parent_map_t, typename vertex_iterator_t,
-        typename color_t
-    >
-void poh_color_bfs(
-        const graph_t & graph, const planar_embedding_t & planar_embedding,
-        mark_map_t & mark_map, parent_map_t & parent_map,
-        color_map_t & color_map, vertex_iterator_t p_begin,
-        vertex_iterator_t p_end, vertex_iterator_t q_begin,
-        vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
-    );
+ template<
+         typename graph_t, typename planar_embedding_t, typename color_map_t,
+         typename mark_map_t, typename parent_map_t, typename vertex_iterator_t,
+         typename color_t
+     >
+ void poh_color_bfs(
+         const graph_t & graph, const planar_embedding_t & planar_embedding,
+         mark_map_t & mark_map, parent_map_t & parent_map,
+         color_map_t & color_map, vertex_iterator_t p_begin,
+         vertex_iterator_t p_end, vertex_iterator_t q_begin,
+         vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
+     );
  ```
 
 ### Types
 
- *vertex_t* is *boost::graph_traits<graph_t>::vertex_descriptor*
+ | *vertex_t* | is *boost::graph_traits<graph_t>::vertex_descriptor*
  
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
@@ -40,7 +40,7 @@ void poh_color_bfs(
 ### Input Requirements
 
  - *graph* is triangulated and has no loops or parallel edges;
- - *planar_embedding* must be a valid planar embedding of *graph*;
+ - *planar_embedding* must be ordered as a valid planar embedding of *graph*;
  - the colors *c_0*, *c_1*, and *c_2* are distinct;
  - *color_map* must not initially assign any vertex of *graph* the value *c_0*,
    *c_1*, or *c_2*;
@@ -77,25 +77,25 @@ void poh_color_bfs(
  the next path to color.
 
  ```c++
-template<
-        typename graph_t, typename planar_embedding_t, typename color_map_t,
-        typename mark_map_t, typename neighbor_range_map_t,
-        typename vertex_iterator_t, typename color_t
-    >
-void poh_color(
-        const graph_t & graph, const planar_embedding_t & planar_embedding,
-        color_map_t & color_map, neighbor_range_map_t & neighbor_range_map,
-        mark_map_t & mark_map, vertex_iterator_t p_begin,
-        vertex_iterator_t p_end, vertex_iterator_t q_begin,
-        vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
-    );
+ template<
+         typename graph_t, typename planar_embedding_t, typename color_map_t,
+         typename mark_map_t, typename neighbor_range_map_t,
+         typename vertex_iterator_t, typename color_t
+     >
+ void poh_color(
+         const graph_t & graph, const planar_embedding_t & planar_embedding,
+         color_map_t & color_map, neighbor_range_map_t & neighbor_range_map,
+         mark_map_t & mark_map, vertex_iterator_t p_begin,
+         vertex_iterator_t p_end, vertex_iterator_t q_begin,
+         vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
+     );
  ```
 
 ### Types
 
- *vertex_t* is *boost::graph_traits<graph_t>::vertex_descriptor*
- *edge_iterator_t* is *boost::property_traits<embedding_t>::value_type::const_iterator*
- *neighbor_range_t* is *std::pair<edge_iterator_t,edge_iterator_t>*
+ | *vertex_t* | is *boost::graph_traits<graph_t>::vertex_descriptor*
+ | *neighbor_iterator_t* | is *boost::property_traits<planar_embedding_t>::value_type::const_iterator*
+ | *neighbor_range_t* | is *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
  
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
@@ -110,7 +110,7 @@ void poh_color(
 ### Input Requirements
 
  - *graph* is triangulated and has no loops or parallel edges;
- - *planar_embedding* must be a valid planar embedding of *graph*;
+ - *planar_embedding* must be ordered as a valid planar embedding of *graph*;
  - the colors *c_0*, *c_1*, and *c_2* are distinct;
  - *color_map* must not initially assign any vertex of *graph* the value *c_0*,
    *c_1*, or *c_2*;
@@ -150,60 +150,62 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  This file implements the Hartman-Skrekovski algorithm.
 
  ```c++
-template<
-        typename graph_t, typename planar_embedding_t, typename color_map_t,
-        typename mark_map_t, typename neighbor_range_map_t,
-        typename vertex_iterator_t, typename color_t
-    >
-void poh_color(
-        const graph_t & graph, const planar_embedding_t & planar_embedding,
-        color_map_t & color_map, neighbor_range_map_t & neighbor_range_map,
-        mark_map_t & mark_map, vertex_iterator_t p_begin,
-        vertex_iterator_t p_end, vertex_iterator_t q_begin,
-        vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
-    );
+ template<
+         typename graph_t, typename augmented_embedding_t,
+         typename color_list_map_t, typename color_map_t,
+         typename neighbor_range_map_t, typename state_map_t,
+         typename face_location_map_t, typename face_iterator_t
+     >
+ void hartman_skrekovski_color(
+         const graph_t & graph,
+         const augmented_embedding_t & augmented_embedding,
+         const color_list_map_t & color_list_map, color_map_t & color_map,
+         neighbor_range_map_t & neighbor_range_map, state_map_t & state_map,
+         face_location_map_t & face_location_map, face_iterator_t face_begin,
+         face_iterator_t face_end
+     );
  ```
 
 ### Types
 
- *vertex_t* is *boost::graph_traits<graph_t>::vertex_descriptor*
- 
- *edge_iterator_t* is *boost::property_traits<embedding_t>::value_type::const_iterator*
- 
- *neighbor_range_t* is *std::pair<edge_iterator_t,edge_iterator_t>*
+ | *vertex_t* | is *boost::graph_traits<graph_t>::vertex_descriptor*|
+ | *neighbor_iterator_t* | is *boost::property_traits<augmented_embedding_t>::value_type::const_iterator* |
+ | *neighbor_range_t* | is *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
  
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
  | *graph_t* | [VertexAndEdgeListGraph](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/VertexAndEdgeListGraph.html) | None |
  | *color_t* | [EqualityComparable](http://www.sgi.com/tech/stl/EqualityComparable.html), [Assignable](http://www.boost.org/doc/libs/1_64_0/libs/utility/Assignable.html) | None |
- | *planar_embedding_t* | [PlanarEmbedding](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/PlanarEmbedding.html) | None |
+ | *augmented_embedding_t* | [AugmentedEmbedding](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/PlanarEmbedding.html) | None |
  | *color_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *color_t* |
- | *mark_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be an integer type |
+ | *color_list_t* | [SequenceContainer](http://en.cppreference.com/w/cpp/concept/SequenceContainer) | *value_type* must be *color_t* |
+ | *color_list_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *color_list_t* |
+ | *state_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be an integer type |
+ | *face_location_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be an integer type |
  | *neighbor_range_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *neighbor_range_t* |
  | *vertex_iterator_t* | [Input Iterator](http://www.cplusplus.com/reference/iterator/InputIterator/) | *value_type* must be *vertex_t* |
 
 ### Input Requirements
 
  - *graph* is triangulated and has no loops or parallel edges;
- - *planar_embedding* must be a valid planar embedding of *graph*;
- - the colors *c_0*, *c_1*, and *c_2* are distinct;
- - *color_map* must not initially assign any vertex of *graph* the value *c_0*,
-   *c_1*, or *c_2*;
- - *mark_map* must initially assign each vertex a value of *0*;
- - the iterator pairs *p_begin*, *p_end* and *q_begin*, *q_end* must each be a
-   range of vertices *p_0,..,p_n* and *q_0,...,q_m* in *graph* such that *p_0...p_n*
-   and *q_0...q_m* are induced paths in *graph*, and such that *p_0...p_nq_0...q_m*
-   is a cycle in *graph*.
+ - *augmented_embedding* must be ordered as a valid planar embedding of *graph*;
+ - *color_list_map_t* must assign each vertex on the outer cycle a list of 2
+   colors and each vertex interior to the cycle a list of 3 colors;
+ - *state_map* and *face_location_map* must each initially assign each vertex a
+   value of *0*;
+ - the iterator pair *face_begin*, *face_end* and *q_begin*, *q_end* must be a
+   range of vertices *v_0,..,v_n* such that *v_0...v_n* is a cycle in *graph*.
 
 ### Output
 
  The *color_map* has been assigned such that it represents a valid path
- 3-coloring of the vertices of the subgraph bounded by the cycle
- *p_0...p_nq_0...q_m* using the three colors *c_0*, *c_1*, and *c_2*.
+ coloring of the vertices of the subgraph bounded by the cycle
+ *v_0...v_n* such that each vertex recieves a color in its list.
 
 ### Time Complexity
  
- A call to *poh_color* on input *graph* with *n* vertices makes at most:
+ A call to *hartman_skrekovski_color* on input *graph* with *n* vertices makes
+ at most:
  
  - *O(n)* reads and writes to the provided property map structures;
  - *O(n)* comparisons between integer, *vertex_t*, and *color_t* type variables;
@@ -214,4 +216,23 @@ void poh_color(
  for *graph_t* and
  [boost::iterator_property_map](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/iterator_property_map.html)
  for all property maps. See *src/examples/* for full example code.
+
+# Augmented Embeddings
+
+ An augmented embedding assigns each vertex an augmented adjacency list, ordered
+ according to a valid planar embedding. An augmented adjacency list differs from
+ a standard adjacency list in that given a vertex *v*, the augmented adjacency
+ list entry for a neighbor *u* also provides a reference to the entry for *v* in
+ *u*'s list.
+
+## AugmentedEmbedding
+ 
+ The AugmentedEmbedding concept refines [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html),
+ placing additional restrictions on the *value_type*.
+ 
+### Notation
+
+ | *augmented_embedding_t* | is a type that models the PlanarEmbedding concept. |
+ | *augmented_embedding* | is an object of type *augmented_embedding_t*. |
+ | *graph_t* | is the type of the underlying graph. |
  
