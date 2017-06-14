@@ -37,15 +37,15 @@
 
 #### Input Requirements
 
- - *planar_embedding* must be a valid planar embedding of *graph*
- - the colors *c_0*, *c_1*, and *c_2* are distinct
+ - *planar_embedding* must be a valid planar embedding of *graph*;
+ - the colors *c_0*, *c_1*, and *c_2* are distinct;
  - *color_map* must not initially assign any vertex of *graph* any of *c_0*,
-   *c_1*, or *c_2*
- - *mark_map* must initially assign each vertex a value of *0*
+   *c_1*, or *c_2*;
+ - *mark_map* must initially assign each vertex a value of *0*;
  - the iterator pairs *p_begin*, *p_end* and *q_begin*, *q_end* must be for a
    range of vertices *p_0,..,p_n* and *q_0,...,q_m* in *graph* such that *p_0...p_n*
    and *q_0...q_m* are induced paths in *graph* and such that *p_0...p_nq_0...q_m*
-   is a cycle in *graph*
+   is a cycle in *graph*.
 
 #### Output
 
@@ -55,10 +55,16 @@
 
 #### Time Complexity
  
- We take the input size to be the number of vertices *n* in *graph*. A call to
- *poh_path_color* makes at most *O(n^2)* reads and writes to the provided property map
- structures.
+ A call to *poh_path_color* on input *graph* with *n* vertices makes at most:
  
- Property map lookups are constant time given a structure such as
- [boost::adjacency_list](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/adjacency_list.html).
+ - *O(n^2)* reads and writes to the provided property map structures;
+ - *O(n^2)* comparisons between integer, *vertex_t*, and *color_t* type variables;
+ - *O(n^2)* calls to *push* and *pop* on a *std::queue<vertex_t>*.
+ 
+ Property map lookups are often constant time, and thus the algorithm often runs
+ in *O(n^2)* time. For example: using
+ [boost::adjacency_list](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/adjacency_list.html)
+ for *graph_t* and
+ [boost::iterator_property_map](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/iterator_property_map.html)
+ for all property maps.
  
