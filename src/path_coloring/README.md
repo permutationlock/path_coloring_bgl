@@ -25,6 +25,8 @@
 
 ### Types
 
+ | Type | |
+ | ---- | --- |
  | *vertex_t* | is *boost::graph_traits<graph_t>::vertex_descriptor*
  
  | Type | Concept | Additional Requirements |
@@ -92,7 +94,8 @@
  ```
 
 ### Types
-
+ | Type | |
+ | ---- | --- |
  | *vertex_t* | is *boost::graph_traits<graph_t>::vertex_descriptor*
  | *neighbor_iterator_t* | is *boost::property_traits<planar_embedding_t>::value_type::const_iterator*
  | *neighbor_range_t* | is *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
@@ -168,6 +171,8 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 
 ### Types
 
+ | Type | |
+ | ---- | --- |
  | *vertex_t* | is *boost::graph_traits<graph_t>::vertex_descriptor*|
  | *neighbor_iterator_t* | is *boost::property_traits<augmented_embedding_t>::value_type::const_iterator* |
  | *neighbor_range_t* | is *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
