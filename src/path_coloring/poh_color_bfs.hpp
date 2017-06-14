@@ -203,8 +203,8 @@ namespace {
  */
 
 template<
-        typename graph_t, typename planar_embedding_t,
-        typename color_map_t, typename vertex_iterator_t, typename color_t
+        typename graph_t, typename planar_embedding_t, typename color_map_t,
+        typename vertex_iterator_t, typename color_t
     >
 void poh_color_bfs(
         const graph_t & graph, const planar_embedding_t & planar_embedding,
