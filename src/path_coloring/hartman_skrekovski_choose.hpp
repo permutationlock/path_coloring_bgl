@@ -91,6 +91,7 @@ namespace {
             typename face_location_map_t, typename state_map_t,
             typename neighbor_range_map_t, typename color_list_map_t,
             typename color_map_t, typename vertex_t
+                = typename boost::graph_traits<graph_t>::vertex_descriptor
         >
     void hartman_skrekovski_choose_recursive(
             const graph_t & graph,
@@ -404,86 +405,20 @@ namespace {
 template<
         typename graph_t, typename augmented_embedding_t,
         typename color_list_map_t, typename color_map_t,
-        typename face_iterator_t
+        typename neighbor_range_map_t, typename state_map_t,
+        typename face_location_map_t, typename face_iterator_t
     >
 void hartman_skrekovski_choose(
         const graph_t & graph,
         const augmented_embedding_t & augmented_embedding,
-        const color_list_map_t & color_list_map,
-        color_map_t & color_map,
-        face_iterator_t face_begin,
+        const color_list_map_t & color_list_map, color_map_t & color_map,
+        neighbor_range_map_t & neighbor_range_map, state_map_t & state_map,
+        face_location_map_t & face_location_map, face_iterator_t face_begin,
         face_iterator_t face_end
     )
 {
     // Type definitions
     typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
-    typedef typename color_map_t::value_type color_t;
-    typedef typename boost::graph_traits<graph_t>::vertex_iterator
-        vertex_iterator_t;
-    typedef typename boost::property_traits<augmented_embedding_t>::value_type
-        ::const_iterator neighbor_iterator_t;
-    
-    // Construct a vertex property for start/stop positions in adjacency lists
-    std::vector<std::pair<neighbor_iterator_t, neighbor_iterator_t>>
-        neighbor_range_storage(boost::num_vertices(graph));
-    boost::iterator_property_map<
-            typename std::vector<std::pair<neighbor_iterator_t,
-                neighbor_iterator_t>>::iterator,
-            typename boost::property_map<graph_t, boost::vertex_index_t>
-                ::const_type
-        > neighbor_range_map(
-                neighbor_range_storage.begin(),
-                boost::get(boost::vertex_index, graph)
-            );
-    
-    // Construct a vertex property for the location of vertices on outer face
-    std::vector<int> face_location_storage(boost::num_vertices(graph));
-    boost::iterator_property_map<
-            std::vector<int>::iterator,
-            typename boost::property_map<graph_t, boost::vertex_index_t>
-                ::const_type
-        > face_location_map(
-                face_location_storage.begin(),
-                boost::get(boost::vertex_index, graph)
-            );
-    
-    // Constuct a vertex property for the state of each vertex
-    std::vector<int> state_storage(boost::num_vertices(graph));
-    boost::iterator_property_map<
-            std::vector<int>::iterator,
-            typename boost::property_map<graph_t, boost::vertex_index_t>
-                ::const_type
-        > state_map(
-                state_storage.begin(), boost::get(boost::vertex_index, graph)
-            );
-    
-    // Construct a vertex property to store color lists for each vertex
-    std::vector<std::list<color_t>> color_list_storage(
-            boost::num_vertices(graph)
-        );
-    boost::iterator_property_map<
-            typename std::vector<std::list<color_t>>::iterator,
-            typename boost::property_map<graph_t, boost::vertex_index_t>
-                ::const_type
-        > color_list_map_copy(
-                color_list_storage.begin(),
-                boost::get(boost::vertex_index, graph)
-            );
-    
-    // Copy color lists
-    vertex_iterator_t vertex_iter, vertex_end;
-    for(
-            boost::tie(vertex_iter, vertex_end) = vertices(graph);
-            vertex_iter != vertex_end; vertex_iter++
-        )
-    {
-        vertex_t v = *vertex_iter;
-        
-        std::copy(
-            color_list_map[v].begin(), color_list_map[v].end(),
-            std::back_inserter(color_list_map_copy[v])
-        );
-    }
     
     // Setup face location sets (we will have only the region before_y)
     disjoint_set_t face_location_sets;
@@ -519,7 +454,7 @@ void hartman_skrekovski_choose(
             graph, augmented_embedding,
             face_location_map, face_location_sets,
             state_map, neighbor_range_map, 
-            color_list_map_copy, color_map,
+            color_list_map, color_map,
             x, y, x,
             -1, before_y, -1
         );

@@ -46,6 +46,13 @@
 
 using namespace boost;
 
+
+/* 
+ * -----------------------------------------------------------------------------
+ *                             Test option macros
+ * -----------------------------------------------------------------------------
+ */
+
 // Comment line below to hide passing tests.
 //#define SHOW_PASSES
 
@@ -58,188 +65,279 @@ using namespace boost;
 // Comment line below to hide color list assignment printouts
 //#define SHOW_COLOR_LISTS
 
+
 bool failed=false;
 
-// A class to hold the coordinates of the straight line embedding
-struct coord_t {
-  std::size_t x;
-  std::size_t y;
-};
+/* 
+ * -----------------------------------------------------------------------------
+ *                         Template type definitions
+ * -----------------------------------------------------------------------------
+ */
 
+// Timer
 typedef std::chrono::high_resolution_clock nanosecond_timer;
 
-template<typename index_graph>
-void make_triangulated(index_graph & graph) {
-	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
-	
-	// Define the storage type for the planar embedding
-	typedef std::vector<
-			std::vector<edge_descriptor>
-		> embedding_storage_t;
+// Define the graph type for all test graphs
+typedef adjacency_list<
+            setS,
+			vecS,
+			undirectedS,
+			property<vertex_index_t, std::size_t>,
+			property<edge_index_t, std::size_t>
+		> graph_t;
 
-	typedef iterator_property_map
-		< typename embedding_storage_t::iterator, 
-			typename property_map<index_graph, vertex_index_t>::type
-		> embedding_t;
+// Vertex and edge types
+typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
+typedef typename graph_traits<graph_t>::edge_descriptor edge_t;
 
+// Vertex iterator type
+typedef typename graph_traits<graph_t>::vertex_iterator vertex_iterator_t;
+typedef typename graph_traits<graph_t>::edge_iterator edge_iterator_t;
+
+// Vertex and edge index map types
+typedef typename property_map<graph_t, vertex_index_t>::const_type
+    vertex_index_map_t;
+typedef typename property_map<graph_t, edge_index_t>::const_type
+    edge_index_map_t;
+
+// Vertex property map type for an integer property
+typedef std::vector<int> integer_property_storage_t;
+typedef iterator_property_map<
+        typename integer_property_storage_t::iterator, 
+		vertex_index_map_t
+	> integer_property_map_t;
+
+// Vertex property map type for a planar embedding
+typedef std::vector<std::vector<edge_t>> planar_embedding_storage_t;
+typedef iterator_property_map<
+        typename planar_embedding_storage_t::iterator, 
+		vertex_index_map_t
+	> planar_embedding_t;
+
+// Vertex property map type for the neighbor ranges of planar_embedding_t
+typedef typename property_traits<planar_embedding_t>::value_type
+        ::const_iterator embedding_iterator_t;
+typedef typename std::vector<
+        std::pair<embedding_iterator_t, embedding_iterator_t>
+    > neighbor_range_storage_t;
+typedef iterator_property_map<
+            typename neighbor_range_storage_t::iterator,
+            vertex_index_map_t
+        > neighbor_range_map_t;
+
+// Vertex property for an augmented embedding
+struct adjacency_node_t {
+		vertex_t vertex;
+		typename std::vector<adjacency_node_t>::iterator iterator;
+	};
+typedef typename std::vector<std::vector<adjacency_node_t>>
+    augmented_embedding_storage_t;
+typedef iterator_property_map<
+			typename augmented_embedding_storage_t::iterator,
+			vertex_index_map_t
+		> augmented_embedding_t;
+
+// Vertex property map type for the neighbor ranges of augmented_embedding_t
+typedef typename property_traits<augmented_embedding_t>::value_type
+        ::const_iterator augmented_embedding_iterator_t;
+typedef typename std::vector<
+        std::pair<
+                augmented_embedding_iterator_t, augmented_embedding_iterator_t
+            >
+    > augmented_neighbor_range_storage_t;
+typedef iterator_property_map<
+            typename augmented_neighbor_range_storage_t::iterator,
+            vertex_index_map_t
+        > augmented_neighbor_range_map_t;
+
+// Vertex property for a graph drawing; gives each vertex cartesians coordinates
+struct coord_t {
+        std::size_t x;
+        std::size_t y;
+    };
+typedef std::vector<coord_t> straight_line_drawing_storage_t;
+typedef iterator_property_map<
+        straight_line_drawing_storage_t::iterator, 
+		vertex_index_map_t
+	> straight_line_drawing_t;
+
+// Random graph generator
+typedef erdos_renyi_iterator<minstd_rand, graph_t> ERGen;
+
+/* 
+ * -----------------------------------------------------------------------------
+ *                         Planar graph triangulation
+ * -----------------------------------------------------------------------------
+ */
+
+void make_triangulated(graph_t & graph) {
 	make_connected(graph);
 	
-	//Initialize the interior edge index
-	typename property_map<index_graph, edge_index_t>::type e_index = get(edge_index, graph);
-	typename graph_traits<index_graph>::edges_size_type edge_count = 0;
-	typename graph_traits<index_graph>::edge_iterator ei, ei_end;
-	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
-		put(e_index, *ei, edge_count++);
+	// Initialize the interior edge index
+	auto edge_index_map = get(edge_index, graph);
+	typename graph_traits<graph_t>::edges_size_type edge_count = 0;
+	edge_iterator_t edge_iter, edge_end;
+	for(tie(edge_iter, edge_end) = edges(graph); edge_iter != edge_end;
+	    ++edge_iter)
+    {
+		put(edge_index_map, *edge_iter, edge_count++);
+	}
 
 	// Create the planar embedding
-	embedding_storage_t embedding_storage(num_vertices(graph));
-	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-
+    planar_embedding_storage_t planar_embedding_storage(num_vertices(graph));
+	planar_embedding_t planar_embedding(
+	        planar_embedding_storage.begin(), get(vertex_index, graph)
+        );
+    vertex_iterator_t v_iter, v_end;
+    for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+		vertex_t v = *v_iter;
+		planar_embedding[v].reserve(out_degree(v, graph));
+	}
 	if(!boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		boyer_myrvold_params::embedding = embedding))
+		boyer_myrvold_params::embedding = planar_embedding))
 	{
 		std::string error = "Non-planar graph.";
 		throw std::logic_error(error);
 	}
 
-	make_biconnected_planar(graph, embedding);
+	make_biconnected_planar(graph, planar_embedding);
 	
 	// Re-initialize the edge index, since we just added a few edges
 	edge_count = 0;
-	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
-		put(e_index, *ei, edge_count++);
+	for(tie(edge_iter, edge_end) = edges(graph); edge_iter != edge_end;
+	    ++edge_iter)
+    {
+		put(edge_index_map, *edge_iter, edge_count++);
+	}
 	
-	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-						   boyer_myrvold_params::embedding = embedding);
-
-	make_maximal_planar(graph, embedding);
-	
-	// Re-initialize the edge index, since we just added a few edges
-	edge_count = 0;
-	for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei)
-		put(e_index, *ei, edge_count++);
-
-}
-
-template<typename index_graph>
-void draw_graph_no_color(index_graph & graph) {
-	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
-	
-	// Define the storage type for the planar embedding
-	typedef std::vector<
-			std::vector<edge_descriptor>
-		> embedding_storage_t;
-
-	typedef iterator_property_map
-		< typename embedding_storage_t::iterator, 
-			typename property_map<index_graph, vertex_index_t>::type
-		> embedding_t;
-	
-	// Create the planar embedding
-	embedding_storage_t embedding_storage(num_vertices(graph));
-	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-
-	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-						   boyer_myrvold_params::embedding = embedding);
-	
-	std::map<vertex_descriptor,int> color_map;
-  	boost::associative_property_map< std::map<vertex_descriptor, int> >
-		color_property_map(color_map);
-		
-	// Find a canonical ordering
-	std::vector<vertex_descriptor> ordering;
-	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
-		
-	//Set up a property map to hold the mapping from vertices to coord_t's
-	typedef std::vector< coord_t > straight_line_drawing_storage_t;
-	typedef boost::iterator_property_map
-		< straight_line_drawing_storage_t::iterator, 
-			typename property_map<index_graph, vertex_index_t>::type 
-		> straight_line_drawing_t;
-
-	straight_line_drawing_storage_t straight_line_drawing_storage
-		(num_vertices(graph));
-	straight_line_drawing_t straight_line_drawing
-		(straight_line_drawing_storage.begin(), 
-			get(vertex_index, graph)
+	boyer_myrvold_planarity_test(
+	        boyer_myrvold_params::graph = graph,
+			boyer_myrvold_params::embedding = planar_embedding
 		);
 
+	make_maximal_planar(graph, planar_embedding);
+	
+	// Re-initialize the edge index, since we just added a few edges
+	edge_count = 0;
+	for(tie(edge_iter, edge_end) = edges(graph); edge_iter != edge_end;
+	    ++edge_iter)
+    {
+		put(edge_index_map, *edge_iter, edge_count++);
+	}
+}
+
+
+/* 
+ * -----------------------------------------------------------------------------
+ *                            Planar graph drawing
+ * -----------------------------------------------------------------------------
+ */
+
+void draw_graph_no_color(graph_t & graph) {
+	// Create the planar embedding
+	planar_embedding_storage_t planar_embedding_storage(num_vertices(graph));
+	planar_embedding_t planar_embedding(
+	        planar_embedding_storage.begin(), get(vertex_index, graph)
+        );
+    vertex_iterator_t v_iter, v_end;
+    for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+		vertex_t v = *v_iter;
+		planar_embedding[v].reserve(out_degree(v, graph));
+	}
+	boyer_myrvold_planarity_test(
+	        boyer_myrvold_params::graph = graph,
+			boyer_myrvold_params::embedding = planar_embedding
+		);
+	
+	// Create a vertex property map for the coloring
+	integer_property_storage_t color_map_storage(num_vertices(graph));
+  	integer_property_map_t color_map(
+  	        color_map_storage.begin(), get(vertex_index, graph)
+        );
+		
+	// Find a canonical ordering
+	std::vector<vertex_t> ordering;
+	planar_canonical_ordering(
+	        graph, planar_embedding, std::back_inserter(ordering)
+        );
+		
 	// Compute the straight line drawing
+	straight_line_drawing_storage_t straight_line_drawing_storage(
+	        num_vertices(graph)
+        );
+	straight_line_drawing_t straight_line_drawing(
+	        straight_line_drawing_storage.begin(), 
+			get(vertex_index, graph)
+		);
 	chrobak_payne_straight_line_drawing(graph, 
-			embedding, 
+			planar_embedding, 
 			ordering.begin(),
 			ordering.end(),
 			straight_line_drawing
 		);
 	
-	std::cout << draw_tikz_graph(graph, color_property_map, straight_line_drawing) << "\n";
+	std::cout << draw_tikz_graph(
+	        graph, color_map, straight_line_drawing
+        ) << "\n";
 }
 
-template<typename index_graph, typename color_map>
-void draw_graph_color(const index_graph & graph, const color_map & coloring) {
-	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
-	
-	// Define the storage type for the planar embedding
-	typedef std::vector<
-			std::vector<edge_descriptor>
-		> embedding_storage_t;
-
-	typedef iterator_property_map
-		< typename embedding_storage_t::iterator, 
-			typename property_map<index_graph, vertex_index_t>::type
-		> embedding_t;
-	
+void draw_graph_color(
+        const graph_t & graph, const integer_property_map_t & coloring
+    )
+{
 	// Create the planar embedding
-	embedding_storage_t embedding_storage(num_vertices(graph));
-	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-
-	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		boyer_myrvold_params::embedding = embedding);
+	planar_embedding_storage_t planar_embedding_storage(num_vertices(graph));
+	planar_embedding_t planar_embedding(
+	        planar_embedding_storage.begin(), get(vertex_index, graph)
+        );
+    
+    vertex_iterator_t v_iter, v_end;
+    for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+		vertex_t v = *v_iter;
+		planar_embedding[v].reserve(out_degree(v, graph));
+	}
+	boyer_myrvold_planarity_test(
+	        boyer_myrvold_params::graph = graph,
+			boyer_myrvold_params::embedding = planar_embedding
+		);
 		
 	// Find a canonical ordering
-	std::vector<vertex_descriptor> ordering;
-	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
+	std::vector<vertex_t> ordering;
+	planar_canonical_ordering(
+	        graph, planar_embedding, std::back_inserter(ordering)
+        );
 		
-	//Set up a property map to hold the mapping from vertices to coord_t's
-	typedef std::vector< coord_t > straight_line_drawing_storage_t;
-	typedef boost::iterator_property_map
-		< straight_line_drawing_storage_t::iterator, 
-			typename property_map<index_graph, vertex_index_t>::type 
-		> straight_line_drawing_t;
-
-	straight_line_drawing_storage_t straight_line_drawing_storage
-		(num_vertices(graph));
-	straight_line_drawing_t straight_line_drawing
-		(straight_line_drawing_storage.begin(), 
+	// Compute the straight line drawing
+	straight_line_drawing_storage_t straight_line_drawing_storage(
+	        num_vertices(graph)
+        );
+	straight_line_drawing_t straight_line_drawing(
+	        straight_line_drawing_storage.begin(), 
 			get(vertex_index, graph)
 		);
-
-	// Compute the straight line drawing
 	chrobak_payne_straight_line_drawing(graph, 
-			embedding, 
+			planar_embedding, 
 			ordering.begin(),
 			ordering.end(),
 			straight_line_drawing
 		);
 	
-	std::cout << draw_tikz_graph(graph, coloring, straight_line_drawing) << "\n";
+	std::cout << draw_tikz_graph(graph, coloring, straight_line_drawing)
+	    << "\n";
 }
 
-template<
-		typename graph_t, typename planar_embedding_t,
-		typename augmented_embedding_t
-	>
+
+/* 
+ * -----------------------------------------------------------------------------
+ *                        Augmented embedding tests
+ * -----------------------------------------------------------------------------
+ */
+
 void test_augmented_embedding(
 		const graph_t & graph, const planar_embedding_t & planar_embedding,
 		const augmented_embedding_t & augmented_embedding
 	)
 {
-	// Type definitions
-	typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
-	typedef typename graph_traits<graph_t>::vertex_iterator vertex_iterator_t;
-	
 	// Iterate over each vertex
 	vertex_iterator_t v_iter, v_end;
 	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
@@ -255,9 +353,10 @@ void test_augmented_embedding(
 			vertex_t u_1 = adjacency_node_iter -> vertex;
 			
 			if(u_0 != u_1) {
-				std::string error = "vertex " + std::to_string(v) + " has neighbor "
-					+ std::to_string(u_0) + " in embedding, but neighbor "
-					+ std::to_string(u_1) + " in augmented_embedding.";
+				std::string error = "vertex " + std::to_string(v)
+				    + " has neighbor " + std::to_string(u_0)
+				    + " in embedding, but neighbor " + std::to_string(u_1)
+				    + " in augmented_embedding.";
 				throw std::runtime_error(error);
 			}
 			
@@ -287,68 +386,70 @@ void test_augmented_embedding(
 	}
 }
 
-template<typename graph_t, typename planar_embedding_t>
 void test_augmented_embedding_construction(
 		const graph_t & graph, const planar_embedding_t & planar_embedding
 	)
 {
-	typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
-	
-	struct adjacency_node_t {
-		vertex_t vertex;
-		typename std::vector<adjacency_node_t>::iterator iterator;
-	};
-	
-	typedef boost::iterator_property_map<
-			typename std::vector<std::vector<adjacency_node_t>>::iterator,
-			typename boost::property_map<graph_t, boost::vertex_index_t>
-				::const_type
-		> augmented_embedding_t;
-	
+	// Compute an augmented embedding
 	std::vector<std::vector<adjacency_node_t>>
-		adjacency_node_storage(boost::num_vertices(graph));
+		adjacency_node_storage(num_vertices(graph));
 	augmented_embedding_t augmented_embedding(
 			adjacency_node_storage.begin(),
-			boost::get(boost::vertex_index, graph)
+			get(vertex_index, graph)
 		);
-	
+    vertex_iterator_t v_iter, v_end;
+    for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+		vertex_t v = *v_iter;
+		augmented_embedding[v].reserve(out_degree(v, graph));
+	}
 	augment_embedding(graph, planar_embedding, augmented_embedding);
 	
+	// Run the test
 	test_augmented_embedding(graph, planar_embedding, augmented_embedding);
 }
 
-template<typename index_graph, typename color_map>
-void test_path_coloring(const index_graph & graph, const color_map & coloring) {
-	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<index_graph>::vertex_iterator vertex_iterator;
-	typedef typename graph_traits<index_graph>::adjacency_iterator adjacency_iterator;
-	typedef typename property_traits<color_map>::value_type color_type;
+
+/* 
+ * -----------------------------------------------------------------------------
+ *                           Path coloring test
+ * -----------------------------------------------------------------------------
+ */
+
+void test_path_coloring(
+        const graph_t & graph, const integer_property_map_t & coloring
+    )
+{
+    // Type definitions
+	typedef typename property_traits<integer_property_map_t>::value_type
+	    color_t;
+	typedef typename graph_traits<graph_t>::adjacency_iterator
+	    adjacency_iterator_t;
 	
-	std::set<vertex_descriptor> visited;
+	std::set<vertex_t> visited;
 	
 	// Iterate over each vertex
-	vertex_iterator v_iter, v_end;
+	vertex_iterator_t v_iter, v_end;
 	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
-		vertex_descriptor curr_vertex = *v_iter;
-		color_type curr_color = coloring[curr_vertex];
+		vertex_t curr_vertex = *v_iter;
+		color_t curr_color = coloring[curr_vertex];
 		
 		// If we have not yet visited this vertex, start bfs on same color vertices
 		if(visited.count(curr_vertex) == 0) {
-			std::queue<vertex_descriptor> bfs_queue;
+			std::queue<vertex_t> bfs_queue;
 			bfs_queue.push(curr_vertex);
 			
 			std::size_t extra = 1;
 			
 			while(!bfs_queue.empty()) {
-				vertex_descriptor v = bfs_queue.front();
+				vertex_t v = bfs_queue.front();
 				bfs_queue.pop();
 				
 				if(visited.count(v) == 0) {
 					std::size_t new_neighbor_count = 0, old_neighbor_count = 0;
 					
-					adjacency_iterator n_iter, n_end;
+					adjacency_iterator_t n_iter, n_end;
 					for(tie(n_iter, n_end) = adjacent_vertices(v, graph); n_iter != n_end; n_iter++) {
-						vertex_descriptor n = *n_iter;
+						vertex_t n = *n_iter;
 						
 						// If this vertex is unvisited
 						if(visited.count(n) == 0 && coloring[n] == curr_color) {
@@ -381,218 +482,250 @@ void test_path_coloring(const index_graph & graph, const color_map & coloring) {
 	}
 }
 
-// Apply Poh algorithm to given graph and verify it works
-template<typename index_graph>
-void poh_color_bfs_test(const index_graph & graph) {
-	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
-	
-	// Define the storage type for the planar embedding
-	typedef std::vector<
-			std::vector<edge_descriptor>
-		> embedding_storage_t;
 
-	typedef iterator_property_map
-		< typename embedding_storage_t::iterator, 
-			typename property_map<index_graph, vertex_index_t>::type
-		> embedding_t;
-	
+/* 
+ * -----------------------------------------------------------------------------
+ *                     Algorithm tests for single graph
+ * -----------------------------------------------------------------------------
+ */
+
+void poh_color_bfs_test(const graph_t & graph) {
 	// Create the planar embedding
-	embedding_storage_t embedding_storage(num_vertices(graph));
-	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-	
-	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		boyer_myrvold_params::embedding = embedding);
-	
-	// Find a canonical ordering
-	std::vector<vertex_descriptor> ordering;
-	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
-	
-	// Create property map to hold the coloring
-	std::map<vertex_descriptor, int> color_map;
-	associative_property_map< std::map<vertex_descriptor, int> >
-		color_property_map(color_map);
-	
-	// Create vectors to hold chordless paths
-	std::vector<vertex_descriptor> p;
-	std::vector<vertex_descriptor> q;
-	
-	// Initialize path p with top vertex of outer face
-	p.push_back(ordering[0]);
-
-	// Initialize path q with bottom vertices of outer face
-	q.push_back(ordering[1]);
-	q.push_back(ordering.back());
-	
-	// Call Poh algorithm
-	#ifdef SHOW_TIMINGS
-		auto start = nanosecond_timer::now();
-		
-		for(std::size_t i = 0; i < 1000; ++i) {
-			poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3);
-		}
-	
-		auto end = nanosecond_timer::now();
-		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
-	#else
-		poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3);
-	#endif
-	
-	#ifdef SHOW_VISUALIZATION
-		draw_graph_color(graph, color_property_map);
-	#endif
-	
-	// Test correctness of path coloring
-	test_path_coloring(graph, color_property_map);
-}
-
-// Apply Poh algorithm to given graph and verify it works
-template<typename index_graph>
-void poh_color_test(const index_graph & graph) {
-	typedef typename graph_traits<index_graph>::vertex_descriptor vertex_descriptor;
-	typedef typename graph_traits<index_graph>::edge_descriptor edge_descriptor;
-	
-	// Define the storage type for the planar embedding
-	typedef std::vector<
-			std::vector<edge_descriptor>
-		> embedding_storage_t;
-
-	typedef iterator_property_map
-		< typename embedding_storage_t::iterator, 
-			typename property_map<index_graph, vertex_index_t>::type
-		> embedding_t;
-	
-	// Create the planar embedding
-	embedding_storage_t embedding_storage(num_vertices(graph));
-	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-	
-	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		boyer_myrvold_params::embedding = embedding);
-	
-	// Find a canonical ordering
-	std::vector<vertex_descriptor> ordering;
-	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
-	
-	// Create property map to hold the coloring
-	std::map<vertex_descriptor, int> color_map;
-	associative_property_map< std::map<vertex_descriptor, int> >
-		color_property_map(color_map);
-	
-	// Create vectors to hold chordless paths
-	std::vector<vertex_descriptor> p;
-	std::vector<vertex_descriptor> q;
-	
-	// Initialize path p with top vertex of outer face
-	p.push_back(ordering[0]);
-
-	// Initialize path q with bottom vertices of outer face
-	q.push_back(ordering[1]);
-	q.push_back(ordering.back());
-	
-	// Call Poh algorithm
-	#ifdef SHOW_TIMINGS
-		auto start = nanosecond_timer::now();
-		
-		for(std::size_t i = 0; i < 1000; ++i) {
-			poh_color_bfs(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3);
-		}
-	
-		auto end = nanosecond_timer::now();
-		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
-	#else
-		poh_color(graph, embedding, color_property_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3);
-	#endif
-	
-	#ifdef SHOW_VISUALIZATION
-		draw_graph_color(graph, color_property_map);
-	#endif
-	
-	// Test correctness of path coloring
-	test_path_coloring(graph, color_property_map);
-}
-
-
-// Apply Hartman-Skrekovski algorithm to given graph and verify it works
-template<typename graph_t>
-void path_choose_test(const graph_t & graph, std::size_t num_colors) {
-	typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
-	typedef typename graph_traits<graph_t>::vertex_iterator vertex_iterator_t;
-	typedef typename graph_traits<graph_t>::edge_descriptor edge_descriptor;
-	
-	// Define the storage type for the planar embedding
-	typedef std::vector<
-			std::vector<edge_descriptor>
-		> embedding_storage_t;
-
-	typedef iterator_property_map
-		< typename embedding_storage_t::iterator, 
-			typename property_map<graph_t, vertex_index_t>::type
-		> embedding_t;
-	
-	// Define the storage type for nodes in the augmented embedding
-	struct adjacency_node_t {
-		vertex_t vertex;
-		typename std::vector<adjacency_node_t>::iterator iterator;
-	};
-	
-	typedef boost::iterator_property_map<
-			typename std::vector<std::vector<adjacency_node_t>>::iterator,
-			typename boost::property_map<graph_t, boost::vertex_index_t>
-				::const_type
-		> augmented_embedding_t;
-	
-	// Create the planar embedding
-	embedding_storage_t embedding_storage(num_vertices(graph));
-	embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-
-	boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-		boyer_myrvold_params::embedding = embedding);
-	
-	// Find a canonical ordering
-	std::vector<vertex_t> ordering;
-	planar_canonical_ordering(graph, embedding, std::back_inserter(ordering));
-	
-	std::vector<std::vector<adjacency_node_t>>
-		adjacency_node_storage(boost::num_vertices(graph));
-	augmented_embedding_t augmented_embedding(
-			adjacency_node_storage.begin(),
-			boost::get(boost::vertex_index, graph)
+	planar_embedding_storage_t planar_embedding_storage(num_vertices(graph));
+	planar_embedding_t planar_embedding(
+	        planar_embedding_storage.begin(), get(vertex_index, graph)
+        );
+    vertex_iterator_t v_iter, v_end;
+    for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+		vertex_t v = *v_iter;
+		planar_embedding[v].reserve(out_degree(v, graph));
+	}
+	boyer_myrvold_planarity_test(
+	        boyer_myrvold_params::graph = graph,
+			boyer_myrvold_params::embedding = planar_embedding
 		);
 	
-	vertex_iterator_t v_iter, v_end;
+	// Create a vertex property map for the coloring
+	integer_property_storage_t color_map_storage(num_vertices(graph));
+  	integer_property_map_t color_map(
+  	        color_map_storage.begin(), get(vertex_index, graph)
+        );
+    
+    // Construct a vertex property for marking vertices
+    integer_property_storage_t mark_storage(num_vertices(graph));
+    integer_property_map_t mark_map(
+                mark_storage.begin(), get(vertex_index, graph)
+            );
+    
+    // Construct a vertex property for storing parents to track the BFS tree
+    std::vector<vertex_t> parent_storage(num_vertices(graph));
+    iterator_property_map<
+            typename std::vector<vertex_t>::iterator,
+            vertex_index_map_t
+        > parent_map(
+                parent_storage.begin(), get(vertex_index, graph)
+            );
+		
+	// Find a canonical ordering
+	std::vector<vertex_t> ordering;
+	planar_canonical_ordering(
+	        graph, planar_embedding, std::back_inserter(ordering)
+        );
 	
-	// Reserve deg(v) space for each v in G
-	for(boost::tie(v_iter, v_end) = boost::vertices(graph); v_iter != v_end;
-			v_iter++
-		)
-	{
+	// Create vectors to hold chordless paths
+	std::vector<vertex_t> p;
+	std::vector<vertex_t> q;
+	
+	// Initialize path p with top vertex of outer face
+	p.push_back(ordering[0]);
+
+	// Initialize path q with bottom vertices of outer face
+	q.push_back(ordering[1]);
+	q.push_back(ordering.back());
+	
+	// Call Poh algorithm
+	#ifdef SHOW_TIMINGS
+		auto start = nanosecond_timer::now();
+		
+		for(std::size_t i = 0; i < 1000; ++i) {
+			poh_color_bfs(
+		            graph, planar_embedding, color_map, mark_map,
+		            parent_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
+	            );
+		}
+	
+		auto end = nanosecond_timer::now();
+		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
+	#else
+		poh_color_bfs(
+		        graph, planar_embedding, color_map, mark_map,
+		        parent_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
+	        );
+	#endif
+	
+	#ifdef SHOW_VISUALIZATION
+		draw_graph_color(graph, color_map);
+	#endif
+	
+	// Test correctness of path coloring
+	test_path_coloring(graph, color_map);
+}
+
+void poh_color_test(const graph_t & graph) {
+	// Create the planar embedding
+	planar_embedding_storage_t planar_embedding_storage(num_vertices(graph));
+	planar_embedding_t planar_embedding(
+	        planar_embedding_storage.begin(), get(vertex_index, graph)
+        );
+    vertex_iterator_t v_iter, v_end;
+    for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+		vertex_t v = *v_iter;
+		planar_embedding[v].reserve(out_degree(v, graph));
+	}
+	boyer_myrvold_planarity_test(
+	        boyer_myrvold_params::graph = graph,
+			boyer_myrvold_params::embedding = planar_embedding
+		);
+	
+	// Create a vertex property map for the coloring
+	integer_property_storage_t color_map_storage(num_vertices(graph));
+  	integer_property_map_t color_map(
+  	        color_map_storage.begin(), get(vertex_index, graph)
+        );
+    
+    // Construct a vertex property for marking vertices
+    integer_property_storage_t mark_storage(num_vertices(graph));
+    integer_property_map_t mark_map(
+                mark_storage.begin(), get(vertex_index, graph)
+            );
+    
+    // Construct a vertex property for neighbor ranges
+    neighbor_range_storage_t neighbor_range_storage(num_vertices(graph));
+    neighbor_range_map_t neighbor_range_map(
+                neighbor_range_storage.begin(), get(vertex_index, graph)
+            );
+    
+    // Find a canonical ordering
+	std::vector<vertex_t> ordering;
+	planar_canonical_ordering(
+	        graph, planar_embedding, std::back_inserter(ordering)
+        );
+	
+	// Create vectors to hold chordless paths
+	std::vector<vertex_t> p;
+	std::vector<vertex_t> q;
+	
+	// Initialize path p with top vertex of outer face
+	p.push_back(ordering[0]);
+
+	// Initialize path q with bottom vertices of outer face
+	q.push_back(ordering[1]);
+	q.push_back(ordering.back());
+	
+	// Call Poh algorithm
+	#ifdef SHOW_TIMINGS
+		auto start = nanosecond_timer::now();
+		
+		for(std::size_t i = 0; i < 1000; ++i) {
+			poh_color(
+		            graph, planar_embedding, color_map, neighbor_range_map,
+		            mark_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
+	            );
+		}
+	
+		auto end = nanosecond_timer::now();
+		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
+	#else
+		poh_color(
+		        graph, planar_embedding, color_map, neighbor_range_map,
+		        mark_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
+	        );
+	#endif
+	
+	#ifdef SHOW_VISUALIZATION
+		draw_graph_color(graph, color_map);
+	#endif
+	
+	// Test correctness of path coloring
+	test_path_coloring(graph, color_map);
+}
+
+
+void path_choose_test(const graph_t & graph, std::size_t num_colors) {
+	// Create the planar embedding
+	planar_embedding_storage_t planar_embedding_storage(num_vertices(graph));
+	planar_embedding_t planar_embedding(
+	        planar_embedding_storage.begin(), get(vertex_index, graph)
+        );
+    vertex_iterator_t v_iter, v_end;
+    for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+		vertex_t v = *v_iter;
+		planar_embedding[v].reserve(out_degree(v, graph));
+	}
+	boyer_myrvold_planarity_test(
+	        boyer_myrvold_params::graph = graph,
+			boyer_myrvold_params::embedding = planar_embedding
+		);
+	
+	// Create the augmented embedding
+	augmented_embedding_storage_t augmented_embedding_storage(
+	        num_vertices(graph)
+        );
+	augmented_embedding_t augmented_embedding(
+	        augmented_embedding_storage.begin(), get(vertex_index, graph)
+        );
+	for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
 		vertex_t v = *v_iter;
 		augmented_embedding[v].reserve(out_degree(v, graph));
 	}
+	augment_embedding(graph, planar_embedding, augmented_embedding);
 	
-	augment_embedding(graph, embedding, augmented_embedding);
-	
-	// Create property map to hold the coloring
-	typedef iterator_property_map<
-			typename std::vector<int>::iterator,
-			typename property_map<graph_t, vertex_index_t>::type
-		> color_property_map;
-	std::vector<int> color_storage(num_vertices(graph));
-	color_property_map coloring(color_storage.begin(), get(vertex_index, graph));
+	// Create a vertex property map for the coloring
+	integer_property_storage_t color_map_storage(num_vertices(graph));
+  	integer_property_map_t color_map(
+  	        color_map_storage.begin(), get(vertex_index, graph)
+        );
+    
+    // Construct a vertex property for marking vertices
+    integer_property_storage_t state_storage(num_vertices(graph));
+    integer_property_map_t state_map(
+                state_storage.begin(), get(vertex_index, graph)
+            );
+    
+    // Construct a vertex property for marking vertices
+    integer_property_storage_t face_location_storage(num_vertices(graph));
+    integer_property_map_t face_location_map(
+                face_location_storage.begin(), get(vertex_index, graph)
+            );
+    
+    // Construct a vertex property for neighbor ranges
+    augmented_neighbor_range_storage_t neighbor_range_storage(
+            num_vertices(graph)
+        );
+    augmented_neighbor_range_map_t neighbor_range_map(
+                neighbor_range_storage.begin(), get(vertex_index, graph)
+            );
+    
+    // Find a canonical ordering
+	std::vector<vertex_t> ordering;
+	planar_canonical_ordering(
+	        graph, planar_embedding, std::back_inserter(ordering)
+        );
 	
 	// Set up clockwise outer face using properties of a canonical ordering
 	std::vector<vertex_t> outer_face = { ordering[1], ordering[0], ordering.back() };
 	
-	// Create property map to hold the coloring
-	typedef iterator_property_map<
+	// Create property map to hold the list assignment
+	std::vector<std::list<int>> color_list_storage(num_vertices(graph));
+	iterator_property_map<
 			typename std::vector<std::list<int> >::iterator,
-			typename property_map<graph_t, vertex_index_t>::type
-		> color_list_property_map;
-	std::vector<std::list<int> > color_list_storage(num_vertices(graph));
-	color_list_property_map color_list(color_list_storage.begin(), get(vertex_index, graph));
+			vertex_index_map_t
+		> color_list_map(
+	        color_list_storage.begin(), get(vertex_index, graph)
+        );
 	
 	std::mt19937 generator;
-	std::uniform_int_distribution<int> distribution(0, num_colors - 1);
+	std::uniform_int_distribution<int> distribution(1, num_colors);
 	
 	// Iterate over each vertex
 	for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
@@ -606,14 +739,17 @@ void path_choose_test(const graph_t & graph, std::size_t num_colors) {
 		}
 		
 		#ifdef SHOW_COLOR_LISTS
-			std::cout << "color_list[" << *v_iter << "] = { ";
+			std::cout << "color_list_map[" << *v_iter << "] = { ";
 			for(std::size_t i = 0; i < 3; ++i) {
 				std::cout << random_colors[i] << ((i != 2) ? ", " : "");
 			}
 			std::cout << "\n";
 		#endif
 		
-		std::copy(random_colors.begin(), random_colors.end(), std::back_inserter(color_list[*v_iter]));
+		std::copy(
+		        random_colors.begin(), random_colors.end(),
+		        std::back_inserter(color_list_map[*v_iter])
+	        );
 	}
 	
 	// Call path 3-choose algorithm
@@ -621,62 +757,52 @@ void path_choose_test(const graph_t & graph, std::size_t num_colors) {
 		auto start = nanosecond_timer::now();
 		
 		for(std::size_t i = 0; i < 1000; ++i) {
-			hartman_skrekovski_choose(graph, augmented_embedding, color_list,
-				coloring, outer_face.begin(), outer_face.end());
+			hartman_skrekovski_choose(
+		            graph, augmented_embedding, color_list_map, color_map,
+				    neighbor_range_map, state_map, face_location_map,
+				    outer_face.begin(), outer_face.end()
+			    );
 		}
 	
 		auto end = nanosecond_timer::now();
 		std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
 	#else
-		hartman_skrekovski_choose(graph, augmented_embedding, color_list,
-				coloring, outer_face.begin(), outer_face.end());
+		hartman_skrekovski_choose(
+		        graph, augmented_embedding, color_list_map, color_map,
+				neighbor_range_map, state_map, face_location_map,
+				outer_face.begin(), outer_face.end()
+			);
 	#endif
 	
 	#ifdef SHOW_VISUALIZATION
-		draw_graph_color(graph, coloring);
+		draw_graph_color(graph, color_map);
 	#endif
 	
 	// Test correctness of path coloring
-	test_path_coloring(graph, coloring);
+	test_path_coloring(graph, color_map);
 }
 
+
+/* 
+ * -----------------------------------------------------------------------------
+ *             Run each algorithm test on a set of generated graphs
+ * -----------------------------------------------------------------------------
+ */
 
 void test_augmenting_embeddings() {
 	std::cout << "Augmenting Planar Embeddings" << std::endl;
 	
-	// Define graph properties
-	typedef adjacency_list
-		<	setS,
-			vecS,
-			undirectedS,
-			property<vertex_index_t, std::size_t>,
-			property<edge_index_t, std::size_t>
-		> index_graph;
-	
-	typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
-	
-	typedef typename graph_traits<index_graph>::edge_descriptor edge_t;
-	
-	typedef std::vector<
-			std::vector<edge_t>
-		> embedding_storage_t;
-
-	typedef iterator_property_map
-		< typename embedding_storage_t::iterator, 
-			typename property_map<index_graph, vertex_index_t>::type
-		> embedding_t;
-	
-	boost::minstd_rand gen;
+	minstd_rand gen;
 	gen.seed(8573);
 	
-	for(std::size_t order = 4; order <= 100; ++order) {
+	for(std::size_t order = 4; order <= 200; order+=10) {
 		bool found_planar = false;
 		std::size_t count = 4;
 		
 		while(!found_planar) {
 			try {
 				// Construct a random trriangulated graph
-				index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+				graph_t graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 		
 				++count;
 				
@@ -685,15 +811,23 @@ void test_augmenting_embeddings() {
 				found_planar = true;
 				
 				// Create the planar embedding
-				embedding_storage_t embedding_storage(num_vertices(graph));
-				embedding_t embedding(embedding_storage.begin(), get(vertex_index, graph));
-	
-				boyer_myrvold_planarity_test(boyer_myrvold_params::graph = graph,
-					boyer_myrvold_params::embedding = embedding);
+	            planar_embedding_storage_t planar_embedding_storage(num_vertices(graph));
+	            planar_embedding_t planar_embedding(
+	                    planar_embedding_storage.begin(), get(vertex_index, graph)
+                    );
+                vertex_iterator_t v_iter, v_end;
+                for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+		            vertex_t v = *v_iter;
+		            planar_embedding[v].reserve(out_degree(v, graph));
+	            }
+	            boyer_myrvold_planarity_test(
+	                    boyer_myrvold_params::graph = graph,
+			            boyer_myrvold_params::embedding = planar_embedding
+		            );
 		
 				//draw_graph_no_color(graph);
 		
-				test_augmented_embedding_construction(graph, embedding);
+				test_augmented_embedding_construction(graph, planar_embedding);
 		
 				#ifdef SHOW_PASSES
 					std::cout<<"    PASS " << order << " vertex augmented embedding construction."<<std::endl;
@@ -717,28 +851,17 @@ void test_augmenting_embeddings() {
 void test_poh_color_bfs() {
 	std::cout<<"Path 3-coloring (Poh w/BFS)"<<std::endl;
 	
-	// Define graph properties
-	typedef adjacency_list
-		<	setS,
-			vecS,
-			undirectedS,
-			property<vertex_index_t, std::size_t>,
-			property<edge_index_t, std::size_t>
-		> index_graph;
-	
-	typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
-	
-	boost::minstd_rand gen;
+	minstd_rand gen;
 	gen.seed(8573);
 	
-	for(std::size_t order = 4; order <= 100; ++order) {
+	for(std::size_t order = 4; order <= 200; order+=10) {
 		bool found_planar = false;
 		std::size_t count = 4;
 		
 		while(!found_planar) {
 			try {
 				// Construct a random trriangulated graph
-				index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+				graph_t graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 		
 				++count;
 				
@@ -772,28 +895,17 @@ void test_poh_color_bfs() {
 void test_poh_color() {
 	std::cout<<"Path 3-coloring (Poh w/outer face tracing)"<<std::endl;
 	
-	// Define graph properties
-	typedef adjacency_list
-		<	setS,
-			vecS,
-			undirectedS,
-			property<vertex_index_t, std::size_t>,
-			property<edge_index_t, std::size_t>
-		> index_graph;
-	
-	typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
-	
-	boost::minstd_rand gen;
+	minstd_rand gen;
 	gen.seed(8573);
 	
-	for(std::size_t order = 4; order <= 100; ++order) {
+	for(std::size_t order = 4; order <= 200; order+=10) {
 		bool found_planar = false;
 		std::size_t count = 4;
 		
 		while(!found_planar) {
 			try {
 				// Construct a random trriangulated graph
-				index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+				graph_t graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 				
 				++count;
 				
@@ -827,31 +939,20 @@ void test_poh_color() {
 
 void test_path_choose()
 {
-	// Define graph properties
-	typedef adjacency_list
-		<	setS,
-			vecS,
-			undirectedS,
-			property<vertex_index_t, std::size_t>,
-			property<edge_index_t, std::size_t>
-		> index_graph;
-
-	typedef erdos_renyi_iterator<minstd_rand, index_graph> ERGen;
-	
-	boost::minstd_rand gen;
+	minstd_rand gen;
 	gen.seed(8573);
 	
-	for(std::size_t colors = 3; colors < 9; ++colors) {
+	for(std::size_t colors = 3; colors < 14; colors += 2) {
 		std::cout << "Path 3-choosing (Hartman-Skrekovski) with " << colors << " colors" << std::endl;
 	
-		for(std::size_t order = 4; order <= 100; ++order) {
+		for(std::size_t order = 4; order <= 200; order+=10) {
 			bool found_planar = false;
 			std::size_t count = 4;
 			
 			while(!found_planar) {
 				try {
 					// Construct a random trriangulated graph
-					index_graph graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
+					graph_t graph(ERGen(gen, order, 2 * order - count), ERGen(), order);
 					
 					++count;
 					
@@ -886,6 +987,13 @@ void test_path_choose()
 	}
 }
 
+
+/* 
+ * -----------------------------------------------------------------------------
+ *                             Main: run tests
+ * -----------------------------------------------------------------------------
+ */
+
 int main() {
 	test_augmenting_embeddings();
 	test_poh_color_bfs();
@@ -899,3 +1007,4 @@ int main() {
 	
 	return 0;
 }
+

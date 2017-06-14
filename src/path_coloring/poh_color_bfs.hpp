@@ -204,38 +204,17 @@ namespace {
 
 template<
         typename graph_t, typename planar_embedding_t, typename color_map_t,
-        typename vertex_iterator_t, typename color_t
+        typename mark_map_t, typename parent_map_t, typename vertex_iterator_t,
+        typename color_t
     >
 void poh_color_bfs(
         const graph_t & graph, const planar_embedding_t & planar_embedding,
-        color_map_t & color_map, vertex_iterator_t p_begin,
+        color_map_t & color_map, mark_map_t & mark_map,
+        parent_map_t & parent_map, vertex_iterator_t p_begin,
         vertex_iterator_t p_end, vertex_iterator_t q_begin,
         vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
     )
-{
-    // Type definitions
-    typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
-    
-    // Construct a vertex property for marking vertices
-    std::vector<std::size_t> mark_storage(boost::num_vertices(graph));
-    typename boost::iterator_property_map<
-            std::vector<std::size_t>::iterator,
-            typename boost::property_map<graph_t, boost::vertex_index_t>
-                ::const_type
-        > mark_map(
-                mark_storage.begin(), boost::get(boost::vertex_index, graph)
-            );
-    
-    // Construct a vertex property for storing parents to track the BFS tree
-    std::vector<vertex_t> parent_storage(boost::num_vertices(graph));
-    typename boost::iterator_property_map<
-            typename std::vector<vertex_t>::iterator,
-            typename boost::property_map<graph_t, boost::vertex_index_t>
-                ::const_type
-        > parent_map(
-                parent_storage.begin(), boost::get(boost::vertex_index, graph)
-            );
-    
+{ 
     // Color the path P
     for(vertex_iterator_t p_iter = p_begin; p_iter != p_end; ++p_iter) {
         color_map[*p_iter] = c_0;

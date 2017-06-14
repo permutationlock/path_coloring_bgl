@@ -1,6 +1,6 @@
-# Path Coloring Plane Graphs
+# Path Coloring
 
- We implement an algorithm to path 3-color a plane graph,
+ We implement an algorithm to path *3*-color a triangulated simple plane graph,
  based on a proof by Poh in 1990.
 
 ## poh_color_bfs.hpp
@@ -20,7 +20,7 @@ void poh_color_bfs(
         color_map_t & color_map, vertex_iterator_t p_begin,
         vertex_iterator_t p_end, vertex_iterator_t q_begin,
         vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
-    )
+    );
  ```
 
 ### Types
@@ -39,6 +39,7 @@ void poh_color_bfs(
 
 ### Input Requirements
 
+ - *graph* is triangulated and has no loops or parallel edges;
  - *planar_embedding* must be a valid planar embedding of *graph*;
  - the colors *c_0*, *c_1*, and *c_2* are distinct;
  - *color_map* must not initially assign any vertex of *graph* the value *c_0*,
@@ -52,7 +53,7 @@ void poh_color_bfs(
 ### Output
 
  The *color_map* has been assigned such that it represents a valid path
- 3-coloring of the vertices of subgraph of *graph* bounded by the cycle
+ *3*-coloring of the vertices of the subgraph bounded by the cycle
  *p_0...p_nq_0...q_m* using the three colors *c_0*, *c_1*, and *c_2*.
 
 ### Time Complexity
@@ -87,7 +88,7 @@ void poh_color(
         mark_map_t & mark_map, vertex_iterator_t p_begin,
         vertex_iterator_t p_end, vertex_iterator_t q_begin,
         vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
-    )
+    );
  ```
 
 ### Types
@@ -108,6 +109,7 @@ void poh_color(
 
 ### Input Requirements
 
+ - *graph* is triangulated and has no loops or parallel edges;
  - *planar_embedding* must be a valid planar embedding of *graph*;
  - the colors *c_0*, *c_1*, and *c_2* are distinct;
  - *color_map* must not initially assign any vertex of *graph* the value *c_0*,
@@ -121,7 +123,7 @@ void poh_color(
 ### Output
 
  The *color_map* has been assigned such that it represents a valid path
- 3-coloring of the vertices of subgraph of *graph* bounded by the cycle
+ *3*-coloring of the vertices of subgraph of *graph* bounded by the cycle
  *p_0...p_nq_0...q_m* using the three colors *c_0*, *c_1*, and *c_2*.
 
 ### Time Complexity
@@ -138,10 +140,10 @@ void poh_color(
  [boost::iterator_property_map](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/iterator_property_map.html)
  for all property maps. See *src/examples/* for full example code.
 
-# Path List Coloring
+# Path List-Coloring
 
 We implement an algorithm to path list-color a plane graph given color lists of
-size 3 or more for each vertex, based on proofs by Hartman and Skrekovski.
+size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 
 ## hartman_skrekovski_color.hpp
 
@@ -159,13 +161,15 @@ void poh_color(
         mark_map_t & mark_map, vertex_iterator_t p_begin,
         vertex_iterator_t p_end, vertex_iterator_t q_begin,
         vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
-    )
+    );
  ```
 
 ### Types
 
  *vertex_t* is *boost::graph_traits<graph_t>::vertex_descriptor*
+ 
  *edge_iterator_t* is *boost::property_traits<embedding_t>::value_type::const_iterator*
+ 
  *neighbor_range_t* is *std::pair<edge_iterator_t,edge_iterator_t>*
  
  | Type | Concept | Additional Requirements |
@@ -180,6 +184,7 @@ void poh_color(
 
 ### Input Requirements
 
+ - *graph* is triangulated and has no loops or parallel edges;
  - *planar_embedding* must be a valid planar embedding of *graph*;
  - the colors *c_0*, *c_1*, and *c_2* are distinct;
  - *color_map* must not initially assign any vertex of *graph* the value *c_0*,
@@ -193,7 +198,7 @@ void poh_color(
 ### Output
 
  The *color_map* has been assigned such that it represents a valid path
- 3-coloring of the vertices of subgraph of *graph* bounded by the cycle
+ 3-coloring of the vertices of the subgraph bounded by the cycle
  *p_0...p_nq_0...q_m* using the three colors *c_0*, *c_1*, and *c_2*.
 
 ### Time Complexity
