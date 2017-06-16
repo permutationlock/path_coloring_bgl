@@ -107,20 +107,20 @@ int main() {
     
     // First we will construct a planar graph.
     boost::add_edge(0, 1, graph);
-	boost::add_edge(1, 2, graph);
-	boost::add_edge(2, 0, graph);
-	boost::add_edge(1, 3, graph);
-	boost::add_edge(0, 3, graph);
-	boost::add_edge(2, 3, graph);
-	boost::add_edge(0, 4, graph);
-	boost::add_edge(2, 4, graph);
-	boost::add_edge(3, 4, graph);
-	
-	// We choose our outer face to be the triangle 012
-	std::vector<vertex_t> cycle = { 0, 1, 2 };
+    boost::add_edge(1, 2, graph);
+    boost::add_edge(2, 0, graph);
+    boost::add_edge(1, 3, graph);
+    boost::add_edge(0, 3, graph);
+    boost::add_edge(2, 3, graph);
+    boost::add_edge(0, 4, graph);
+    boost::add_edge(2, 4, graph);
+    boost::add_edge(3, 4, graph);
     
-	// Create the planar embedding
-	planar_embedding_storage_t planar_embedding_storage(num_vertices(graph));
+    // We choose our outer face to be the triangle 012
+    std::vector<vertex_t> cycle = { 0, 1, 2 };
+    
+    // Create the planar embedding
+    planar_embedding_storage_t planar_embedding_storage(num_vertices(graph));
     planar_embedding_t planar_embedding(
             planar_embedding_storage.begin(), get(vertex_index, graph)
         );
@@ -160,7 +160,7 @@ int main() {
     std::cout << "\n";
     
     // Create a vertex property map to store color lists
-	color_list_storage_t color_list_storage(num_vertices(graph));
+    color_list_storage_t color_list_storage(num_vertices(graph));
     color_list_map_t color_list_map(
             color_list_storage.begin(), get(vertex_index, graph)
         );
