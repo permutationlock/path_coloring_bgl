@@ -33,7 +33,7 @@
  
 ### Template requirements
 
- *key_type* for all property maps must be *vertex_t*
+ The *key_type* for all property maps must be *vertex_t*
  
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
@@ -43,7 +43,7 @@
  | *color_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *color_t* |
  | *mark_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be an integer type |
  | *parent_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *vertex_t* |
- | *vertex_iterator_t* | [Input Iterator](http://en.cppreference.com/w/cpp/concept/InputIterator) | *value_type* must be *vertex_t* |
+ | *vertex_iterator_t* | [InputIterator](http://en.cppreference.com/w/cpp/concept/InputIterator) | *value_type* must be *vertex_t* |
 
 ### Input Requirements
 
@@ -111,7 +111,7 @@
 
 ### Template Requirements
 
- *key_type* for all property maps must be *vertex_t*
+ The *key_type* for all property maps must be *vertex_t*
  
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
@@ -121,7 +121,7 @@
  | *color_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *color_t* |
  | *mark_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be an integer type |
  | *neighbor_range_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *neighbor_range_t* |
- | *vertex_iterator_t* | [Input Iterator](http://en.cppreference.com/w/cpp/concept/InputIterator) | *value_type* must be *vertex_t* |
+ | *vertex_iterator_t* | [InputIterator](http://en.cppreference.com/w/cpp/concept/InputIterator) | *value_type* must be *vertex_t* |
 
 ### Input Requirements
 
@@ -176,7 +176,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  void hartman_skrekovski_color(
          const graph_t & graph,
          const augmented_embedding_t & augmented_embedding,
-         const color_list_map_t & color_list_map,
+         color_list_map_t & color_list_map,
          neighbor_range_map_t & neighbor_range_map,
          face_location_map_t & face_location_map,
          face_iterator_t face_begin, face_iterator_t face_end
@@ -193,7 +193,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 
 ### Template Requirements
 
- *key_type* for all property maps must be *vertex_t*
+ The *key_type* for all property maps must be *vertex_t*
  
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
@@ -204,7 +204,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  | *color_list_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *color_list_t* |
  | *face_location_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be a signed integer type |
  | *neighbor_range_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *neighbor_range_t* |
- | *vertex_iterator_t* | [Input Iterator](http://en.cppreference.com/w/cpp/concept/InputIterator) | *value_type* must be *vertex_t* |
+ | *vertex_iterator_t* | [InputIterator](http://en.cppreference.com/w/cpp/concept/InputIterator) | *value_type* must be *vertex_t* |
 
 ### Input Requirements
 
@@ -249,7 +249,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  list entry for a neighbor *u* also provides a reference to the entry for *v* in
  *u*'s list.
 
-## AugmentedEmbedding Concept
+## Augmented Embedding Concept
  
  The AugmentedEmbedding concept refines [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html),
  placing additional restrictions on the *value_type*.
@@ -271,13 +271,13 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 
 ### Notation
 
- | Object | Type |
+ | Object(s) | Description |
  | --- | --- |
  | *u*, *v* | objects of the type *vertex_t* |
  | *embedding* | an object of type *augmented_embedding_t* |
  | *n* | an object of type *node_t* |
 
-### Description of Specification
+### Description
 
  The object *embedding* will assign a range of objects of type
  *node_t* to each vertex *v* in the underlying graph. There will be exactly one
@@ -318,16 +318,89 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  
  struct node_t {
          vertex_t vertex;
-         typename std::vector<node_t>::iterator iterator;
+         typename std::list<node_t>::iterator iterator;
      };
  
  typedef typename std::vector<std::list<node_t>> embedding_storage_t;
  
  typedef boost::iterator_property_map<
          typename embedding_storage_t::iterator,
-         typename boost::property_map<graph_t, vertex_index_t>::const_type
+         typename boost::property_map<graph_t, boost::vertex_index_t>::const_type
      > augmented_embedding_t;
  ```
 
  See *src/examples* for full example code.
+
+# Constructing Augmented Embeddings From Planar Embeddings
+
+ Augmented embeddings may be efficiently constructed for any graph given a
+ an ordering of the incident edges and/or neighboring vertices around each
+ vertex that corresponds to a valid planar embedding.
+ 
+ The [Boost Graph Library](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/table_of_contents.html)
+ provides an [efficient algorithm](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/boyer_myrvold.html) to compute an embedding structure
+ modeling their [PlanarEmbedding](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/PlanarEmbedding.html) concept. Here we provide an efficient algorithm
+ to compute a structure modeling [AugmentedEmbedding](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/path_coloring#augmented-embeddings)
+ when given a structure modeling [PlanarEmbedding](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/PlanarEmbedding.html).
+
+## augmented_embedding.hpp
+
+ Here we implement an algorithm to compute an augmented embedding from a planar
+ embedding.
+
+### Functions Implemented
+
+ '''c++
+ template<
+         typename graph_t, typename planar_embedding_t,
+         typename augmented_embedding_t
+     >
+ void augment_embedding(
+         const graph_t & graph, const planar_embedding_t & planar_embedding,
+         augmented_embedding_t & augmented_embedding
+     );
+ '''
+
+### Type Definitions
+
+ | Type | Definition |
+ | ---- | --- |
+ | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor* |
+ | *node_t* | *boost::property_traits<augmented_embedding_t>::value_type* |
+
+### Template Requirements
+
+ The *key_type* for all property maps must be *vertex_t*
+ 
+ | Type | Concept | Additional Requirements |
+ | ---- | ------- | ----- |
+ | *graph_t* | [VertexAndEdgeListGraph](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/VertexAndEdgeListGraph.html) | None |
+ | *planar_embedding_t* | [PlanarEmbedding](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/PlanarEmbedding.html) | None |
+ | *augmented_embedding_t* | [AugmentedEmbedding](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/path_coloring#augmented-embeddings) | None |
+
+### Input Requirements
+
+ - *graph* has no loops or multiple edges;
+ - *planar_embedding* is ordered as a valid planar embedding of *graph*.
+
+### Output
+
+ The structure *augmented_embedding* is an augmented embedding structure for
+ *graph* with neighbors listed in the same order as *planar_embedding*.
+
+### Time Complexity
+ 
+ A call to *augment_embedding* on an input *graph* with *n* vertices makes
+ at most:
+ 
+ - *O(n)* reads and writes to the provided property map structures;
+ 
+ Property map lookups are often constant time, and thus the algorithm often runs
+ in *O(n)* time. For example: *O(n)* time may be achieved by using
+ [boost::adjacency_list](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/adjacency_list.html)
+ for *graph_t* and
+ [boost::iterator_property_map](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/iterator_property_map.html)
+ for all property maps. See *src/examples/* for full example code.
+
+
 

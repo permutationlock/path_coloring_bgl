@@ -35,9 +35,9 @@ void augment_embedding(
         ::iterator adjacency_node_iterator_t;
     typedef typename boost::graph_traits<graph_t>::vertex_iterator
         vertex_iterator_t;
-    typedef typename boost::graph_traits<graph_t>::vertex_descriptor
-        vertex_t;
+    typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
     
+    // Iterators for walking through the vertex set of the graph
     vertex_iterator_t v_begin, v_iter, v_end;
     
     // Create the embedding ordered adjacency list with uninitialized iterators

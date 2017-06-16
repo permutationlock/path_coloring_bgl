@@ -5,20 +5,16 @@
  * Implementation of Hartman-Skrekovski path 3-choosing algorithm.
  */
 
-#ifndef __HARTMAN_SKREKOVSKI_color_HPP
-#define __HARTMAN_SKREKOVSKI_color_HPP
+#ifndef __HARTMAN_SKREKOVSKI_COLOR_HPP
+#define __HARTMAN_SKREKOVSKI_COLOR_HPP
 
 // STL headers
 #include <vector>
 #include <utility>
 #include <algorithm>
-#include <stdexcept>
-#include <string>
 
 // Basic graph headers
-#include <boost/graph/properties.hpp>
 #include <boost/graph/graph_traits.hpp>
-#include <boost/property_map/property_map.hpp>
 
 // Local project headers
 #include "disjoint_set.hpp"
@@ -300,7 +296,7 @@ namespace {
                 if(face_location_sets.compare(n_location, before_y) || n == y) {
                     vertex_t new_p = n;
                     
-                    // The case n may be colored and added to the path
+                    // The case n needs to be colored
                     if(color_iter != color_list_map[n].end()
                         && color_list_map[n].size() > 1)
                     {
@@ -435,7 +431,7 @@ template<
 void hartman_skrekovski_color(
         const graph_t & graph,
         const augmented_embedding_t & augmented_embedding,
-        const color_list_map_t & color_list_map,
+        color_list_map_t & color_list_map,
         neighbor_range_map_t & neighbor_range_map,
         face_location_map_t & face_location_map,
         face_iterator_t face_begin, face_iterator_t face_end
