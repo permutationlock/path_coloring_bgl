@@ -13,9 +13,7 @@
 #include <utility>
 #include <string>
 #include <cmath>
-#include <unordered_map>
 #include <set>
-#include <chrono>
 #include <random>
 
 // Basic graph headers
@@ -59,9 +57,6 @@ using namespace boost;
 // Comment line below to hide tikz drawing printouts
 //#define SHOW_VISUALIZATION
 
-// Comment line below to hide test timings.
-//#define SHOW_TIMINGS
-
 // Comment line below to hide color list assignment printouts
 //#define SHOW_COLOR_LISTS
 
@@ -74,17 +69,14 @@ bool failed=false;
  * -----------------------------------------------------------------------------
  */
 
-// Timer
-typedef std::chrono::high_resolution_clock nanosecond_timer;
-
 // Define the graph type for all test graphs
 typedef adjacency_list<
-            setS,
-            vecS,
-            undirectedS,
-            property<vertex_index_t, std::size_t>,
-            property<edge_index_t, std::size_t>
-        > graph_t;
+        setS,
+        vecS,
+        undirectedS,
+        property<vertex_index_t, std::size_t>,
+        property<edge_index_t, std::size_t>
+    > graph_t;
 
 // Vertex and edge types
 typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
@@ -140,9 +132,9 @@ struct adjacency_node_t {
 typedef typename std::vector<std::vector<adjacency_node_t>>
     augmented_embedding_storage_t;
 typedef iterator_property_map<
-            typename augmented_embedding_storage_t::iterator,
-            vertex_index_map_t
-        > augmented_embedding_t;
+        typename augmented_embedding_storage_t::iterator,
+        vertex_index_map_t
+    > augmented_embedding_t;
 
 // Vertex property map type for the neighbor ranges of augmented_embedding_t
 typedef typename property_traits<augmented_embedding_t>::value_type
@@ -586,24 +578,10 @@ void poh_color_bfs_test(const graph_t & graph) {
     q.push_back(ordering.back());
     
     // Call Poh algorithm
-    #ifdef SHOW_TIMINGS
-        auto start = nanosecond_timer::now();
-        
-        for(std::size_t i = 0; i < 1000; ++i) {
-            poh_color_bfs(
-                    graph, planar_embedding, color_map, mark_map,
-                    parent_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
-                );
-        }
-    
-        auto end = nanosecond_timer::now();
-        std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
-    #else
-        poh_color_bfs(
-                graph, planar_embedding, color_map, mark_map,
-                parent_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
-            );
-    #endif
+    poh_color_bfs(
+            graph, planar_embedding, color_map, mark_map,
+            parent_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
+        );
     
     #ifdef SHOW_VISUALIZATION
         draw_graph_color(graph, color_map);
@@ -631,21 +609,21 @@ void poh_color_test(const graph_t & graph) {
     
     // Create a vertex property map for the coloring
     integer_property_storage_t color_map_storage(num_vertices(graph));
-      integer_property_map_t color_map(
-              color_map_storage.begin(), get(vertex_index, graph)
+    integer_property_map_t color_map(
+            color_map_storage.begin(), get(vertex_index, graph)
         );
     
     // Construct a vertex property for marking vertices
     integer_property_storage_t mark_storage(num_vertices(graph));
     integer_property_map_t mark_map(
-                mark_storage.begin(), get(vertex_index, graph)
-            );
+            mark_storage.begin(), get(vertex_index, graph)
+        );
     
     // Construct a vertex property for neighbor ranges
     neighbor_range_storage_t neighbor_range_storage(num_vertices(graph));
     neighbor_range_map_t neighbor_range_map(
-                neighbor_range_storage.begin(), get(vertex_index, graph)
-            );
+            neighbor_range_storage.begin(), get(vertex_index, graph)
+        );
     
     // Find a canonical ordering
     std::vector<vertex_t> ordering;
@@ -665,24 +643,10 @@ void poh_color_test(const graph_t & graph) {
     q.push_back(ordering.back());
     
     // Call Poh algorithm
-    #ifdef SHOW_TIMINGS
-        auto start = nanosecond_timer::now();
-        
-        for(std::size_t i = 0; i < 1000; ++i) {
-            poh_color(
-                    graph, planar_embedding, color_map, neighbor_range_map,
-                    mark_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
-                );
-        }
-    
-        auto end = nanosecond_timer::now();
-        std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
-    #else
-        poh_color(
-                graph, planar_embedding, color_map, neighbor_range_map,
-                mark_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
-            );
-    #endif
+    poh_color(
+            graph, planar_embedding, color_map, neighbor_range_map,
+            mark_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
+        );
     
     #ifdef SHOW_VISUALIZATION
         draw_graph_color(graph, color_map);
@@ -723,12 +687,6 @@ void hartman_skrekovski_test(const graph_t & graph, std::size_t num_colors) {
     augment_embedding(graph, planar_embedding, augmented_embedding);
     
     // Construct a vertex property for marking vertices
-    integer_property_storage_t state_storage(num_vertices(graph));
-    integer_property_map_t state_map(
-            state_storage.begin(), get(vertex_index, graph)
-        );
-    
-    // Construct a vertex property for marking vertices
     integer_property_storage_t face_location_storage(num_vertices(graph));
     integer_property_map_t face_location_map(
             face_location_storage.begin(), get(vertex_index, graph)
@@ -748,8 +706,10 @@ void hartman_skrekovski_test(const graph_t & graph, std::size_t num_colors) {
             graph, planar_embedding, std::back_inserter(ordering)
         );
     
-    // Set up clockwise outer face using properties of a canonical ordering
-    std::vector<vertex_t> outer_face = { ordering[1], ordering[0], ordering.back() };
+    // Grab a triangle to use as the outer face from the ordering
+    std::vector<vertex_t> outer_face = {
+            ordering[1], ordering[0], ordering.back()
+        };
     
     // Create property map to hold the list assignment
     color_list_storage_t color_list_storage(num_vertices(graph));
@@ -761,14 +721,18 @@ void hartman_skrekovski_test(const graph_t & graph, std::size_t num_colors) {
             original_color_list_storage.begin(), get(vertex_index, graph)
         );
     
+    // Uniform distribution to generate random colors
     std::mt19937 generator;
     std::uniform_int_distribution<int> distribution(1, num_colors);
     
     // Iterate over each vertex
     for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
         std::vector<int> random_colors(3);
-        while(random_colors[0] == random_colors[1] || random_colors[0] == random_colors[2] ||
-            random_colors[1] == random_colors[2])
+        while(
+                random_colors[0] == random_colors[1] ||
+                random_colors[0] == random_colors[2] ||
+                random_colors[1] == random_colors[2]
+            )
         {
             for(std::size_t i = 0; i < 3; ++i) {
                 random_colors[i] = distribution(generator);
@@ -794,26 +758,11 @@ void hartman_skrekovski_test(const graph_t & graph, std::size_t num_colors) {
     }
     
     // Call path list-coloring algorithm
-    #ifdef SHOW_TIMINGS
-        auto start = nanosecond_timer::now();
-        
-        for(std::size_t i = 0; i < 1000; ++i) {
-            hartman_skrekovski_color(
-                    graph, augmented_embedding, color_list_map, color_map,
-                    neighbor_range_map, state_map, face_location_map,
-                    outer_face.begin(), outer_face.end()
-                );
-        }
-    
-        auto end = nanosecond_timer::now();
-        std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
-    #else
-        hartman_skrekovski_color(
-                graph, augmented_embedding, color_list_map,
-                neighbor_range_map, face_location_map,
-                outer_face.begin(), outer_face.end()
-            );
-    #endif
+    hartman_skrekovski_color(
+            graph, augmented_embedding, color_list_map,
+            neighbor_range_map, face_location_map,
+            outer_face.begin(), outer_face.end()
+        );
     
     // Test correctness of list coloring
     test_list_coloring(graph, original_color_list_map, color_list_map);
@@ -925,8 +874,6 @@ void test_poh_color_bfs() {
         
                 found_planar = true;
         
-                //draw_graph_no_color(graph);
-        
                 poh_color_bfs_test(graph);
         
                 #ifdef SHOW_PASSES
@@ -968,8 +915,6 @@ void test_poh_color() {
                 make_triangulated(graph);
                 
                 found_planar = true;
-                
-                //draw_graph_no_color(graph);
                 
                 poh_color_test(graph);
         
@@ -1016,8 +961,6 @@ void test_hartman_skrekovski_color()
             
                     found_planar = true;
             
-                    //draw_graph_no_color(graph);
-            
                     hartman_skrekovski_test(graph, colors);
             
                     #ifdef SHOW_PASSES
@@ -1051,9 +994,9 @@ void test_hartman_skrekovski_color()
  */
 
 int main() {
-    //test_augmenting_embeddings();
-    //test_poh_color_bfs();
-    //test_poh_color();
+    test_augmenting_embeddings();
+    test_poh_color_bfs();
+    test_poh_color();
     test_hartman_skrekovski_color();
 
     if(failed)
