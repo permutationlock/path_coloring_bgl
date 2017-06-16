@@ -27,7 +27,7 @@
 
  | Type | |
  | ---- | --- |
- | *vertex_t* | is *boost::graph_traits<graph_t>::vertex_descriptor*
+ | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor*
  
 ### Template requirements
  
@@ -99,9 +99,9 @@
 
  | Type | |
  | ---- | --- |
- | *vertex_t* | is *boost::graph_traits<graph_t>::vertex_descriptor*
- | *neighbor_iterator_t* | is *boost::property_traits<planar_embedding_t>::value_type::const_iterator*
- | *neighbor_range_t* | is *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
+ | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor*
+ | *neighbor_iterator_t* | *boost::property_traits<planar_embedding_t>::value_type::const_iterator*
+ | *neighbor_range_t* | *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
 
 ### Template requirements
 
@@ -177,9 +177,9 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 
  | Type | |
  | ---- | --- |
- | *vertex_t* | is *boost::graph_traits<graph_t>::vertex_descriptor*|
- | *neighbor_iterator_t* | is *boost::property_traits<augmented_embedding_t>::value_type::const_iterator* |
- | *neighbor_range_t* | is *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
+ | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor*|
+ | *neighbor_iterator_t* | *boost::property_traits<augmented_embedding_t>::value_type::const_iterator* |
+ | *neighbor_range_t* | *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
 
 ### Template requirements
 
@@ -187,7 +187,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  | ---- | ------- | ----- |
  | *graph_t* | [VertexAndEdgeListGraph](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/VertexAndEdgeListGraph.html) | None |
  | *color_t* | [EqualityComparable](http://www.sgi.com/tech/stl/EqualityComparable.html), [Assignable](http://www.boost.org/doc/libs/1_64_0/libs/utility/Assignable.html) | None |
- | *augmented_embedding_t* | [AugmentedEmbedding](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/PlanarEmbedding.html) | None |
+ | *augmented_embedding_t* | [AugmentedEmbedding](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/path_coloring#augmented-embeddings) | None |
  | *color_list_t* | [SequenceContainer](http://en.cppreference.com/w/cpp/concept/SequenceContainer) | *value_type* must be *color_t* |
  | *color_list_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *color_list_t* |
  | *face_location_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be a signed integer type |
