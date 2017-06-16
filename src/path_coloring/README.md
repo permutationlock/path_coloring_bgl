@@ -1,12 +1,14 @@
 # Path Coloring
 
  We implement an algorithm to path *3*-color a triangulated simple plane graph,
- based on a proof by Poh in 1990.
+ based on a proof by Poh.
 
 ## poh_color_bfs.hpp
 
  This file implements the Poh algorithm using a breadth first search to locate
  paths to color.
+
+### Implemented Functions
 
  ```c++
  template<
@@ -81,6 +83,8 @@
 
  This file implements Poh's algorithm by walking along a colored path to find
  the next path to color.
+
+### Implemented Functions
 
  ```c++
  template<
@@ -160,6 +164,8 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 ## hartman_skrekovski_color.hpp
 
  This file implements the Hartman-Skrekovski algorithm.
+
+### Implemented Functions
 
  ```c++
  template<
@@ -261,19 +267,19 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  | Type | Additional Restrictions |
  | --- | --- |
  | *node_t* | A *node_t n* object must have members *vertex_t n.vertex* and *iterator_t n.iterator*  |
- | *iterator_t* | Must model the [BidirectionalIterator](http://www.cplusplus.com/reference/iterator/BidirectionalIterator/) concept |
+ | *iterator_t* | Must model the [BidirectionalIterator](http://en.cppreference.com/w/cpp/concept/BidirectionalIterator) concept |
 
 ### Notation
 
  | Object | Type |
  | --- | --- |
  | *u*, *v* | objects of the type *vertex_t* |
- | *augmented_embedding* | an object of type *augmented_embedding_t* |
- | *n* | *node_t* |
+ | *embedding* | an object of type *augmented_embedding_t* |
+ | *n* | an object of type *node_t* |
 
 ### Description of Specification
 
- The object *augmented_embedding* will assign a range of objects of type
+ The object *embedding* will assign a range of objects of type
  *node_t* to each vertex *v* in the underlying graph. There will be exactly one
  node in this range for each neighbor of *v* in the underlying graph. We will
  call this range of nodes the augmented adjacency list for *v*.
@@ -282,20 +288,20 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  adjacency list for a vertex *v*. The type *iterator_t* will be an iterator for
  the range of *node_t* objects for a vertex *v*.
  
- For a vertex *v* each node *n* in the range *augmented_embedding[v].begin()*,
- *augmented_embedding[v].end()* will have *n.vertex* be a neighboring vertex *u*
- and *n.iterator* be the unique iterator in the range *augmented_embedding[u].begin()*,
- *augmented_embedding[u].end()* such that *n.iterator->vertex* is equal to *v*.
+ For a vertex *v* each node *n* in the range *embedding[v].begin()* to
+ *embedding[v].end()* will have *n.vertex* be a neighboring vertex *u*
+ and *n.iterator* be the unique iterator in the range *embedding[u].begin()*
+ to *embedding[u].end()* such that *n.iterator->vertex* is equal to *v*.
 
 ### Valid Expressions
  
- | Expression | Return Type | Description |
+ | Expression | Type | Description |
  | --- | --- | --- |
- | *n.vertex | *vertex_t &* | Access the vertex member for a node in the augmented adjacency list |
- | *n.iterator | *iterator_t* | Access the iterator member for a node in the augmented adjacency list |
- | *augmented_embedding[v].begin()* | *iterator_t* | Returns an iterator to the beginning of the range of nodes for the neighbors of vertex *v* |
- | *augmented_embedding[v].end()* | *iterator_t* | Returns an iterator to the end of the range of nodes for the neighbors of the vertex *v* |
- | *augmented_embedding[v].push_back(n)* | *void* | Adds a node *n* to the end of the sequence of nodes for the vertex *v* |
+ | *n.vertex* | *vertex_t* | Access the vertex member for the node *n* in the augmented embedding |
+ | *n.iterator* | *iterator_t* | Access the iterator member for the node *n* in the augmented embedding |
+ | *embedding[v].begin()* | *iterator_t* | Returns an iterator to the beginning of the range of nodes for the vertex *v* |
+ | *embedding[v].end()* | *iterator_t* | Returns an iterator to the end of the range of nodes for the vertex *v* |
+ | *embedding[v].push_back(n)* | *void* | Adds a node *n* to the end of the sequence of nodes for the vertex *v* |
 
 ### Example Definition
 
