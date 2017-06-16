@@ -267,13 +267,18 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  | Type | Definition | Additional Restrictions |
  | --- | --- | --- |
  | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor* | None |
- | *node_t* | *boost::property_traits<augmented_embedding_t>::value_type::value_type* | Has *vertex_t n.vertex* and *iterator_t n.iterator*  |
- | *iterator_t* | *boost::property_traits<augmented_embedding_t>::value_type::iterator* | Must model [BidirectionalIterator](http://www.cplusplus.com/reference/iterator/BidirectionalIterator/) |
+ | *node_t* | *boost::property_traits<augmented_embedding_t>::value_type::value_type* |
+ | *iterator_t* | *boost::property_traits<augmented_embedding_t>::value_type::iterator* |
  
  For a vertex *v* each *node_t n* in the range *augmented_embedding[v].begin()*,
  *augmented_embedding[v].end()* will have *n.vertex* be a neighboring vertex *u*
  and *n.iterator* be the iterator pointing to the node containing *v* in the
  range *augmented_embedding[u].begin()*, *augmented_embedding[u].end()*.
+ 
+ | Type | Additional Restrictions |
+ | --- | --- |
+ | *node_t* | A *node_t n* have members *vertex_t n.vertex* and *iterator_t n.iterator*  |
+ | *iterator_t* | Must model the [BidirectionalIterator](http://www.cplusplus.com/reference/iterator/BidirectionalIterator/) concept |
 
 ### Valid Expressions
  
