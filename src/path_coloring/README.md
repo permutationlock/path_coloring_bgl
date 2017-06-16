@@ -154,7 +154,8 @@
  [boost::adjacency_list](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/adjacency_list.html)
  for *graph_t* and
  [boost::iterator_property_map](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/iterator_property_map.html)
- for all property maps. See *src/examples/* for full example code.
+ for all property maps. See [*src/examples/poh_example*](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/examples/poh_bfs_example)
+ for full example code.
 
 # Path List-Coloring
 
@@ -239,7 +240,8 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  [boost::adjacency_list](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/adjacency_list.html)
  for *graph_t* and
  [boost::iterator_property_map](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/iterator_property_map.html)
- for all property maps. See *src/examples/* for full example code.
+ for all property maps. See [*src/examples/hartman_skrekovski_example*](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/examples/hartman_skrekovski_example)
+ for full example code.
 
 # Augmented Embeddings
 
@@ -329,7 +331,8 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
      > augmented_embedding_t;
  ```
 
- See *src/examples* for full example code.
+ See [*src/examples/hartman_skrekovski_example*](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/examples/hartman_skrekovski_example)
+ for full example code.
 
 # Constructing Augmented Embeddings From Planar Embeddings
 
@@ -400,7 +403,8 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  [boost::adjacency_list](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/adjacency_list.html)
  for *graph_t* and
  [boost::iterator_property_map](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/iterator_property_map.html)
- for all property maps. See *src/examples/* for full example code.
+ for all property maps. See See [*src/examples/hartman_skrekovski_example*](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/examples/hartman_skrekovski_example)
+ for full example code.
 
 
 
