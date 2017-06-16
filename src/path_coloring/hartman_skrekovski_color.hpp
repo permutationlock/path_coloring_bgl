@@ -36,12 +36,11 @@ namespace {
      *     structure to store face location sets.
      * 
      * outputs: sets the face location of v to the given face location, if the
-     * given location doesn't exist, that is, the integer new_face_location is
-     * negative, a new face location is created in the disjoint set structure.
+     *     given location doesn't exist, that is, the integer new_face_location
+     *     is negative, a new face location is created in the disjoint set
+     *     structure.
      */
-    template<
-            typename vertex_t, typename face_location_map_t
-        >
+    template<typename vertex_t, typename face_location_map_t>
     inline int set_face_location(
             vertex_t v, int new_face_location,
             face_location_map_t & face_location_map,
@@ -354,7 +353,7 @@ namespace {
                             );
                     }
                 }
-                // The case n is in C[y,x]
+                // The case n is in C[y,x], n != y
                 else if(face_location_sets.compare(n_location, before_x)) {
                     if(color_iter != color_list_map[n].end()) {
                         color_list_map[n].erase(color_iter);

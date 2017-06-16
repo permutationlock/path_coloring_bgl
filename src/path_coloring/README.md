@@ -25,11 +25,13 @@
 
 ### Type definitions
 
- | Type | |
+ | Type | Definition |
  | ---- | --- |
  | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor*
  
 ### Template requirements
+
+ *key_type* for all property maps must be *vertex_t*
  
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
@@ -95,16 +97,18 @@
      );
  ```
 
-### Type definitions
+### Type Definitions
 
- | Type | |
+ | Type | Definition |
  | ---- | --- |
  | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor*
  | *neighbor_iterator_t* | *boost::property_traits<planar_embedding_t>::value_type::const_iterator*
  | *neighbor_range_t* | *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
 
-### Template requirements
+### Template Requirements
 
+ *key_type* for all property maps must be *vertex_t*
+ 
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
  | *graph_t* | [VertexAndEdgeListGraph](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/VertexAndEdgeListGraph.html) | None |
@@ -173,16 +177,18 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
      );
  ```
 
-### Type definitions
+### Type Definitions
 
- | Type | |
+ | Type | Definition |
  | ---- | --- |
  | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor*|
  | *neighbor_iterator_t* | *boost::property_traits<augmented_embedding_t>::value_type::const_iterator* |
  | *neighbor_range_t* | *std::pair<neighbor_iterator_t,neighbor_iterator_t>*
 
-### Template requirements
+### Template Requirements
 
+ *key_type* for all property maps must be *vertex_t*
+ 
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
  | *graph_t* | [VertexAndEdgeListGraph](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/VertexAndEdgeListGraph.html) | None |
@@ -237,14 +243,74 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  list entry for a neighbor *u* also provides a reference to the entry for *v* in
  *u*'s list.
 
-## AugmentedEmbedding
+## AugmentedEmbedding Concept
  
  The AugmentedEmbedding concept refines [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html),
  placing additional restrictions on the *value_type*.
  
 ### Notation
+ | Type | Description |
+ | --- | --- |
+ | *augmented_embedding_t* | a type that models the PlanarEmbedding concept. |
+ | *augmented_embedding* | an object of type *augmented_embedding_t*. |
+ | *n* | an object of type *boost::property_traits<augmented_embedding_t>::value_type::value_type*. |
+ | *graph_t* | the type of the underlying graph. |
+ | *u*, *v* | objects of the type *graph_traits<graph_t>::vertex_descriptor* |
 
- | *augmented_embedding_t* | is a type that models the PlanarEmbedding concept. |
- | *augmented_embedding* | is an object of type *augmented_embedding_t*. |
- | *graph_t* | is the type of the underlying graph. |
+### Associated Types
+
+ The type *node_t* will represent a neighboring vertex *u* in the augmented
+ adjacency list for a vertex *v*. The type *iterator_t* will be an iterator for
+ the range of *node_t* objects representing the augmented adjacency list for a
+ vertex *v*.
+
+ | Type | Definition |
+ | --- | --- | --- |
+ | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor* |
+ | *node_t* | *boost::property_traits<augmented_embedding_t>::value_type::value_type* |
+ | *iterator_t* | *boost::property_traits<augmented_embedding_t>::value_type::iterator* |
  
+ For a vertex *v* each *node_t n* in the range *augmented_embedding[v].begin()*,
+ *augmented_embedding[v].end()* will have *n.vertex* be a neighboring vertex *u*
+ and *n.iterator* be the iterator pointing to the node containing *v* in the
+ range *augmented_embedding[u].begin()*, *augmented_embedding[u].end()*.
+
+### Valid Expressions
+ 
+ | Expression | Return Type | Description |
+ | --- | --- | --- |
+ | *n.vertex | *vertex_t &* | Access the vertex for a node in the augmented adjacency list |
+ | *n.iterator | *iterator_t* | If *n* is a node in *v*'s list with *u=n.vertex* then *\*n.iterator* is the node containing *v* in *u*'s list |
+ | *augmented_embedding[v].begin()* | *iterator_t* | Returns an iterator to the beginning of the range of nodes for the neighbors of vertex *v* |
+ | *augmented_embedding[v].end()* | *iterator_t* | Returns an iterator to the end of the range of nodes for the neighbors of the vertex *v* |
+ | *augmented_embedding[v].push_back(n)* | *void* | Adds a node *n* to the end of the sequence of nodes for a vertex *v* |
+
+### Example Typedefinition
+
+ ```c++
+ typedef adjacency_list<
+         setS,
+         vecS,
+         undirectedS,
+         property<vertex_index_t, std::size_t>,
+         property<edge_index_t, std::size_t>
+     > graph_t;
+ 
+ typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
+ 
+ struct adjacency_node_t {
+         vertex_t vertex;
+         typename std::vector<adjacency_node_t>::iterator iterator;
+     };
+ 
+ typedef typename std::vector<std::vector<adjacency_node_t>>
+     augmented_embedding_storage_t;
+ 
+ typedef iterator_property_map<
+         typename augmented_embedding_storage_t::iterator,
+         typename property_map<graph_t, vertex_index_t>::const_type
+     > augmented_embedding_t;
+ ```
+
+ See *src/examples* for full example code.
+
