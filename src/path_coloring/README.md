@@ -36,12 +36,12 @@
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
  | *graph_t* | [VertexAndEdgeListGraph](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/VertexAndEdgeListGraph.html) | None |
- | *color_t* | [EqualityComparable](http://www.sgi.com/tech/stl/EqualityComparable.html), [Assignable](http://www.boost.org/doc/libs/1_64_0/libs/utility/Assignable.html) | None |
+ | *color_t* | [EqualityComparable](http://en.cppreference.com/w/cpp/concept/EqualityComparable), [CopyAssignable](http://en.cppreference.com/w/cpp/concept/CopyAssignable) | None |
  | *planar_embedding_t* | [PlanarEmbedding](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/PlanarEmbedding.html) | None |
  | *color_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *color_t* |
  | *mark_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be an integer type |
  | *parent_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *vertex_t* |
- | *vertex_iterator_t* | [Input Iterator](http://www.cplusplus.com/reference/iterator/InputIterator/) | *value_type* must be *vertex_t* |
+ | *vertex_iterator_t* | [Input Iterator](http://en.cppreference.com/w/cpp/concept/InputIterator) | *value_type* must be *vertex_t* |
 
 ### Input Requirements
 
@@ -112,12 +112,12 @@
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
  | *graph_t* | [VertexAndEdgeListGraph](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/VertexAndEdgeListGraph.html) | None |
- | *color_t* | [EqualityComparable](http://www.sgi.com/tech/stl/EqualityComparable.html), [Assignable](http://www.boost.org/doc/libs/1_64_0/libs/utility/Assignable.html) | None |
+ | *color_t* | [EqualityComparable](http://en.cppreference.com/w/cpp/concept/EqualityComparable), [CopyAssignable](http://en.cppreference.com/w/cpp/concept/CopyAssignable) | None |
  | *planar_embedding_t* | [PlanarEmbedding](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/PlanarEmbedding.html) | None |
  | *color_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *color_t* |
  | *mark_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be an integer type |
  | *neighbor_range_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *neighbor_range_t* |
- | *vertex_iterator_t* | [Input Iterator](http://www.cplusplus.com/reference/iterator/InputIterator/) | *value_type* must be *vertex_t* |
+ | *vertex_iterator_t* | [Input Iterator](http://en.cppreference.com/w/cpp/concept/InputIterator) | *value_type* must be *vertex_t* |
 
 ### Input Requirements
 
@@ -192,13 +192,13 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  | Type | Concept | Additional Requirements |
  | ---- | ------- | ----- |
  | *graph_t* | [VertexAndEdgeListGraph](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/VertexAndEdgeListGraph.html) | None |
- | *color_t* | [EqualityComparable](http://www.sgi.com/tech/stl/EqualityComparable.html), [Assignable](http://www.boost.org/doc/libs/1_64_0/libs/utility/Assignable.html) | None |
+ | *color_t* | [EqualityComparable](http://en.cppreference.com/w/cpp/concept/EqualityComparable), [CopyAssignable](http://en.cppreference.com/w/cpp/concept/CopyAssignable) | None |
  | *augmented_embedding_t* | [AugmentedEmbedding](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/path_coloring#augmented-embeddings) | None |
  | *color_list_t* | [SequenceContainer](http://en.cppreference.com/w/cpp/concept/SequenceContainer) | *value_type* must be *color_t* |
  | *color_list_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *color_list_t* |
  | *face_location_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be a signed integer type |
  | *neighbor_range_map_t* | [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html) | *value_type* must be *neighbor_range_t* |
- | *vertex_iterator_t* | [Input Iterator](http://www.cplusplus.com/reference/iterator/InputIterator/) | *value_type* must be *vertex_t* |
+ | *vertex_iterator_t* | [Input Iterator](http://en.cppreference.com/w/cpp/concept/InputIterator) | *value_type* must be *vertex_t* |
 
 ### Input Requirements
 
@@ -251,10 +251,10 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 ### Notation
  | Type | Description |
  | --- | --- |
- | *augmented_embedding_t* | a type that models the PlanarEmbedding concept. |
- | *augmented_embedding* | an object of type *augmented_embedding_t*. |
- | *n* | an object of type *boost::property_traits<augmented_embedding_t>::value_type::value_type*. |
- | *graph_t* | the type of the underlying graph. |
+ | *augmented_embedding_t* | a type that models the [AugmentedEmbedding](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/path_coloring#augmented-embeddings) concept |
+ | *augmented_embedding* | an object of type *augmented_embedding_t* |
+ | *n* | an object of type *boost::property_traits<augmented_embedding_t>::value_type::value_type* |
+ | *graph_t* | the type of the underlying graph |
  | *u*, *v* | objects of the type *graph_traits<graph_t>::vertex_descriptor* |
 
 ### Associated Types
@@ -264,9 +264,9 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  the range of *node_t* objects representing the augmented adjacency list for a
  vertex *v*.
 
- | Type | Definition | Additional Restrictions |
- | --- | --- | --- |
- | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor* | None |
+ | Type | Definition |
+ | --- | --- |
+ | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor* |
  | *node_t* | *boost::property_traits<augmented_embedding_t>::value_type::value_type* |
  | *iterator_t* | *boost::property_traits<augmented_embedding_t>::value_type::iterator* |
  
@@ -308,11 +308,10 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
          typename std::vector<node_t>::iterator iterator;
      };
  
- typedef typename std::vector<std::vector<node_t>>
-     augmented_embedding_storage_t;
+ typedef typename std::vector<std::list<node_t>> embedding_storage_t;
  
  typedef iterator_property_map<
-         typename augmented_embedding_storage_t::iterator,
+         typename embedding_storage_t::iterator,
          typename property_map<graph_t, vertex_index_t>::const_type
      > augmented_embedding_t;
  ```
