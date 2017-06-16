@@ -266,15 +266,17 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 ### Notation
 
  | Object | Type |
+ | --- | --- |
  | *u*, *v* | objects of the type *vertex_t* |
  | *augmented_embedding* | an object of type *augmented_embedding_t* |
  | *n* | *node_t* |
 
-### Description
+### Description of Specification
 
  The object *augmented_embedding* will assign a range of objects of type
- *node_t* to each vertex *v* in the underlying graph. We will call this range of
- nodes an augmented adjacency list.
+ *node_t* to each vertex *v* in the underlying graph. There will be exactly one
+ node in this range for each neighbor of *v* in the underlying graph. We will
+ call this range of nodes the augmented adjacency list for *v*.
  
  The type *node_t* will represent a neighboring vertex *u* in the augmented
  adjacency list for a vertex *v*. The type *iterator_t* will be an iterator for
@@ -282,31 +284,31 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  
  For a vertex *v* each node *n* in the range *augmented_embedding[v].begin()*,
  *augmented_embedding[v].end()* will have *n.vertex* be a neighboring vertex *u*
- and *n.iterator* be an iterator in the range *augmented_embedding[u].begin()*,
+ and *n.iterator* be the unique iterator in the range *augmented_embedding[u].begin()*,
  *augmented_embedding[u].end()* such that *n.iterator->vertex* is equal to *v*.
 
 ### Valid Expressions
  
  | Expression | Return Type | Description |
  | --- | --- | --- |
- | *n.vertex | *vertex_t &* | Access the vertex for a node in the augmented adjacency list |
- | *n.iterator | *iterator_t* | If *n* is a node in *v*'s list with *u=n.vertex* then *\*n.iterator* is the node containing *v* in *u*'s list |
+ | *n.vertex | *vertex_t &* | Access the vertex member for a node in the augmented adjacency list |
+ | *n.iterator | *iterator_t* | Access the iterator member for a node in the augmented adjacency list |
  | *augmented_embedding[v].begin()* | *iterator_t* | Returns an iterator to the beginning of the range of nodes for the neighbors of vertex *v* |
  | *augmented_embedding[v].end()* | *iterator_t* | Returns an iterator to the end of the range of nodes for the neighbors of the vertex *v* |
- | *augmented_embedding[v].push_back(n)* | *void* | Adds a node *n* to the end of the sequence of nodes for a vertex *v* |
+ | *augmented_embedding[v].push_back(n)* | *void* | Adds a node *n* to the end of the sequence of nodes for the vertex *v* |
 
 ### Example Definition
 
  ```c++
- typedef adjacency_list<
-         setS,
-         vecS,
-         undirectedS,
-         property<vertex_index_t, std::size_t>,
-         property<edge_index_t, std::size_t>
+ typedef boost::adjacency_list<
+         boost::setS,
+         boost::vecS,
+         boost::undirectedS,
+         boost::property<boost::vertex_index_t, std::size_t>,
+         boost::property<boost::edge_index_t, std::size_t>
      > graph_t;
  
- typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
+ typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
  
  struct node_t {
          vertex_t vertex;
@@ -315,9 +317,9 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  
  typedef typename std::vector<std::list<node_t>> embedding_storage_t;
  
- typedef iterator_property_map<
+ typedef boost::iterator_property_map<
          typename embedding_storage_t::iterator,
-         typename property_map<graph_t, vertex_index_t>::const_type
+         typename boost::property_map<graph_t, vertex_index_t>::const_type
      > augmented_embedding_t;
  ```
 
