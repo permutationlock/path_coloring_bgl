@@ -14,6 +14,7 @@
 #include <queue>
 #include <stdexcept>
 #include <utility>
+#include <string>
 
 // Basic graph headers
 #include <boost/graph/properties.hpp>

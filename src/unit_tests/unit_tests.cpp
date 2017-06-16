@@ -121,9 +121,16 @@ typedef typename std::vector<
         std::pair<embedding_iterator_t, embedding_iterator_t>
     > neighbor_range_storage_t;
 typedef iterator_property_map<
-            typename neighbor_range_storage_t::iterator,
-            vertex_index_map_t
-        > neighbor_range_map_t;
+        typename neighbor_range_storage_t::iterator,
+        vertex_index_map_t
+    > neighbor_range_map_t;
+
+// Vertex property map to store color lists
+typedef std::vector<std::list<int>> color_list_storage_t;
+typedef iterator_property_map<
+        typename color_list_storage_t::iterator,
+        vertex_index_map_t
+    > color_list_map_t;
 
 // Vertex property for an augmented embedding
 struct adjacency_node_t {
@@ -482,6 +489,41 @@ void test_path_coloring(
     }
 }
 
+void test_list_coloring(
+        const graph_t & graph, const color_list_map_t & original_color_list_map,
+        const color_list_map_t & color_list_map
+    )
+{
+    vertex_iterator_t v_iter, v_end;
+    for(tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+        vertex_t v = *v_iter;
+        if(color_list_map[v].size() < 1) {
+            std::string error = "vertex "
+                + std::to_string(v) + " has an empty color list.";
+            throw std::runtime_error(error);
+        }
+        
+        if(color_list_map[v].size() > 1) {
+            std::string error = "vertex "
+                + std::to_string(v) + " has more than one color in its list.";
+            throw std::runtime_error(error);
+        }
+        
+        auto v_color = color_list_map[v].front();
+        auto color_iter = std::find(
+                original_color_list_map[v].begin(),
+                original_color_list_map[v].end(), v_color
+            );
+        
+        if(color_iter == original_color_list_map[v].end()) {
+            std::string error = "vertex "
+                + std::to_string(v) + " has the color "
+                + std::to_string(v_color) + " not in the original list.";
+            throw std::runtime_error(error);
+        }
+    }
+}
+
 
 /* 
  * -----------------------------------------------------------------------------
@@ -680,31 +722,25 @@ void hartman_skrekovski_test(const graph_t & graph, std::size_t num_colors) {
     }
     augment_embedding(graph, planar_embedding, augmented_embedding);
     
-    // Create a vertex property map for the coloring
-    integer_property_storage_t color_map_storage(num_vertices(graph));
-      integer_property_map_t color_map(
-              color_map_storage.begin(), get(vertex_index, graph)
-        );
-    
     // Construct a vertex property for marking vertices
     integer_property_storage_t state_storage(num_vertices(graph));
     integer_property_map_t state_map(
-                state_storage.begin(), get(vertex_index, graph)
-            );
+            state_storage.begin(), get(vertex_index, graph)
+        );
     
     // Construct a vertex property for marking vertices
     integer_property_storage_t face_location_storage(num_vertices(graph));
     integer_property_map_t face_location_map(
-                face_location_storage.begin(), get(vertex_index, graph)
-            );
+            face_location_storage.begin(), get(vertex_index, graph)
+        );
     
     // Construct a vertex property for neighbor ranges
     augmented_neighbor_range_storage_t neighbor_range_storage(
             num_vertices(graph)
         );
     augmented_neighbor_range_map_t neighbor_range_map(
-                neighbor_range_storage.begin(), get(vertex_index, graph)
-            );
+            neighbor_range_storage.begin(), get(vertex_index, graph)
+        );
     
     // Find a canonical ordering
     std::vector<vertex_t> ordering;
@@ -716,12 +752,13 @@ void hartman_skrekovski_test(const graph_t & graph, std::size_t num_colors) {
     std::vector<vertex_t> outer_face = { ordering[1], ordering[0], ordering.back() };
     
     // Create property map to hold the list assignment
-    std::vector<std::list<int>> color_list_storage(num_vertices(graph));
-    iterator_property_map<
-            typename std::vector<std::list<int> >::iterator,
-            vertex_index_map_t
-        > color_list_map(
+    color_list_storage_t color_list_storage(num_vertices(graph));
+    color_list_map_t color_list_map(
             color_list_storage.begin(), get(vertex_index, graph)
+        );
+    color_list_storage_t original_color_list_storage(num_vertices(graph));
+    color_list_map_t original_color_list_map(
+            original_color_list_storage.begin(), get(vertex_index, graph)
         );
     
     std::mt19937 generator;
@@ -743,12 +780,16 @@ void hartman_skrekovski_test(const graph_t & graph, std::size_t num_colors) {
             for(std::size_t i = 0; i < 3; ++i) {
                 std::cout << random_colors[i] << ((i != 2) ? ", " : "");
             }
-            std::cout << "\n";
+            std::cout << "}\n";
         #endif
         
         std::copy(
                 random_colors.begin(), random_colors.end(),
                 std::back_inserter(color_list_map[*v_iter])
+            );
+        std::copy(
+                random_colors.begin(), random_colors.end(),
+                std::back_inserter(original_color_list_map[*v_iter])
             );
     }
     
@@ -768,11 +809,26 @@ void hartman_skrekovski_test(const graph_t & graph, std::size_t num_colors) {
         std::cout << "Time = " << (end - start).count() / 1000 << "ns\n";
     #else
         hartman_skrekovski_color(
-                graph, augmented_embedding, color_list_map, color_map,
-                neighbor_range_map, state_map, face_location_map,
+                graph, augmented_embedding, color_list_map,
+                neighbor_range_map, face_location_map,
                 outer_face.begin(), outer_face.end()
             );
     #endif
+    
+    // Test correctness of list coloring
+    test_list_coloring(graph, original_color_list_map, color_list_map);
+    
+    // Create a vertex property map for the coloring
+    integer_property_storage_t color_map_storage(num_vertices(graph));
+    integer_property_map_t color_map(
+            color_map_storage.begin(), get(vertex_index, graph)
+        );
+    
+    // Grab the color from each vertex's list
+    for (tie(v_iter, v_end) = vertices(graph); v_iter != v_end; v_iter++) {
+        vertex_t v = *v_iter;
+        color_map[v] = color_list_map[v].front();
+    }
     
     #ifdef SHOW_VISUALIZATION
         draw_graph_color(graph, color_map);
@@ -995,9 +1051,9 @@ void test_hartman_skrekovski_color()
  */
 
 int main() {
-    test_augmenting_embeddings();
-    test_poh_color_bfs();
-    test_poh_color();
+    //test_augmenting_embeddings();
+    //test_poh_color_bfs();
+    //test_poh_color();
     test_hartman_skrekovski_color();
 
     if(failed)

@@ -12,6 +12,8 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <stdexcept>
+#include <string>
 
 // Basic graph headers
 #include <boost/graph/properties.hpp>
@@ -24,7 +26,7 @@
 
 namespace {
     // The three states a vertex may have
-    const int INTERIOR = 0, ON_FACE = 1, COLORED = 2;
+    const int INTERIOR_MARK = 0;
 
     /* 
      * set_face_location
@@ -88,34 +90,38 @@ namespace {
 
     template<
             typename graph_t, typename augmented_embedding_t,
-            typename face_location_map_t, typename state_map_t,
-            typename neighbor_range_map_t, typename color_list_map_t,
-            typename color_map_t, typename vertex_t
+            typename face_location_map_t, typename neighbor_range_map_t,
+            typename color_list_map_t, typename vertex_t
                 = typename boost::graph_traits<graph_t>::vertex_descriptor
         >
     void hartman_skrekovski_color_recursive(
             const graph_t & graph,
             const augmented_embedding_t & augmented_embedding,
             face_location_map_t & face_location_map,
-            disjoint_set_t & face_location_sets, state_map_t & state_map,
+            disjoint_set_t & face_location_sets, 
             neighbor_range_map_t & neighbor_range_map,
-            color_list_map_t & color_list_map, color_map_t & color_map,
+            color_list_map_t & color_list_map,
             vertex_t x, vertex_t y, vertex_t p,
             int before_p, int before_y, int before_x
         )
     {
         // If p isn't colored yet we are starting a new path
-        if(state_map[p] != COLORED) {
+        if(color_list_map[p].size() > 1) {
             // Color p the first color in its list
-            state_map[p] = COLORED;
-            color_map[p] = color_list_map[p].front();
+            color_list_map[p].erase(
+                    ++color_list_map[p].begin(),
+                    color_list_map[p].end()
+                );
         }
+        
+        // Grab p's the color from p's singleton list
+        auto p_color = color_list_map[p].front();
         
         // Track the vertices that will become x and y in the first cycle
         vertex_t new_x = x, new_y = y;
-        auto neighbor_iter = neighbor_range_map[p].first;
         
         // Iterate through p's adjacency list
+        auto neighbor_iter = neighbor_range_map[p].first;
         do {
             // Wrap adjacency list
             if(neighbor_iter == augmented_embedding[p].end())
@@ -126,10 +132,14 @@ namespace {
             auto back_iter = neighbor_iter -> iterator;
             int n_location = face_location_map[n];
             
+            // Look for p_color in n's color list
+            auto color_iter = std::find(
+                    color_list_map[n].begin(),
+                    color_list_map[n].end(), p_color
+                );
+            
             // The case n is not in C
-            if(state_map[n] == INTERIOR) {
-                state_map[n] = ON_FACE;
-                
+            if(face_location_map[n] == INTERIOR_MARK) {
                 // Note that n is between x and p on the first cycle
                 before_p = set_face_location(
                         n, before_p, face_location_map, face_location_sets
@@ -145,38 +155,55 @@ namespace {
                         n, neighbor_range_map, augmented_embedding
                     );
                 
-                color_list_map[n].remove(color_map[p]);
+                // Remove the path color from n's list
+                if(color_iter != color_list_map[n].end()) {
+                    color_list_map[n].erase(color_iter);
+                    color_iter = color_list_map[n].end();
+                }
             }
             // The case n is immediately counterclockwise to p in C
             else if(neighbor_iter == neighbor_range_map[p].first) {
                 // If p has a single neighbor the current subgraph is K_2
                 if(neighbor_iter == neighbor_range_map[p].second) {
+                    // If is neither x nor y, ensure it doesn't receive p_color
                     if(n != x && n != y) {
-                        color_list_map[n].remove(color_map[p]);
+                        // Remove the path color from n's list
+                        if(color_iter != color_list_map[n].end()) {
+                            color_list_map[n].erase(color_iter);
+                            color_iter = color_list_map[n].end();
+                        }
                     }
                     
-                    if(state_map[n] != COLORED) {
-                        state_map[n] = COLORED;
-                        color_map[n] = color_list_map[n].front();
+                    // Color n with any color remaining in its list
+                    if(color_list_map[n].size() > 1) {
+                        color_list_map[n].erase(
+                                ++color_list_map[n].begin(),
+                                color_list_map[n].end()
+                            );
                     }
                     
                     break;
                 }
-                // If n is y, swap p and y so the path runs clockwise
-                else if(n == y) {
-                    if(state_map[y] != COLORED) {
-                        state_map[y] = COLORED;
-                        color_map[y] = color_map[p];
+                // If n is y and y has the path color, swap p and y so the
+                //     path runs clockwise
+                else if(n == y && color_iter != color_list_map[n].end()) {
+                    if(color_list_map[n].size() > 1) {
+                        // Remove all colors other than the path color
+                        color_list_map[n].erase(
+                                color_list_map[n].begin(),
+                                color_iter
+                            );
+                        color_list_map[n].erase(
+                                ++color_list_map[n].begin(),
+                                color_list_map[n].end()
+                            );
                     }
-                    
-                    if(x == p) new_x = y;
                     
                     hartman_skrekovski_color_recursive(
                             graph, augmented_embedding,
                             face_location_map, face_location_sets,
-                            state_map, neighbor_range_map, 
-                            color_list_map, color_map,
-                            new_x, p, y,
+                            neighbor_range_map, color_list_map,
+                            y, p, y,
                             -1, -1, before_y
                         );
                     
@@ -194,7 +221,11 @@ namespace {
                             );
                     }
                     
-                    color_list_map[n].remove(color_map[p]);
+                    // Remove path color from n's list
+                    if(color_iter != color_list_map[n].end()) {
+                        color_list_map[n].erase(color_iter);
+                        color_iter = color_list_map[n].end();
+                    }
                     
                     // Remove the edge pn from n's adjacency list
                     remove_last_neighbor(
@@ -214,7 +245,10 @@ namespace {
                 
                 // The case we are removing y
                 if(p == y) {
-                    color_list_map[n].remove(color_map[p]);
+                    if(color_iter != color_list_map[n].end()) {
+                        color_list_map[n].erase(color_iter);
+                        color_iter = color_list_map[n].end();
+                    }
                     
                     // If p=x=y then we are removing a single vertex path
                     if(p == x) {
@@ -223,8 +257,7 @@ namespace {
                         hartman_skrekovski_color_recursive(
                                 graph, augmented_embedding,
                                 face_location_map, face_location_sets,
-                                state_map, neighbor_range_map, 
-                                color_list_map, color_map,
+                                neighbor_range_map, color_list_map,
                                 new_x, n, new_x,
                                 -1, before_p, before_y
                             );
@@ -236,8 +269,7 @@ namespace {
                             hartman_skrekovski_color_recursive(
                                     graph, augmented_embedding,
                                     face_location_map, face_location_sets,
-                                    state_map, neighbor_range_map, 
-                                    color_list_map, color_map,
+                                    neighbor_range_map, color_list_map,
                                     n, p, p,
                                     -1, -1, before_y
                                 );
@@ -252,8 +284,7 @@ namespace {
                         hartman_skrekovski_color_recursive(
                                 graph, augmented_embedding,
                                 face_location_map, face_location_sets,
-                                state_map, neighbor_range_map, 
-                                color_list_map, color_map,
+                                neighbor_range_map, color_list_map,
                                 new_x, n, new_x,
                                 -1, before_p, before_x
                             );
@@ -271,22 +302,22 @@ namespace {
                     vertex_t new_p = n;
                     
                     // The case n may be colored and added to the path
-                    if(
-                        color_list_map[n].end() != std::find(
-                                    color_list_map[n].begin(),
-                                    color_list_map[n].begin(), color_map[p]
-                                )
-                            && state_map[n] != COLORED
-                        )
+                    if(color_iter != color_list_map[n].end()
+                        && color_list_map[n].size() > 1)
                     {
-                        color_map[n] = color_map[p];
-                        state_map[n] = COLORED;
+                        // Remove all colors other than the path color
+                        color_list_map[n].erase(
+                                color_list_map[n].begin(),
+                                color_iter
+                            );
+                        color_list_map[n].erase(
+                                ++color_list_map[n].begin(),
+                                color_list_map[n].end()
+                            );
                     }
                     // The case n will not be added to the path
-                    else if(
-                            state_map[n] != COLORED ||
-                            color_map[n] != color_map[p]
-                        )
+                    else if(color_list_map[n].size() > 1
+                        || color_list_map[n].front() != p_color)
                     {
                         // Start new path at the new x on the first cycle
                         new_p = new_x;
@@ -305,8 +336,7 @@ namespace {
                     hartman_skrekovski_color_recursive(
                             graph, augmented_embedding,
                             face_location_map, face_location_sets,
-                            state_map, neighbor_range_map, 
-                            color_list_map, color_map,
+                            neighbor_range_map, color_list_map,
                             new_x, new_y, new_p,
                             before_p, before_y, before_x
                         );
@@ -318,8 +348,7 @@ namespace {
                         hartman_skrekovski_color_recursive(
                                 graph, augmented_embedding,
                                 face_location_map, face_location_sets,
-                                state_map, neighbor_range_map, 
-                                color_list_map, color_map,
+                                neighbor_range_map, color_list_map,
                                 p, n, p,
                                 -1, before_y, -1
                             );
@@ -327,15 +356,17 @@ namespace {
                 }
                 // The case n is in C[y,x]
                 else if(face_location_sets.compare(n_location, before_x)) {
-                    color_list_map[n].remove(color_map[p]);
+                    if(color_iter != color_list_map[n].end()) {
+                        color_list_map[n].erase(color_iter);
+                        color_iter = color_list_map[n].end();
+                    }
                     
                     // Color the subgraph bounded by the first cycle
                     neighbor_range_map[n] = n_ranges.second;
                     hartman_skrekovski_color_recursive(
                             graph, augmented_embedding,
                             face_location_map, face_location_sets,
-                            state_map, neighbor_range_map, 
-                            color_list_map, color_map,
+                            neighbor_range_map, color_list_map,
                             new_x, n, new_x,
                             -1, before_p, before_x
                         );
@@ -345,23 +376,19 @@ namespace {
                     hartman_skrekovski_color_recursive(
                             graph, augmented_embedding,
                             face_location_map, face_location_sets,
-                            state_map, neighbor_range_map, 
-                            color_list_map, color_map,
+                            neighbor_range_map, color_list_map,
                             n, y, p,
                             -1, before_y, before_x
                         );
                 }
                 // The case n is in C[x,p]
                 else {
-                    color_list_map[n].remove(color_map[p]);
-                    
                     // Color the subgraph bounded b the second cycle
                     neighbor_range_map[n] = n_ranges.first;
                     hartman_skrekovski_color_recursive(
                             graph, augmented_embedding,
                             face_location_map, face_location_sets,
-                            state_map, neighbor_range_map, 
-                            color_list_map, color_map,
+                            neighbor_range_map, color_list_map,
                             x, y, p,
                             before_p, before_y, before_x
                         );
@@ -371,8 +398,7 @@ namespace {
                     hartman_skrekovski_color_recursive(
                             graph, augmented_embedding,
                             face_location_map, face_location_sets,
-                            state_map, neighbor_range_map, 
-                            color_list_map, color_map,
+                            neighbor_range_map, color_list_map,
                             n, n, n,
                             -1, before_p, -1
                         );
@@ -404,17 +430,16 @@ namespace {
  
 template<
         typename graph_t, typename augmented_embedding_t,
-        typename color_list_map_t, typename color_map_t,
-        typename neighbor_range_map_t, typename state_map_t,
+        typename color_list_map_t, typename neighbor_range_map_t,
         typename face_location_map_t, typename face_iterator_t
     >
 void hartman_skrekovski_color(
         const graph_t & graph,
         const augmented_embedding_t & augmented_embedding,
-        const color_list_map_t & color_list_map, color_map_t & color_map,
-        neighbor_range_map_t & neighbor_range_map, state_map_t & state_map,
-        face_location_map_t & face_location_map, face_iterator_t face_begin,
-        face_iterator_t face_end
+        const color_list_map_t & color_list_map,
+        neighbor_range_map_t & neighbor_range_map,
+        face_location_map_t & face_location_map,
+        face_iterator_t face_begin, face_iterator_t face_end
     )
 {
     // Type definitions
@@ -422,6 +447,11 @@ void hartman_skrekovski_color(
     
     // Setup face location sets (we will have only the region before_y)
     disjoint_set_t face_location_sets;
+    
+    // Make a set for 0, the location given to interior vertices
+    face_location_sets.make_next();
+    
+    // Intitially all vertices will be
     int before_y = -1;
     
     // Initialize vertices on outer face
@@ -432,8 +462,6 @@ void hartman_skrekovski_color(
         
         vertex_t l = *face_iter;
         vertex_t v = *next;
-        
-        state_map[v] = ON_FACE;
         
         before_y = set_face_location(
                 v, before_y, face_location_map, face_location_sets
@@ -453,8 +481,7 @@ void hartman_skrekovski_color(
     hartman_skrekovski_color_recursive(
             graph, augmented_embedding,
             face_location_map, face_location_sets,
-            state_map, neighbor_range_map, 
-            color_list_map, color_map,
+            neighbor_range_map, color_list_map,
             x, y, x,
             -1, before_y, -1
         );
