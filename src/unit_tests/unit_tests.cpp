@@ -830,8 +830,6 @@ void test_augmenting_embeddings() {
                         boyer_myrvold_params::embedding = planar_embedding
                     );
         
-                //draw_graph_no_color(graph);
-        
                 test_augmented_embedding_construction(graph, planar_embedding);
         
                 #ifdef SHOW_PASSES
