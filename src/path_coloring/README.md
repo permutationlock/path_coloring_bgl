@@ -48,15 +48,15 @@
 ### Input Requirements
 
  - *graph* is triangulated and has no loops or parallel edges;
- - *planar_embedding* must be ordered as a valid planar embedding of *graph*;
+ - *planar_embedding* is a valid planar embedding of *graph*;
  - the colors *c_0*, *c_1*, and *c_2* are distinct;
- - *color_map* must not initially assign any vertex of *graph* the value *c_0*,
-   *c_1*, or *c_2*;
- - *mark_map* must initially assign each vertex a value of *0*;
- - the iterator pairs *p_begin*, *p_end* and *q_begin*, *q_end* must each be a
-   range of vertices *p_0,..,p_n* and *q_0,...,q_m* in *graph* such that *p_0...p_n*
-   and *q_0...q_m* are induced paths in *graph*, and such that *p_0...p_nq_0...q_m*
-   is a cycle in *graph*.
+ - *color_map* does initially assign any vertex the value *c_0*, *c_1*, or
+   *c_2*;
+ - *mark_map* initially assigns each vertex a value of *0*;
+ - the iterator pairs *p_begin*, *p_end* and *q_begin*, *q_end* are each a
+   range of vertices in *graph*, respectively *p_0,..,p_n* and *q_0,...,q_m*,
+   such that *p_0...p_n* and *q_0...q_m* are both induced paths, and
+   such that *p_0...p_nq_0...q_m* is a cycle.
 
 ### Output
 
@@ -77,7 +77,8 @@
  [boost::adjacency_list](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/adjacency_list.html)
  for *graph_t* and
  [boost::iterator_property_map](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/iterator_property_map.html)
- for all property maps. See *src/examples/* for full example code.
+ for all property maps. See See [*src/examples/poh_bfs_example*](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/examples/poh_bfs_example)
+ for full example code.
 
 ## poh_color.hpp
 
@@ -126,15 +127,15 @@
 ### Input Requirements
 
  - *graph* is triangulated and has no loops or parallel edges;
- - *planar_embedding* must be ordered as a valid planar embedding of *graph*;
+ - *planar_embedding* is a valid planar embedding of *graph*;
  - the colors *c_0*, *c_1*, and *c_2* are distinct;
- - *color_map* must not initially assign any vertex of *graph* the value *c_0*,
+ - *color_map* does not initially assign any vertex of *graph* the value *c_0*,
    *c_1*, or *c_2*;
- - *mark_map* must initially assign each vertex a value of *0*;
- - the iterator pairs *p_begin*, *p_end* and *q_begin*, *q_end* must each be a
-   range of vertices *p_0,..,p_n* and *q_0,...,q_m* in *graph* such that *p_0...p_n*
-   and *q_0...q_m* are induced paths in *graph*, and such that *p_0...p_nq_0...q_m*
-   is a cycle in *graph*.
+ - *mark_map* initially assigns each vertex a value of *0*;
+ - the iterator pairs *p_begin*, *p_end* and *q_begin*, *q_end* are each a
+   range of vertices in *graph*, respectively *p_0,..,p_n* and *q_0,...,q_m*,
+   such that *p_0...p_n* and *q_0...q_m* are both induced paths, and
+   such that *p_0...p_nq_0...q_m* is a cycle.
 
 ### Output
 
@@ -210,14 +211,13 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 ### Input Requirements
 
  - *graph* is triangulated and has no loops or parallel edges;
- - *augmented_embedding* must be ordered as a valid planar embedding of *graph*;
- - *color_list_map_t* must assign each vertex on the outer cycle a list of 2 or
+ - *augmented_embedding* is a valid planar embedding of *graph*;
+ - *color_list_map_t* assigns each vertex on the outer cycle a list of 2 or
    more colors, and each vertex interior to the cycle a list of at 3 or more
    colors;
- - *face_location_map* must each initially assign each vertex a
-   value of *0*;
- - the iterator pair *face_begin*, *face_end* must be for a range of vertices
-   *v_0,..,v_n* such that *v_0...v_n* is a cycle in *graph*.
+ - *face_location_map* assigns each vertex a value of *0*;
+ - the iterator pair *face_begin*, *face_end* is a range of vertices
+   *v_0,..,v_n* in *graph* such that *v_0...v_n* is a cycle.
 
 ### Output
 
@@ -334,7 +334,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  See [*src/examples/hartman_skrekovski_example*](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/examples/hartman_skrekovski_example)
  for full example code.
 
-# Constructing Augmented Embeddings From Planar Embeddings
+# Constructing Augmented Embeddings
 
  Augmented embeddings may be efficiently constructed for any graph given a
  an ordering of the incident edges and/or neighboring vertices around each
@@ -384,7 +384,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 ### Input Requirements
 
  - *graph* has no loops or multiple edges;
- - *planar_embedding* is ordered as a valid planar embedding of *graph*.
+ - *planar_embedding* is a valid planar embedding of *graph*.
 
 ### Output
 
