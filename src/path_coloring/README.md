@@ -248,37 +248,42 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  The AugmentedEmbedding concept refines [LvaluePropertyMap](http://www.boost.org/doc/libs/1_64_0/libs/property_map/doc/LvaluePropertyMap.html),
  placing additional restrictions on the *value_type*.
  
-### Notation
+### Types
+
  | Type | Description |
  | --- | --- |
  | *augmented_embedding_t* | a type that models the [AugmentedEmbedding](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/path_coloring#augmented-embeddings) concept |
- | *augmented_embedding* | an object of type *augmented_embedding_t* |
- | *n* | an object of type *boost::property_traits<augmented_embedding_t>::value_type::value_type* |
- | *graph_t* | the type of the underlying graph |
- | *u*, *v* | objects of the type *graph_traits<graph_t>::vertex_descriptor* |
-
-### Associated Types
-
- The type *node_t* will represent a neighboring vertex *u* in the augmented
- adjacency list for a vertex *v*. The type *iterator_t* will be an iterator for
- the range of *node_t* objects representing the augmented adjacency list for a
- vertex *v*.
-
- | Type | Definition |
- | --- | --- |
- | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor* |
  | *node_t* | *boost::property_traits<augmented_embedding_t>::value_type::value_type* |
  | *iterator_t* | *boost::property_traits<augmented_embedding_t>::value_type::iterator* |
- 
- For a vertex *v* each *node_t n* in the range *augmented_embedding[v].begin()*,
- *augmented_embedding[v].end()* will have *n.vertex* be a neighboring vertex *u*
- and *n.iterator* be the iterator pointing to the node containing *v* in the
- range *augmented_embedding[u].begin()*, *augmented_embedding[u].end()*.
+ | *graph_t* | the type of the underlying graph |
+ | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor* |
  
  | Type | Additional Restrictions |
  | --- | --- |
- | *node_t* | A *node_t n* have members *vertex_t n.vertex* and *iterator_t n.iterator*  |
+ | *node_t* | A *node_t n* object must have members *vertex_t n.vertex* and *iterator_t n.iterator*  |
  | *iterator_t* | Must model the [BidirectionalIterator](http://www.cplusplus.com/reference/iterator/BidirectionalIterator/) concept |
+
+### Notation
+
+ | Object | Type |
+ | *u*, *v* | objects of the type *vertex_t* |
+ | *augmented_embedding* | an object of type *augmented_embedding_t* |
+ | *n* | *node_t* |
+
+### Description
+
+ The object *augmented_embedding* will assign a range of objects of type
+ *node_t* to each vertex *v* in the underlying graph. We will call this range of
+ nodes an augmented adjacency list.
+ 
+ The type *node_t* will represent a neighboring vertex *u* in the augmented
+ adjacency list for a vertex *v*. The type *iterator_t* will be an iterator for
+ the range of *node_t* objects for a vertex *v*.
+ 
+ For a vertex *v* each node *n* in the range *augmented_embedding[v].begin()*,
+ *augmented_embedding[v].end()* will have *n.vertex* be a neighboring vertex *u*
+ and *n.iterator* be an iterator in the range *augmented_embedding[u].begin()*,
+ *augmented_embedding[u].end()* such that *n.iterator->vertex* is equal to *v*.
 
 ### Valid Expressions
  
