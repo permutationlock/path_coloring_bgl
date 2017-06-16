@@ -264,11 +264,11 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  the range of *node_t* objects representing the augmented adjacency list for a
  vertex *v*.
 
- | Type | Definition |
+ | Type | Definition | Additional Restrictions |
  | --- | --- | --- |
- | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor* |
- | *node_t* | *boost::property_traits<augmented_embedding_t>::value_type::value_type* |
- | *iterator_t* | *boost::property_traits<augmented_embedding_t>::value_type::iterator* |
+ | *vertex_t* | *boost::graph_traits<graph_t>::vertex_descriptor* | None |
+ | *node_t* | *boost::property_traits<augmented_embedding_t>::value_type::value_type* | Has *vertex_t n.vertex* and *iterator_t n.iterator*  |
+ | *iterator_t* | *boost::property_traits<augmented_embedding_t>::value_type::iterator* | Must model [BidirectionalIterator](http://www.cplusplus.com/reference/iterator/BidirectionalIterator/) |
  
  For a vertex *v* each *node_t n* in the range *augmented_embedding[v].begin()*,
  *augmented_embedding[v].end()* will have *n.vertex* be a neighboring vertex *u*
@@ -285,7 +285,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  | *augmented_embedding[v].end()* | *iterator_t* | Returns an iterator to the end of the range of nodes for the neighbors of the vertex *v* |
  | *augmented_embedding[v].push_back(n)* | *void* | Adds a node *n* to the end of the sequence of nodes for a vertex *v* |
 
-### Example Typedefinition
+### Example Definition
 
  ```c++
  typedef adjacency_list<
@@ -298,12 +298,12 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  
  typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
  
- struct adjacency_node_t {
+ struct node_t {
          vertex_t vertex;
-         typename std::vector<adjacency_node_t>::iterator iterator;
+         typename std::vector<node_t>::iterator iterator;
      };
  
- typedef typename std::vector<std::vector<adjacency_node_t>>
+ typedef typename std::vector<std::vector<node_t>>
      augmented_embedding_storage_t;
  
  typedef iterator_property_map<
