@@ -350,7 +350,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 
 ### Functions Implemented
 
- '''c++
+ ```c++
  template<
          typename graph_t, typename planar_embedding_t,
          typename augmented_embedding_t
@@ -359,7 +359,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
          const graph_t & graph, const planar_embedding_t & planar_embedding,
          augmented_embedding_t & augmented_embedding
      );
- '''
+ ```
 
 ### Type Definitions
 
