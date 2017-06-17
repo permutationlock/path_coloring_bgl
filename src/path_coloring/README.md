@@ -221,11 +221,11 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 
 ### Output
 
- For each vertex in the subgraph bounded by the cycle *v_0...v_n* the
- *color_list_map* has been modified such that all but one color remains in the
- vertex's list. Additionally, if we consider each vertex to be colored with the
- remaining color in its list, the coloring is a path coloring of the subgraph
- bounded by *v_0...v_n*.
+ The *color_list_map* has been modified such that all but one color has been
+ removed from the color list of each vertex in the subgraph bounded by the
+ cycle *v_0...v_n*. Additionally, if we consider each vertex to be colored with
+ the remaining color in its list, the coloring is a path coloring of the
+ subgraph bounded by *v_0...v_n*.
 
 ### Time Complexity
  

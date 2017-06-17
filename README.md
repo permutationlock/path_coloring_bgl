@@ -22,7 +22,7 @@
  Graph Library.
 
 ## Requirements
- The boost libraries and a compiler that supports the C++11 standard. The
- provided makefiles use GCC by default; other compilers may be specified by
- changing the appropriate variable.
+ The [Boost Libraries](http://www.boost.org/) and a compiler that supports the
+ C++11 standard. The provided makefiles use GCC by default; other compilers may
+ be specified by changing the appropriate variable.
 
