@@ -23,6 +23,7 @@
 
 ## Requirements
  The [Boost Libraries](http://www.boost.org/) and a compiler that supports the
- C++11 standard. The provided makefiles use GCC by default; other compilers may
- be specified by changing the appropriate variable.
+ C++11 standard. The provided makefiles use [GCC](https://gcc.gnu.org/) by
+ default; other compilers may be specified by changing the appropriate makefile
+ variable.
 
