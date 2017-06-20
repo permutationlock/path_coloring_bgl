@@ -304,7 +304,8 @@ $L$-list-coloring for a plane graph that has been given a list assignment $L$
 with lists of size at least $3$. Interestingly, the proofs of Hartman and
 Skrekovski follow the same coloring algorithm, and thus Skrekovski unknowingly
 showed the stronger path $3$-choosability result. We describe an algorithm
-based on Hartman's proof and show it runs in $\mathcal{O}(n)$ time.
+based on Hartman and Skrekovski's work and show it runs in $\mathcal{O}(n)$
+time.
 
 \section{Graph Representations and Time Complexity}
 Let $G$ be a plane graph. Vertices will be represented by integers, that is, we
@@ -927,7 +928,7 @@ abstract graphs is due to the independent work of Hartman \cite{hartman} and
 Skrekovski \cite{skrekovski}.
 
 Note that the description of the algorithm given below is structured differently
-than the description given by both Hartman and Skrekovski. This restructuring is, in
+than the descriptions given by both Hartman and Skrekovski. This restructuring is, in
 many ways, less elegant than both original proofs, but helps illuminate how the
 algorithm will operate on a graph with an adjacency list representation.\\
 
@@ -1253,9 +1254,8 @@ time. In this call we will be removing $v_1$.
 We iterate through $\text{Adj}[v_1]$ beginning from $v_k$. We will continue
 until we hit neighbor $v_i\in C$, $i\ne k$. We define the cycles $C_1$ and $C_2$
 as in (5.2). At this point we will have removed $v_1$ from the $\text{Int}(C_1)$
-by setting up each neighbors of $v_1$ as an outer face vertex. We will color
-$\text{Int}(C_1)-v_1$ accordingly with \textit{Path Color} (5.3). Then we will
-color $\text{Int}(C_2)$ with \textit{Remove Path} (5.4).
+by setting up each neighbors of $v_1$ as an outer face vertex. We will path
+$L$-color $\text{Int}(C_1)-v_1$ and $\text{Int}(C_2)$ accordingly.
 
 Let us iterate counterclockwise through $\text{Adj}[v_1]$ beginning from $v_k$.
 Let $u$ be the current neighbor of $v_1$.
@@ -1281,18 +1281,104 @@ of $v_1$. Let $C_1$ be the cycle consisting of $N$ and $C[u,v_k]$. If $u\ne v_2$
 let $C_2$ be the cycle consisting of $C[v_1,u]$ and the edge $v_1u$.
 
 Let $\text{Nbr}[u]=(r_1,r_2)$ and
-$\text{Nbr}[u]=(s_1,s_2)$. Let $r_v$ be the reference to the node for
+$\text{Nbr}[v]=(s_1,s_2)$. Let $r_v$ be the reference to the node for
 $v$ in $\text{Adj}[u]$ and $s_u$ be the reference to the node for $u$ in
 $\text{Adj}[v]$.
 
-We will now path $L$-color $\text{Int}(C_1)$ and, if $u\ne v_2$,
+In all cases below, before we apply an algorithm to color
+$\text{Int}(C_1)$ we will assign $\text{Nbr}[u]=(r_v,r_2)$ and $\text{Nbr}[v]=
+(s_1,s_v)$. Similarly, before applying an algorithm to color $\text{Int}(C_2)$
+we will assign $\text{Nbr}[u]=(r_1,r_v)$ and $\text{Nbr}[v]=(s_u,s_2)$.
+
+We will now path $L$-list-color $\text{Int}(C_1)$ and, if $u\ne v_2$,
 $\text{Int}(C_2)$. There are several cases to consider.
 
-\textit{Case 2.2.1:} Suppose $u\in C[x,v_1]$. We will first 
+\textit{Case 2.2.1:} Suppose $u\in C[x,v_1]$. Note in this case it must be that
+$u\ne v_2$. We will first apply \textit{Remove Path} (5.4) to path $L$-list-color
+$\text{Int}(C_2)$ with fixed vertices $x$ and $y$. Note this colors the vertex
+$u$. We will apply \textit{Remove Path} (5.4) to remove the single colored
+vertex $n$, with the vertices immediately adjacent to $n$ on $C_1$ as the fixed
+vertices. This ensures $n$ recieves no same color neighbors in
+$\text{Int}(C_1)$. 
 
-\textit{Case 2.2.2:} Suppose $u\in C[y,x]$.
+\textit{Case 2.2.2:} Suppose $u\in C[y,x]$, $u\ne y$. Again it must be that
+$u\ne v_2$. We apply \textit{Color Path} (5.3) to path $L$-list-color
+$\text{Int}(C_1)$ with fixed vertices $x$ and $u$, the new path starting at $x$.
+Next we apply \textit{Remove Path} (5.4) to $\text{Int}(C_2)$ with fixed
+vertices $u$ and $y$.
 
-\textit{Case 2.2.3:} Suppose $u\in C[v_1,y]$.
+\textit{Case 2.2.3:} Suppose $u\in C[v_1,y]$, $u\ne v_2$. We apply
+\textit{Color Path} (5.3) to path $L$-list-color $\text{Int}(C_1)$ with fixed
+vertices $x$ and $y$, the new path starting at $x$. We then apply \textit{Remove
+Path} (5.4) to path $L$-list-color $\text{Int}(C_2)$ with the single fixed 
+vertex $u$. This ensures $u$ recieves no same color neighbors in
+$\text{Int}(C_2)$.
+
+\textit{Case 2.2.4:} Suppose $u= v_2$. If $c\in L[u]$ then $u$ is a path vertex
+and we apply \textit{Remove Path} (5.4) to path $L$-list-color $\text{Int}(C_1)$
+with fixed vertices $x$ and $y$. Otherwise, we have reached the end of the path.
+We apply \textit{Color Path} (5.3) to $\text{Int}(C_1)$ with fixed vertices $x$
+and $y$, the new path starting from $x$.
+
+\noindent\textbf{Complexity:} Let $v\in G$. We iterate through $\text{Adj}[v]$
+at most once during \textit{Color Path} (5.3) when looking for the next vertex
+to add to the path containing $v$. In \textit{Remove Path} (5.4) we iterate through
+$\text{Adj}[v]$ exactly once. We also iterate through $\text{Adj}[v]$ once
+when we initially construct $\textit{Nbr}[v]$ to locate start and stop nodes.
+Therefore the overall complexity of the algorithm is
+\[
+    \mathcal{O}\left(\sum_{v=0}^{n-1}3\cdot\text{deg}(v)\right)
+        =\mathcal{O}(6m)=\mathcal{O}(n).
+\]
+
+Recall however, the above algorithm and complexity analysis relied on an
+unproven assumption. In \textit{Path Color} (5.3) we assumed we could determine
+whether a given vertex $u\in C$ was in the path $C[v,y]$, where $v$ was the
+last vertex added to our colored path. Additionally, in \textit{Remove Path}
+(5.4) we assumed for $u\in C$ we could determine whether $u$ was in $C[x,v_l]$,
+$C[y,x]$, or $C[v_1,y]$. We will now describe how this check may be acomplished
+in $\mathcal{O}(1)$ time.
+
+Let us define an integer vertex property to store a location mark for each
+vertex on the outer cycle. Assume we are given the input for \textit{Remove
+Path} (5.4). Also assume vertices in $C[v_1,y]$ have been assigned the mark $n_1$,
+vertices in $C[y,x]$ have the mark $n_2$, and vertices in $C[y,v_k]$ have
+the mark $n_3$.
+
+Let us iterate through $\text{Adj}[v_1]$ starting from $v_k$ as in (5.4). Let
+$u$ be the current neighbor. If $u\not\in C$ we will assign $u$ the mark $n_1$.
+This is because $u$ will be in $C_1[x,v_2]$ if there are no chords $v_1v_i$.
+
+Now suppose we reach the end of the colored path, or we hit a chord $v_1u$ with
+$u\in C[v_1,x]$. Then in the subsequent call to \textit{Color Path} (5.3) on
+$\text{Int}(C_1)$ we will need to treat vertices marked $n_1$ and $n_2$ as the
+same segment, since $C_1[x,y]$ consists of both $C_1[x,v_k]$ and $C_1[u,y]$.
+One solution is to walk along $C_1$ and remarking vertices, but this is very
+inefficient. Another solution is to simply compare with both marks to check
+whether a vertex is in $C_1[x,y]$. However, we will be drawing further colored
+paths and generating further marks, and the collection of marks to compare too
+might grow very large.
+
+The ultimate solution is to use a disjoint set structure for the marks. Vertex
+marks are then compared in the disjoint set structure, to see if both marks
+belong to the same set. To join the segments marked with $n_1$ and $n_2$ above
+we may simply perform a union operation in the disjoint set structure.
+
+Note the
+mark $n_1$ for the segment $C_1[x,v_k]$ will always be a singleton set in the
+disjoint set structure. This is because the only vertices marked with $n_1$ are
+vertices that have been added to the outer face while removing vertices from the
+colored path. Thus each union operation performed, at least one of the two sets
+is always a singleton. Because of this, standard disjoint set optimizations
+allow set lookup operations in constant time. Therefore performing
+$\mathcal{O}(n)$ make set, union, and lookup operations in the disjoint set
+structure requires $\mathcal{O}(n)$ time. Hence the overall performance of the
+algorithm remains linear.
+
+For full details on managing location marks and disjoint set operations, see the
+provided C++ implementation.
+
+\begin{comment}
 
 \begin{figure}
 \begin{tikzpicture}[scale=0.7]
@@ -1472,9 +1558,9 @@ $\text{Int}(C_2)$. There are several cases to consider.
 \end{tikzpicture}
 \end{figure}
 
+\end{comment}
 
-
-\section{Boost Graph Implementation}
+%\section{Boost Graph Implementation}
 
 
 
@@ -1567,6 +1653,7 @@ $\text{Int}(C_2)$. There are several cases to consider.
 	2nd ed., Pearson, 2001.
 \end{thebibliography}
 
+\begin{comment}
 \appendix
 \section{Code}
 \subsection{Poh with breadth first search (4.2)}
@@ -1581,5 +1668,7 @@ $\text{Int}(C_2)$. There are several cases to consider.
 \subsection{Embedding helper functions}
 
 \subsection{Disjoint set structure}
+
+\end{comment}
 
 \end{document}
