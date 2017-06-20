@@ -1248,6 +1248,29 @@ $y$ each receive at most one same color neighbor, and no vertex in
 $G-P$ with a neighbor in $P$ receives the color $c$. If $x=y$ then $x$ will
 receive no same colored neighbors in $G$.
 
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+  \node (c_n) [label=above left:$v_k$, fill] at (-1.5cm, 1.25cm) {};
+  \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
+  \node (p_label) [draw=none, scale=0.8] at (0cm, 2cm) {};
+  \node (c_1) [label=above:$v_2$] at (1.5cm, 1.25cm) {};
+  \node (c_i) [label=below:$u$] at (0cm, -1cm) {};
+  \node (G_0) [draw=none, fill=none] at (-0.75cm, 0.12cm) {$C_1$};
+  \node (G_1) [draw=none, fill=none] at (0.7cm, 0.5cm) {$C_2$};
+  
+  \draw (c_i) edge [bend left] (c_n) [dashed];
+  \draw (c_n) edge [bend left] (c_i) [dashed];
+  \draw (c_n) edge (p);
+  \draw (p) edge (c_1);
+  \draw (p) edge (c_i);
+  \draw (c_1) edge [bend left] (c_i) [dashed];
+\end{tikzpicture}
+\end{center}
+
+\caption{The cycles $C_1$ and $C_2$ in the case $v_1u$ is a chord of $C$.}
+\end{figure}
+
 \noindent\textbf{Description:} We will remove the path $P$ one vertex at a
 time. In this call we will be removing $v_1$.
 
@@ -1293,6 +1316,55 @@ we will assign $\text{Nbr}[u]=(r_1,r_v)$ and $\text{Nbr}[v]=(s_u,s_2)$.
 We will now path $L$-list-color $\text{Int}(C_1)$ and, if $u\ne v_2$,
 $\text{Int}(C_2)$. There are several cases to consider.
 
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+  \node (c_n) [label=above left:$v_k$, fill] at (-1.5cm, 1.25cm) {};
+  \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
+  \node (y) [label=right:$y$] at (1.5cm, 1.25cm) {};
+  \node (x) [label=right:$x$] at (1.5cm, -0.25cm) {};
+  \node (c_i) [label=below:$u$] at (0cm, -1cm) {};
+  \node (G_0) [draw=none, fill=none] at (-0.75cm, 0.12cm) {$C_1$};
+  \node (G_1) [draw=none, fill=none] at (0.7cm, 0.5cm) {$C_2$};
+  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
+  
+  \draw (c_i) edge [bend left] (c_n) [dashed];
+  \draw (c_n) edge [bend left] (c_i) [dashed];
+  \draw (c_n) edge (p);
+  \draw (p) edge (c_i);
+  \draw (p) edge (y) [dashed];
+  \draw (y) edge (x) [dashed];
+  \draw (x) edge (c_i) [dashed];
+\end{tikzpicture}
+$\qquad$
+\begin{tikzpicture}
+  \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
+  \node (y) [label=right:$y$, fill] at (1.5cm, 1.25cm) {};
+  \node (x) [label=right:$x$, fill] at (1.5cm, -0.25cm) {};
+  \node (c_i) [label=below:$u$, fill] at (0cm, -1cm) {};
+  \node (G_1) [draw=none,fill=none] at (0.7cm, 0.5cm) {$C_2$};
+  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
+  
+  \draw (p) edge (c_i);
+  \draw (p) edge (y) [dashed];
+  \draw (y) edge (x) [dashed];
+  \draw (x) edge (c_i) [dashed];
+\end{tikzpicture}
+$\qquad$
+\begin{tikzpicture}
+  \node (c_n) [label=above left:$v_k$, fill] at (-1.5cm, 1.25cm) {};
+  \node (c_i) [label=below:{$u$}] at (0cm, -1cm) {};
+  \node (G_0) [draw=none, fill=none] at (-0.75cm, 0.12cm) {$C_1$};
+  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
+  
+  \draw (c_i) edge [bend left] (c_n) [dashed];
+  \draw (c_n) edge [bend left] (c_i) [dashed];
+\end{tikzpicture}
+\end{center}
+
+\caption{Case 2.2.1.}
+\end{figure}
+
 \textit{Case 2.2.1:} Suppose $u\in C[x,v_1]$. Note in this case it must be that
 $u\ne v_2$. We will first apply \textit{Remove Path} (5.4) to path $L$-list-color
 $\text{Int}(C_2)$ with fixed vertices $x$ and $y$. Note this colors the vertex
@@ -1307,6 +1379,54 @@ $\text{Int}(C_1)$ with fixed vertices $x$ and $u$, the new path starting at $x$.
 Next we apply \textit{Remove Path} (5.4) to $\text{Int}(C_2)$ with fixed
 vertices $u$ and $y$.
 
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+  \node (c_n) [label=above left:$v_k$, fill] at (-1.5cm, 1.25cm) {};
+  \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
+  \node (x) [label=below left:$x$, fill] at (-1.5cm, 0.25cm) {};
+  \node (y) [label=right:$y$, fill] at (1.5cm, 0.5cm) {};
+  \node (c_i) [label=below:$u$, fill] at (0cm, -1cm) {};
+  \node (G_0) [draw=none,fill=none] at (-0.75cm, 0.12cm) {$C_1$};
+  \node (G_1) [draw=none,fill=none] at (0.7cm, 0.5cm) {$C_2$};
+  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
+  
+  \draw (c_i) edge (x) [dashed];
+  \draw (x) edge (c_n) [dashed];
+  \draw (c_n) edge [bend left] (c_i) [dashed];
+  \draw (c_n) edge (p);
+  \draw (p) edge (c_i);
+  \draw (p) edge [bend left] (y) [dashed];
+  \draw (y) edge [bend left] (c_i) [dashed];
+\end{tikzpicture}
+$\qquad$
+\begin{tikzpicture}
+  \node (c_n) [label=above left:{$v_k$}, fill] at (-1.5cm, 1.25cm) {};
+  \node (x) [label=below left:{$x$}] at (-1.5cm, 0.25cm) {};
+  \node (c_i) [label=below:{$u$}, fill] at (0cm, -1cm) {};
+  \node (G_0) [draw=none,fill=none] at (-0.75cm, 0.12cm) {$C_1$};
+  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
+  \draw (c_i) edge (x) [dashed];
+  \draw (x) edge (c_n) [dashed];
+  \draw (c_n) edge [bend left] (c_i) [dashed];
+\end{tikzpicture}
+$\qquad$
+\begin{tikzpicture}
+  \node (p) [label=above:$v_1$] at (0cm, 2cm) {};
+  \node (y) [label=right:$y$, fill] at (1.5cm, 0.5cm) {};
+  \node (c_i) [label=below:$u$] at (0cm, -1cm) {};
+  \node (G_1) [draw=none,fill=none] at (0.7cm, 0.5cm) {$C_2$};
+  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
+  
+  \draw (p) edge (c_i);
+  \draw (p) edge [bend left] (y) [dashed];
+  \draw (y) edge [bend left] (c_i) [dashed];
+\end{tikzpicture}
+\end{center}
+
+\caption{Case 2.2.2.}
+\end{figure}
+
 \textit{Case 2.2.3:} Suppose $u\in C[v_1,y]$, $u\ne v_2$. We apply
 \textit{Color Path} (5.3) to path $L$-list-color $\text{Int}(C_1)$ with fixed
 vertices $x$ and $y$, the new path starting at $x$. We then apply \textit{Remove
@@ -1319,6 +1439,55 @@ and we apply \textit{Remove Path} (5.4) to path $L$-list-color $\text{Int}(C_1)$
 with fixed vertices $x$ and $y$. Otherwise, we have reached the end of the path.
 We apply \textit{Color Path} (5.3) to $\text{Int}(C_1)$ with fixed vertices $x$
 and $y$, the new path starting from $x$.
+
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+  \node (c_n) [label=above left:$v_k$, fill] at (-1.5cm, 1.25cm) {};
+  \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
+  \node (x) [label=left:$x$, fill] at (-1.5cm, 0.25cm) {};
+  \node (y) [label=below left:$y$, fill] at (-1cm, -0.75cm) {};
+  \node (c_i) [label=below:$u$, fill] at (0cm, -1cm) {};
+  \node (G_0) [draw=none,fill=none] at (-0.75cm, 0.05cm) {$C_1$};
+  \node (G_1) [draw=none,fill=none] at (0.5cm, 0.5cm) {$C_2$};
+  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
+  
+  \draw (c_i) edge (y) [dashed];
+  \draw (y) edge (x) [dashed];
+  \draw (x) edge (c_n) [dashed];
+  \draw (c_n) edge [bend left] (c_i) [dashed];
+  \draw (c_n) edge (p);
+  \draw (p) edge (c_i);
+  \draw (p) edge [bend left=90] (c_i) [dashed];
+\end{tikzpicture}
+$\qquad$
+\begin{tikzpicture}
+  \node (c_n) [label=above left:{$v_k$}, fill] at (-1.5cm, 1.25cm) {};
+  \node (x) [label=left:{$x$}] at (-1.5cm, 0.25cm) {};
+  \node (y) [label=below left:$y$, fill] at (-1cm, -0.75cm) {};
+  \node (c_i) [label=below:$u$, fill] at (0cm, -1cm) {};
+  \node (G_0) [draw=none,fill=none] at (-0.75cm, 0.05cm) {$C_1$};
+  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
+  
+  \draw (c_i) edge (y) [dashed];
+  \draw (y) edge (x) [dashed];
+  \draw (x) edge (c_n) [dashed];
+  \draw (c_n) edge [bend left] (c_i) [dashed];
+\end{tikzpicture}
+$\qquad$
+\begin{tikzpicture}
+  \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
+  \node (c_i) [label=below:$u$] at (0cm, -1cm) {};
+  \node (G_1) [draw=none,fill=none] at (0.5cm, 0.5cm) {$C_2$};
+  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
+  
+  \draw (p) edge (c_i);
+  \draw (p) edge [bend left=90] (c_i) [dashed];
+\end{tikzpicture}
+\end{center}
+
+\caption{Case 2.2.3.}
+\end{figure}
 
 \noindent\textbf{Complexity:} Let $v\in G$. We iterate through $\text{Adj}[v]$
 at most once during \textit{Color Path} (5.3) when looking for the next vertex
