@@ -326,6 +326,32 @@ namespace {
                         before_p = -1;
                     }
                     
+                    /*
+                     * This is the most complicated case.
+                     * There are two sub-cases to consider:
+                     * 
+                     * Case 1: p_color in L[n]
+                     *   In this case |L[n]|=1. In the first call we will
+                     *   continue coloring the path from n. In the second
+                     *   call, we will immediately find the edge pn and,
+                     *   since it the first edge and in the cycle, we will
+                     *   immediately remove the two vertex path np. Thus
+                     *   no vertex in the path will recieve a new same color
+                     *   neighbor from the second call.
+                     *
+                     * Case 2: p_color is not in L[n]
+                     *   In this case the first call will start a new path
+                     *   from the vertex new_x. By removing p_color from all
+                     *   neighbors of vertices in the path, we ensure no
+                     *   vertices in the path, including n, will recieve any
+                     *   new same color neighbors in the first call. In the
+                     *   second call we will be continuing the path from p.
+                     *   Since p_color is not in L[n] and x=y=n, the vertex
+                     *   n will not recieve any new same color neighbors in
+                     *   the second call.
+                     
+                     */
+                    
                     // Color the subgraph bounded by the first cycle
                     neighbor_range_map[n] = n_ranges.second;
                     hartman_skrekovski_color_recursive(
@@ -344,7 +370,7 @@ namespace {
                                 graph, augmented_embedding,
                                 face_location_map, face_location_sets,
                                 neighbor_range_map, color_list_map,
-                                p, n, p,
+                                n, n, p,
                                 -1, before_y, -1
                             );
                     }

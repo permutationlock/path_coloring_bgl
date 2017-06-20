@@ -37,7 +37,7 @@ std::string draw_tikz_graph(
 		vertex_t;
 	typedef typename boost::graph_traits<graph_t>::edge_descriptor
 		edge_t;
-	typedef typename boost::property_traits<color_map>::value_type color_type;
+	typedef typename boost::property_traits<color_map_t>::value_type color_type;
 	
 	std::map<color_type, std::string> color_string_map;
 	
