@@ -315,7 +315,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
 
  ```c++
  typedef boost::adjacency_list<
-         boost::setS,
+         boost::vecS,
          boost::vecS,
          boost::undirectedS,
          boost::property<boost::vertex_index_t, std::size_t>,

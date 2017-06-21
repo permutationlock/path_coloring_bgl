@@ -34,7 +34,7 @@ using namespace boost;
 
 // Define the graph type for all test graphs
 typedef adjacency_list<
-        setS,
+        vecS,
         vecS,
         undirectedS,
         property<vertex_index_t, std::size_t>,
