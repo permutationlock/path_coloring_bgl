@@ -59,13 +59,13 @@
  - the iterator pairs *p_begin*, *p_end* and *q_begin*, *q_end* are each a
    range of vertices in *graph*, respectively *p_0,..,p_n* and *q_0,...,q_m*,
    such that *p_0...p_n* and *q_0...q_m* are both induced paths, and
-   such that *p_0...p_nq_0...q_m* is a cycle.
+   such that *p_0...p_nq_m...q_0* is a cycle.
 
 ### Output
 
  The *color_map* has been assigned such that it represents a valid path
  *3*-coloring of the vertices of the subgraph bounded by the cycle
- *p_0...p_nq_0...q_m* using the three colors *c_0*, *c_1*, and *c_2*.
+ *p_0...p_nq_m...q_0* using the three colors *c_0*, *c_1*, and *c_2*.
 
 ### Time Complexity
  
@@ -141,13 +141,13 @@
  - the iterator pairs *p_begin*, *p_end* and *q_begin*, *q_end* are each a
    range of vertices in *graph*, respectively *p_0,..,p_n* and *q_0,...,q_m*,
    such that *p_0...p_n* and *q_0...q_m* are both induced paths, and
-   such that *p_0...p_nq_0...q_m* is a cycle.
+   such that *p_0...p_nq_m...q_0* is a cycle.
 
 ### Output
 
  The *color_map* has been assigned such that it represents a valid path
  *3*-coloring of the vertices of subgraph of *graph* bounded by the cycle
- *p_0...p_nq_0...q_m* using the three colors *c_0*, *c_1*, and *c_2*.
+ *p_0...p_nq_m...q_0* using the three colors *c_0*, *c_1*, and *c_2*.
 
 ### Time Complexity
  
