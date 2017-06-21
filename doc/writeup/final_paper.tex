@@ -7,7 +7,7 @@
 \usepackage{chngcntr}
 \usepackage{indentfirst}
 %\usepackage{minted}
-\usepackage{appendix}
+%\usepackage{appendix}
 
 \title{Implementing Path Coloring Algorithms on Planar Graphs}
 \author{Aven Bross}
@@ -1291,12 +1291,6 @@ receive no same colored neighbors in $G$.
 
 \noindent\textbf{Description:} We will remove the path $P$ one vertex at a
 time. In this call we will be removing $v_1$.
-
-We iterate through $\text{Adj}[v_1]$ beginning from $v_k$. We will continue
-until we hit neighbor $v_i\in C$, $i\ne k$. We define the cycles $C_1$ and $C_2$
-as in (5.2). At this point we will have removed $v_1$ from the $\text{Int}(C_1)$
-by setting up each neighbors of $v_1$ as an outer face vertex. We will path
-$L$-color $\text{Int}(C_1)-v_1$ and $\text{Int}(C_2)$ accordingly.
 
 Let us iterate counterclockwise through $\text{Adj}[v_1]$ beginning from $v_k$.
 Let $u$ be the current neighbor of $v_1$.
