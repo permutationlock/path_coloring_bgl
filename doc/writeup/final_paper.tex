@@ -54,7 +54,7 @@ that runs in linear time.
 
 Independent results of Hartman and Skrekovski describe a procedure that takes
 a plane graph $G$ and a list of $3$ colors for each vertex, and
-computes a path coloring of $G$ such that each vertex recieves a color from its
+computes a path coloring of $G$ such that each vertex receives a color from its
 list. We present a linear time algorithm based on Hartman and Skrekovski's
 proofs.
 
@@ -273,7 +273,7 @@ or more disjoint paths. Note that path $k$-coloring is equivalent to
 $(k,2)$-coloring with the added restriction that path coloring forbids cycles.
 It was conjectured by Broere et. al. \cite{broere} that all planar graphs may
 be path $3$-colored. In 1990 Poh \cite{poh} and Goddard \cite{goddard}
-independatnly proved the conjecture. Planar graphs that do not admit a path $3$-coloring
+independently proved the conjecture. Planar graphs that do not admit a path $3$-coloring
 were described by Chartrand et. al. \cite{kronk}, and thus the result is best possible.
 
 Poh's proof is constructive and may easily be adapted to an algorithm for path
@@ -317,7 +317,7 @@ number of vertices $n$. However, since $G$ is a plane graph, if $n\ge 3$ then
 $m\le 3n-6$. Thus $\mathcal{O}(m)= \mathcal{O}(n)$. Hence it is equivalent to
 take the input size to be the number of edges $m$.
 
-We assume an integer RAM model of compution in which integers require
+We assume an integer RAM model of computation in which integers require
 fixed space and integer operations take constant time. The basic operation
 for all time complexity discussions will therefore be a single memory reference
 lookup, integer arithmetic operation, or integer comparison.
@@ -416,7 +416,7 @@ triangulated and plane embedded, arbitrary planar graphs may be modified in
 linear time to fit these criteria.
 
 Each algorithm presented in this project will allocate some fixed number
-of vertex properties, independant of the size of the graph. The size of all
+of vertex properties, independent of the size of the graph. The size of all
 other data structures constructed will be $\mathcal{O}(n)$ at all points during
 the operation of each algorithm. Therefore the size complexity of every
 algorithm is $\mathcal{O}(n)$.
@@ -455,11 +455,11 @@ $v_iv_j$ in common, the combined coloring forms a path $3$-coloring of $G$.
 \textit{Case 2:} Suppose no chords of $C$ exist. Let $u$ be the neighbor of
 $v_k$ immediately clockwise from $v_1$ and let $w$ be the neighbor of $v_l$
 immediately clockwise from $v_{l+1}$. That is, $u,w\in\text{Int}(C)$ are the
-unique, but possibly not distinct, vertices such that $uv_1v_k$ and
-$uv_lv_{l+1}$ are each faces.
+unique, but possibly not distinct, vertices such that the cycles $uv_1v_k$ and
+$wv_lv_{l+1}$ are each faces of $G$.
 
-Since $G$ is weakly triangulated, $G-C$ is nonempty,
-and $C$ has no chords, $G-C$ is connected. Thus there exists a $uw$-path in
+Since $G$ is weakly triangulated, $G-C$ is nonempty, and $C$ has no chords, it
+follows that $G-C$ is connected. Thus there exists a $uw$-path in
 $G-C$. Let $T$ be the shortest such path, and note that therefore $T$ is
 an induced path. Color $T$ with the remaining color not used on $P$ or $Q$.
 
@@ -534,7 +534,8 @@ All planar graphs are path $3$-colorable.
 In order to implement Poh's algorithm with adjacency lists there are two main
 obstacles. First, we must have a method to efficiently represent colored paths,
 as we will be recursively constructing paths and dividing the graph along them.
-Second, we will need an efficient algorithm to locate chords and $uw$-paths.
+Second, we will need an efficient algorithm to locate the chords of $C$ and the
+$uw$-path.
 
 Let $G$ be a $2$-connected weakly triangulated plane graph with an adjacency
 list representation. Each call of the algorithm will be provided with a cycle
@@ -558,8 +559,8 @@ $Q=v_kv_{k-1}\ldots v_{l+1}$ are induced
 paths such that $C=v_1v_2\ldots v_k$ is a cycle. Additionally, assume each
 path has been colored with a distinct color.
 
-\noindent\textbf{Input:} The paths $P$ and $Q$, represented by their endpoints
-as described above.
+\noindent\textbf{Input:} The paths $P$ and $Q$, each represented by their
+endpoints as described above.
 
 \noindent\textbf{Output:} We find an extension of the $2$-coloring of $C$ to
 a path $3$-coloring of $\text{Int}(C)$ such that
@@ -646,24 +647,30 @@ algorithm to $P$ and $Q-u$. In either case, if the two remaining paths each
 consist of single vertex then there are no remaining uncolored vertices and we
 terminate the algorithm.
 
-\textit{Case 2:} Suppose $u\not\in C$. Perform a breadth first search from $u$,
-ignoring vertices in $C$. Terminate the search when we reach a vertex
+\textit{Case 2:} Suppose $u\not\in C$. Perform a breadth first search from $u$
+in $\text{Int}(C)-C$, that is, ignoring vertices in $C$. Terminate the search
+when we reach a vertex
 $w$ with neighbors $v_i\in P$ and $v_j \in Q$ such that $v_i$ is immediately
-past $v_j$ in $\text{Adj}[w]$. Such a vertex must exist because
-$\text{Int}(C)-C$ is connected and $\text{Int}(C)$ is weakly triangulated.
+past $v_j$ in $\text{Adj}[w]$. Such a vertex must exist by the same argument
+as in \textit{Poh $3$-Coloring} (4.1).
 Backtracking from $w$ along the breadth first search and coloring vertices
 produces an induced $uw$-path $T$, colored with the remaining color not used on
 $P$ or $Q$.
 
-Split $P$ and $Q$ to form the paths $P_1=v_1v_2\ldots v_i$, $P_2=v_ip_{i+1}\ldots v_l$,
+Define the paths $P_1=v_1v_2\ldots v_i$, $P_2=v_ip_{i+1}\ldots v_l$,
 $Q_1=v_kv_{k-1}\ldots v_j$, and $Q_2=v_jq_{j-1}\ldots v_{l+1}$. Observe we
 have a cycle $C_1$ consisting of $P_1$, $T$, and the edges $v_1u$ and $v_iw$.
 Similarly we have a cycle $C_2$ consisting of $T$, $Q_1$, and the edges $v_ku$
 and $v_jw$. We apply the algorithm to $P_1$ and $T$ to color $\text{Int}(C_1)$
-and similarly to $T$ and $Q_1$ to color $\text{Int}(C_2)$. If $i=l$ and
+and similarly to $T$ and $Q_1$ to color $\text{Int}(C_2)$.
+
+If $i=l$ and
 $j=l+1$ we are done. Otherwise, we have the cycle $C_3$ consisting of $P_2$,
 $Q_2$ and the edges $v_iv_j$ and $v_lv_{l+1}$, and we may apply the algorithm to
 color $\text{Int}(C_3)$.
+
+Note the combined coloring forms a path $3$-coloring of $\text{Int}(C)$ by the
+same arguments as in (4.1).
 
 \begin{figure}
 \begin{center}
@@ -766,23 +773,32 @@ color of the path $Q$.
 a path $3$-coloring of $\text{Int}(C)$ such that
 no vertex in $C$ receives a same color neighbor in $\text{Int}(C)-C$.
 
-\noindent\textbf{Description:} If $\text{Int}(C)-C$ is empty there is nothing to
-color and the algorithm terminates. Otherwise, we proceed as follows.
-
+\noindent\textbf{Description:} 
 We will iterate through the vertices of $P$ until we find a chord. All interior
 vertices visited will be marked to indicate they have a neighbor in $P$. For
 each $i$ from $1$ to $l$ let us walk through
-$\text{Adj}[v_i]$ from $v_{i-1}$ to $v_{i+1}$, excluding
-$v_{i-1}$ and $v_{i+1}$. For each neighbor $u$ visited,
-if $u\not\in C$, then $u\in \text{Int}(C)-C$ and we
-mark it. If $u=v_j\in Q$ then $v_iv_j$ is a chord of $C$ and we stop.
+$\text{Adj}[v_i]$ from $v_{i-1}$ to $v_{i+1}$, not including
+$v_{i-1}$ and $v_{i+1}$.
 
-We now split $P$ and $Q$ to form the paths
-$P_1=v_1v_2\ldots v_i$, $P_2=v_ip_{i+1}\ldots v_l$, $Q_1=v_kv_{k-1}\ldots v_j$,
-and $Q_2=v_jv_{j-1}\ldots v_{l+1}$. Let us define $C_1$ and $C_2$ as usual and
-note $C_1$ is chordless.
-We may then apply \textit{Path Trace} (4.4) to color $\text{Int}(C_1)$, and
-apply \textit{Face Walk} (4.3) to color $\text{Int}(C_2)$.
+Let $v$ be the current neighbor. If $v=v_j\in Q$ then $v_iv_j$ is a chord of $C$
+and we stop. Otherwise $v\in \text{Int}(C)-C$ with the neighbor $v_i\in P$ and we
+mark it.
+
+Define the cycles $C_1$ and $C_2$ as usual by dividing $C$ along the chord
+$v_iv_j$. Note $C_1$ is chordless as $P$ and $Q$ are induced paths
+and $v_iv_j$ is the first chord of $C$ encountered. Apply \textit{Face Walk}
+(4.3) to path $3$-color $\text{Int}(C_2)$. It remains to color
+$\text{Int}(C_1)$.
+
+If we never encountered a vertex in $\text{Int}(C)-C$ during our walk through
+the neighbors of $v_1,\ldots,v_i$, then $\text{Int}(C_1)-C_1$ is empty and thus
+$\text{Int}(C_1)$ is already colored. Otherwise let $u$ be the first such
+neighbor encountered. Note $u$ is the unique vertex
+such that $uv_1v_l$ is a face. We may therefore apply \textit{Path Trace} (4.4)
+to path $3$-color $\text{Int}(C_1)$.
+
+The combined coloring is a path $3$-coloring of $\text{Int}(C)$ by the
+same argument as in (4.1).
 
 \noindent\textbf{Complexity:} See \textit{Path Trace} (4.4).\\
 
@@ -791,14 +807,14 @@ apply \textit{Face Walk} (4.3) to color $\text{Int}(C_2)$.
 \noindent\textbf{Assumptions:} Let $P=v_1v_2\ldots v_l$ and
 $Q=v_kv_{k-1}\ldots v_{l+1}$ be induced paths, each colored with a distinct
 color, such that $C=v_1v_2\ldots v_k$ is a chordless cycle. In
-addition, suppose all vertices in $\text{Int}(C)- C$ with a neighbor in $P$
-have been marked.
+addition, suppose $\text{Int}(C)-C$ is nonempty and all vertices in
+$\text{Int}(C)- C$ with at least one neighbor in $P$ have been marked.
 
 \noindent\textbf{Input:} The vertex $u\in \text{Int}(C)-C$ such that the cycle
 $uv_1v_k$ is a face, as well as the respective colors of the paths $P$ and $Q$.
 
 \noindent\textbf{Output:} We find an extension of the $2$-coloring of $C$ to a
-path $3$-coloring of $\text{Int}(C)$ such that no vertex in $C$ recieves a same
+path $3$-coloring of $\text{Int}(C)$ such that no vertex in $C$ receives a same
 color vertex in $\text{Int}(C)-C$.
 
 \noindent\textbf{Description:} Initialize $T$ as the path consisting of the
@@ -806,29 +822,32 @@ single vertex $u$, coloring $u$ with the remaining color. We will recursively
 add vertices to $T$ until we reach the unique vertex $w$ such that $wv_lv_{l+1}$
 is a face.
 
-Suppose we have constructed the induced path $T=t_1t_2\ldots t_d$, with $t_1=u$.
-Iterate through $\text{Adj}[t_d]$
-beginning from $t_{d-1}$. If we visit a neighbor $v$ that has a neighbor in
-$P$ we color $v$, append $T$, and repeat this process with $v$ as the new
-end vertex. If we visit $u\in P$ it must be that $t_d=w$ and
-the algorithm terminates. Note one of these two cases must occur since $t_d$
-has at least one neighbor in $P$.
+Suppose we have constructed the induced path $T=t_1t_2\ldots t_d$, such that
+$t_1=u$ and each $t_i$ has at least one neighbor in $P$.
+Iterate through $\text{Adj}[t_d]$,
+starting from $t_{d-1}$. Let $v$ be the current neighbor. If $v$ has a neighbor
+in $P$ we color $v$, assign $T=t_1\ldots t_dv$, and repeat the process with $v$ as
+the new end vertex. If $v\in P$ it must be that $t_d=w$ and we are finished
+constructing $T$. Otherwise ignore $v$ and move to the next neighbor.
+
+Note the process above must terminate since each vertex in $T$ has at least
+one neighbor in $P$.
 
 Let $T=t_1t_2\ldots t_d$ be the path constructed above. Suppose $t_it_j$ is an
 edge with $t_i,t_j\in T$, $i<j$. If $i=1$ let us define the vertex $t_0$ to be
 $v_1$. Since each vertex in $T$ has a neighbor in
 $P$, by planarity it must be that $t_j$ is between $t_{i-1}$ and $t_{i+1}$
 counterclockwise in $\text{Adj}[t_i]$. But by the construction of
-$T$, $t_{i+1}$ is the first neighbor of $t_i$ counterclockwie from $t_{i-1}$.
+$T$, $t_{i+1}$ is the first neighbor of $t_i$ counterclockwise from $t_{i-1}$.
 Thus $j=i+1$.
 
 Therefore the only edges between vertices in $T$ are the edges $t_1t_2,\ldots,
 t_{d-1}t_d$. So $T$ is an induced path.
 
+We apply \textit{Face Walk} (4.3) to path $3$-color $\text{Int}(C_2)$. It remains
+to color any uncolored vertices in $\text{Int}(C_1)$.
 
-We may apply \textit{Face Walk} (4.3) to color $\text{Int}(C_2)$. It remains
-to color any uncolored vertices in $\text{Int}(C_1)$. Notice that all vertices
-in $\text{Int}(C_1)$ have neighbors in $P$. Therefore any uncolored
+All vertices in $T$ have at least one neighbor in $P$. Therefore any uncolored
 vertex in $\text{Int}(C_1)$ must lie in a path $2$-colored chordless cycle of
 the form $v_iv_{i+1}\ldots v_jt_{p+1}t_p$ or $v_iv_{i+1}\ldots v_jt_p$.
 We will use the following procedure to locate all such cycles that contain
@@ -889,7 +908,7 @@ counterclockwise by a neighbor $v_i\in P$. There are two possible cases.
 
 \textit{Case 1:} Suppose we have previously visited a neighbor of $t_p$ in $P$,
 and let $v_j\in P$ be the most recent such neighbor visited. Note by planarity
-it must be that $i<j$. Note the cycle $C_y=v_iv_{i+1}\ldots v_jt_p$ is chordles
+it must be that $i<j$. Note the cycle $C_y=v_iv_{i+1}\ldots v_jt_p$ is chordless
 since $P$ is an induced path.
 We may therefore apply \textit{Path Trace} (4.4) to color $\text{Int}(C_y)$ with
 the vertex $y$ forming the face $yt_pv_i$.
@@ -974,7 +993,6 @@ Let $L'$ be a list assignment for $G$ defined such that for $v\in G$
 
 Let $P=v_{j_1}v_{j_2}\ldots v_{j_l}$ be the path constructed above.
 For each vertex in $v_{j_i}\in P$, color $v_i$ with $c$.
-Note if $y\in P$ then $y$ may already be colored $c$.
 
 Suppose
 $i\in\{1,\ldots,l-1\}$ such that $j_i+1<j_{i+1}$. We apply \textit{Remove Path}
@@ -988,9 +1006,9 @@ subgraph bounded by the cycle consisting of $P$ and $C[v_{j_l},v_{j_1}]$, with
 colored path $P$, and fixed vertices $v_k$ and $y'$.
 
 Pairwise all subgraphs above have only vertices in the path $P$ in common.
-Moreover, by \textit{Remove Path} (5.2), no vertex with a neighbor in $P$ will
+By \textit{Remove Path} (5.2), no vertex with a neighbor in $P$ will
 receive the color $c$. Therefore the combined coloring is a path
-$L$-list-coloring of $G$ such that $x,y$ recieve at most one same color
+$L$-list-coloring of $G$ such that $x,y$ receive at most one same color
 neighbor.\\
 
 \noindent\textbf{Algorithm 5.2.} (Hartman-Skrekovski -- Remove Path)
@@ -1047,7 +1065,7 @@ $\text{Int}(C_1)$ and $\text{Int}(C_2)$. Thus $v_i$ will receive at most one
 same color neighbor in each. Since $v_j$ is the single fixed vertex in
 $\text{Int}(C_2)$, $v_j$ will receive no same color neighbors in
 $\text{Int}(C_2)$. Thus the combined coloring is a path $L$-list-coloring of
-$G$ with $x,y$ recieving the correct number of shared color neighbors.
+$G$ with $x,y$ receiving the correct number of shared color neighbors.
 
 \textit{Case 1.2:} Otherwise $v_j\in C[y,v_{k-1}]$, $v_j\ne y$. Again, we first
 apply \textit{Remove Path} (5.2) to path $L$-list-color $\text{Int}(C_1)$ with
@@ -1059,7 +1077,7 @@ Again $\text{Int}(C_1)$ and $\text{Int}(C_2)$ have only the chord $v_iv_j$ in
 common. In both $\text{Int}(C_1)$ and $\text{Int}(C_2)$ the vertex $v_j$ is
 fixed vertex, and $v_i$ is an endpoint of the colored path. Therefore $v_i$ and
 $v_j$ will both have at most one same color neighbor in each subgraph. Thus the
-combined coloring is a path $L$-list-coloring of $G$ with $x,y$ recieving the
+combined coloring is a path $L$-list-coloring of $G$ with $x,y$ receiving the
 correct number of shared color neighbors.
 
 \textit{Case 2:} Suppose there are no chords of $C$ with endpoints in $P$.
@@ -1088,8 +1106,8 @@ $|L'(v)|=|L(v)|\ge 2$. We ensured $c\not\in L(x)$ if $|L(x)|=1$. Thus if $v=x$
 or $v=y$, $|L'(v)|\ge 1$.
 
 Therefore $L'$ meets the requirements of \textit{Path Color}
-(5.1) if we assign fixed vertices $x$ and $y$. By the definition of $L'$, in an
-$L'$-list-coloring of $G-P$ no vertex with a neighbor in $P$ will recieve the
+(5.1) with fixed vertices $x$ and $y$. Moreover, by the definition of $L'$, in
+an $L'$-list-coloring of $G-P$ no vertex with a neighbor in $P$ will receive the
 color $c$.
 
 \textit{Case 2.1.1:} Suppose $x\ne y$. Then we may apply \textit{Path Color}
@@ -1100,9 +1118,8 @@ path starting at $x$.
 $c_x\in L'(x)$, color $x$ with $c_x$, and define $L'(x)=\{c_x\}$. Apply
 \textit{Remove Path} (5.2) to path $L'$-list-color $G-P$
 with the colored path consisting of the single vertex $x$, and the vertices
-immediately preceeding and subsequent to $x$ on the outer
-cycle of $G-P$ as fixed vertices. This ensures $x$ receives no same colored
-neighbors in $G$.
+adjacent to $x$ on the outer cycle of $G-P$ as fixed vertices. This ensures $x$
+receives no same colored neighbors in $G$.
 
 \textit{Case 2.2:} Finally, if $G-P$ is not $2$-connected, then $G-P$ must be a
 complete graph on one or two vertices. It is simple to check we may
@@ -1147,15 +1164,16 @@ the size of each color list to one. Thus we consider a vertex $v$
 colored if $|L[v]|=1$.
 
 For each vertex $v_i\in C$ we will store a vertex property $\text{Nbr}[v_i]$
-called a neighbor range. The neighbor range of $v_i$ will contain a pair of
+called a \textit{neighbor range}. The neighbor range of $v_i$ will contain a pair of
 references to nodes in $\text{Adj}[v_i]$, that is $\text{Nbr}[v_i]=(r_1,r_2)$.
 The first reference $r_1$ will point to the
 node for $v_{i-1}$ in $\text{Adj}[v_i]$ and the reference $r_2$ will point to
-the node for $v_{i+1}$. This
-will provide immediate access to the preceeding and subsequent vertices of $v_i$
-in $C$, and also give start and stop nodes in $\text{Adj}[v_i]$ bounding the set
-of neighbors of $v_i$ in $G$ that are contained in the subgraph
-$\text{Int}(C)$.\\
+the node for $v_{i+1}$.
+
+Neighbor ranges provide immediate access to the preceding and subsequent
+vertices of $v_i$ in $C$. Additionally, they give start and stop nodes in
+$\text{Adj}[v_i]$ for the list of neighbors of $v_i$ that are contained in the
+subgraph $\text{Int}(C)$.\\
 
 \noindent\textbf{Algorithm 5.3.} (Hartman-Skrekovski -- Path Color)
 
@@ -1212,7 +1230,7 @@ We then assign $\text{Nbr}[u]=(r_v,r_2)$ and $\text{Nbr}[v]=(s_1,s_u)$. Finally,
 color $u$ with $c$, assign $L[u]=\{c\}$, append $u$ to $P$, and attempt to
 continue the path from $u$.
 
-\textit{Case 2.2:} Suppoe the start node of $\text{Nbr}[u]$ is $v$. Then we may
+\textit{Case 2.2:} Suppose the start node of $\text{Nbr}[u]$ is $v$. Then we may
 color $u$ with $c$, assign $L[u]=\{c\}$, append $u$ to $P$, and attempt to
 continue the path from $u$.
 
@@ -1370,7 +1388,7 @@ $u\ne v_2$. We will first apply \textit{Remove Path} (5.4) to path $L$-list-colo
 $\text{Int}(C_2)$ with fixed vertices $x$ and $y$. Note this colors the vertex
 $u$. We will apply \textit{Remove Path} (5.4) to remove the single colored
 vertex $n$, with the vertices immediately adjacent to $n$ on $C_1$ as the fixed
-vertices. This ensures $n$ recieves no same color neighbors in
+vertices. This ensures $n$ receives no same color neighbors in
 $\text{Int}(C_1)$. 
 
 \textit{Case 2.2.2:} Suppose $u\in C[y,x]$, $u\ne y$. Again it must be that
@@ -1431,7 +1449,7 @@ $\qquad$
 \textit{Color Path} (5.3) to path $L$-list-color $\text{Int}(C_1)$ with fixed
 vertices $x$ and $y$, the new path starting at $x$. We then apply \textit{Remove
 Path} (5.4) to path $L$-list-color $\text{Int}(C_2)$ with the single fixed 
-vertex $u$. This ensures $u$ recieves no same color neighbors in
+vertex $u$. This ensures $u$ receives no same color neighbors in
 $\text{Int}(C_2)$.
 
 \textit{Case 2.2.4:} Suppose $u= v_2$. If $c\in L[u]$ then $u$ is a path vertex
@@ -1505,7 +1523,7 @@ unproven assumption. In \textit{Path Color} (5.3) we assumed we could determine
 whether a given vertex $u\in C$ was in the path $C[v,y]$, where $v$ was the
 last vertex added to our colored path. Additionally, in \textit{Remove Path}
 (5.4) we assumed for $u\in C$ we could determine whether $u$ was in $C[x,v_l]$,
-$C[y,x]$, or $C[v_1,y]$. We will now describe how this check may be acomplished
+$C[y,x]$, or $C[v_1,y]$. We will now describe how this check may be accomplished
 in $\mathcal{O}(1)$ time.
 
 Let us define an integer vertex property to store a location mark for each
@@ -1522,24 +1540,22 @@ Now suppose we reach the end of the colored path, or we hit a chord $v_1u$ with
 $u\in C[v_1,x]$. Then in the subsequent call to \textit{Color Path} (5.3) on
 $\text{Int}(C_1)$ we will need to treat vertices marked $n_1$ and $n_2$ as the
 same segment, since $C_1[x,y]$ consists of both $C_1[x,v_k]$ and $C_1[u,y]$.
-One solution is to walk along $C_1$ and remarking vertices, but this is very
+One solution is to walk along $C_1$ and remark vertices, but this is very
 inefficient. Another solution is to simply compare with both marks to check
 whether a vertex is in $C_1[x,y]$. However, we will be drawing further colored
-paths and generating further marks, and the collection of marks to compare too
-might grow very large.
+paths and generating further marks, hence the collection of marks to compare
+may grow very large.
 
-The ultimate solution is to use a disjoint set structure for the marks. Vertex
-marks are then compared in the disjoint set structure, to see if both marks
-belong to the same set. To join the segments marked with $n_1$ and $n_2$ above
-we may simply perform a union operation in the disjoint set structure.
+Our solution is to use a disjoint set structure to compare location marks. All
+marks begin as singleton sets. To join the segments marked with $n_1$ and
+$n_2$ above we may simply perform a union operation in the disjoint set structure.
 
-Note the
-mark $n_1$ for the segment $C_1[x,v_k]$ will always be a singleton set in the
+The mark $n_1$ for the segment $C_1[x,v_k]$ will always be a singleton set in the
 disjoint set structure. This is because the only vertices marked with $n_1$ are
 vertices that have been added to the outer face while removing vertices from the
-colored path. Thus each union operation performed, at least one of the two sets
+colored path. Thus in each union operation performed at least one of the two sets
 is always a singleton. Because of this, standard disjoint set optimizations
-allow set lookup operations in constant time. Therefore performing
+allow set lookups in constant time. Therefore performing
 $\mathcal{O}(n)$ make set, union, and lookup operations in the disjoint set
 structure requires $\mathcal{O}(n)$ time. Hence the overall performance of the
 algorithm remains linear.
