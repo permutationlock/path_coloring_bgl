@@ -28,7 +28,7 @@
 \pgfdeclarelayer{bg}    % declare background layer
 \pgfsetlayers{bg,main}  % set the order of the layers
 
-\tikzset{every picture/.append style={scale=1.2}}
+\tikzset{every picture/.append style={scale=1.1}}
 \tikzset{every label/.append style={fill=white}}
 \tikzset{
     every node/.style={circle, fill, draw, minimum size=1mm, scale=.6,
@@ -103,6 +103,9 @@ If a path $P=v_1v_2\ldots v_n$ is a subgraph of a graph $G$, we say $P$ is a
 $u,v\in V(G)$, there exists a $uv$-path in $G$. If any $k$ vertices may be
 removed from a graph $G$ with $G$ remaining connected, we say $G$ is
 \textit{$k$-connected}.
+
+In all figures a dashed line between a pair of vertices $u,v\in G$ will
+represent a $uv$-path in $G$.
 
 \begin{figure}
 \begin{center}
@@ -237,7 +240,7 @@ the $uv$-path in $C$ running clockwise around the cycle with $C[u,v]$. Finally,
 if $u,v\in V(C)$ we call any edge $uv \in E(G)\setminus E(C)$ a \textit{chord} of
 the cycle $C$.
 
-A \textit{rotation scheme} for a graph $G$ is a cyclic ordering of the incident
+A \textit{rotation scheme} for a graph is a cyclic ordering of the incident
 edges around each vertex. Planar embeddings naturally induce a rotation
 scheme by the counterclockwise order in which edge curves are positioned around
 each vertex. In fact, with respect to graph algorithms, the induced rotation
@@ -348,13 +351,7 @@ to the node for $v$ in $\text{Adj}[u]$.
 An augmented adjacency list
 representation of a graph $G$ may be constructed from a standard adjacency list
 representation in $\mathcal{O}(m)$ time via the following algorithm due to 
-Glenn Chappell.
-
-Some algorithm entries, for example \textit{Poh $3$-Coloring} (4.1), will
-describe procedures on abstract graphs. Others, for example
-\textit{Augment Adjacency Lists} (3.1) below, will describe algorithms
-working with computer graph representations. We will provide time complexity
-analysis for all algorithms working with concrete representations.\\
+Glenn Chappell.\\
 
 \noindent\textbf{Algorithm 3.1.} (Augment Adjacency Lists)
 
@@ -420,6 +417,12 @@ of vertex properties, independent of the size of the graph. The size of all
 other data structures constructed will be $\mathcal{O}(n)$ at all points during
 the operation of each algorithm. Therefore the size complexity of every
 algorithm is $\mathcal{O}(n)$.
+
+Some algorithm entries, for example \textit{Poh $3$-Coloring} (4.1), will
+describe procedures on abstract graphs. Others, for example
+\textit{Augment Adjacency Lists} (3.1) below, will describe algorithms
+working with computer graph representations. We will provide time complexity
+analysis for all algorithms working with concrete representations.
 
 
 \section{Path Coloring -- the Poh Algorithm}
@@ -552,7 +555,7 @@ entire path by storing just the vertices $v_1$ and $v_k$.
 We will now describe the first version of Poh's algorithm on adjacency list
 graphs, using a breadth first search to find induced paths and chords.\\
 
-\noindent\textbf{Algorithm 4.2.} (Poh -- Breadth First Search)
+\noindent\textbf{Algorithm 4.2.} (Poh BFS)
 
 \noindent\textbf{Assumptions:} Suppose $P=v_1v_2\ldots v_l$ and
 $Q=v_kv_{k-1}\ldots v_{l+1}$ are induced
@@ -670,11 +673,11 @@ $Q_2$ and the edges $v_iv_j$ and $v_lv_{l+1}$, and we may apply the algorithm to
 color $\text{Int}(C_3)$.
 
 Note the combined coloring forms a path $3$-coloring of $\text{Int}(C)$ by the
-same arguments as in (4.1).
+same argument as in \textit{Poh $3$-Coloring} (4.1).
 
 \begin{figure}
 \begin{center}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=1.2]
   \node (t1) at (0cm, 3.5cm) {};
   \node (t2) at (2.45cm, 0cm) {};
   \node (t3) at (-2.45cm, 0cm) {};
@@ -726,15 +729,16 @@ same arguments as in (4.1).
   
 \end{tikzpicture}
 
-\caption{The collection of graphs $\{G_k\}$ on which Poh performs poorly.}
+\caption{The collection of graphs $\{G_k\}_{k\in\mathbb{N}}$ on which Poh
+performs poorly.}
 \label{poh_example}
 \end{center}
 \end{figure}
 
 \noindent\textbf{Complexity:} In the first step we rotate through
 $\text{Adj}[v_1]$ to find $v_k$ and get an orientation within the graph. This
-orientation must be performed at most once for each vertex, for a total of
-$\sum_{v=0}^{n-1}\text{deg}(v)=2m$ operations.
+orientation must be performed at most once for each vertex, for a total of at
+most $\sum_{v=0}^{n-1}\text{deg}(v)=2m$ operations.
 
 In the next step we perform a breadth first search from the vertex $u$.
 A breadth first search requires at most $m$ lookups. Moreover, the vertex will
@@ -744,21 +748,31 @@ Therefore the complexity of the algorithm is at worst
 $\mathcal{O}(2m + nm)=\mathcal{O}(n^2)$.
 
 We define the collection of graphs $\{G_k\}_{k\in\mathbb{N}}$, depicted in
-Figure \ref{poh_example}.
-Note $G_k$ has $n=\frac{k^2+k}{2}+3$. The number of operations required will be
+Figure \ref{poh_example}. Let us fix $k\in\mathbb{N}$ and note $G_k$ has
+$n=\frac{k^2+k}{2}+3$ vertices.
+
+Suppose we apply \textit{Poh BFS} (4.2) to path $3$-color $G_k$.
+Let the initial $2$-coloring of the outer triangle of $G_k$ assing the top
+vertex a color distinct from the bottom two.
+The $(k-i+1)$th recursive call will perform a breadth
+first search visiting each vertex in a subgraph of size $\frac{i^2+i}{2}$,
+hence requiring $\Theta(\frac{i^2+i}{2})$ operations. The total number
+of operations required to path $3$-color $G_k$ is therefore
 \[
-    \mathcal{O}\left(\sum_{i=1}^k \frac{i^2+i}{2}\right)=\mathcal{O}(n^{3/2}).
+    \Theta\left(\sum_{i=1}^k \frac{i^2+i}{2}\right)=\Theta(n^{3/2}).
 \]
-Thus the complexity of the algorithm is at best $\mathcal{O}(n^{3/2})$. In
-particular, the algorithm is not linear.\\
+Thus the time complexity of the algorithm is $\Omega(n^{3/2})$. In
+particular the algorithm is not linear.\\
 
 Poh's proof requests that we find the shortest $uv$-path in $\text{Int}(C)$.
-Thus it does not appear to admit a linear time algorithm.
+Therefore Poh's algorithm as written does not appear to admit a linear time
+algorithm.
 
 However, the correctness of Poh's algorithm does not require that $T$
 be the shortest $uw$-path, only that $T$ be an induced $uw$-path. We will show
-that Poh's algorithm is linear if we instead construct an induced path by
-walking along the existing path $P$.\\
+that Poh's algorithm is linear if we instead construct an induced $uw$-path
+consisting of vertices in $G-C$ with at least one neighbor in the colored
+path $P$.\\
 
 \noindent\textbf{Algorithm 4.3.} (Poh -- Face Walk)
 
@@ -798,7 +812,7 @@ such that $uv_1v_l$ is a face. We may therefore apply \textit{Path Trace} (4.4)
 to path $3$-color $\text{Int}(C_1)$.
 
 The combined coloring is a path $3$-coloring of $\text{Int}(C)$ by the
-same argument as in (4.1).
+same argument as in \textit{Poh $3$-Coloring} (4.1).
 
 \noindent\textbf{Complexity:} See \textit{Path Trace} (4.4).\\
 
@@ -861,7 +875,7 @@ uncolored vertices and color them using \textit{Path Trace} (4.4).
   \node (vl1) [label=below:$v_{l+1}$] at (2.25cm, -1cm) {};
   \node (vk) [label=below:$v_k$] at (-2.25cm, -1cm) {};
   \node (w) [label=below:$t_d$] at (1.5cm, 0cm) {};
-  \node (u) [label=below:$t_0$] at (-1.5cm, 0cm) {};
+  \node (u) [label=below:$t_1$] at (-1.5cm, 0cm) {};
   \node (vi) [label=above:$v_i$] at (-0.9cm, 1.5cm) {};
   \node (vj) [label=above:$v_j$] at (0.9cm, 1.5cm) {};
   
@@ -894,10 +908,46 @@ uncolored vertices and color them using \textit{Path Trace} (4.4).
   \draw (tp) edge (y);
   \draw (vi) edge (y);
 \end{tikzpicture}
+$\quad$
+\begin{tikzpicture}
+  \node (vl) [label=above:$v_l$] at (2.25cm, 1cm) {};
+  \node (v1) [label=above:$v_1$] at (-2.25cm, 1cm) {};
+  \node (vl1) [label=below:$v_{l+1}$] at (2.25cm, -1cm) {};
+  \node (vk) [label=below:$v_k$] at (-2.25cm, -1cm) {};
+  \node (w) [label=below:$t_d$] at (1.5cm, 0cm) {};
+  \node (u) [label=below:$t_1$] at (-1.5cm, 0cm) {};
+  \node (vi) [label=above:$v_i$] at (-0.9cm, 1.5cm) {};
+  \node (vj) [label=above:$v_j$] at (0.9cm, 1.5cm) {};
+  
+  \node (tp) [label=below:$t_p$] at (-0.5cm, 0cm) {};
+  
+  \node (y) [label=above:$y$] at (-0.32cm, 0.8cm) {};
 
-\caption{Coloring vertices above $T$ in \textit{Path Trace} (4.4), the case
-$v_i$ is the first neighbor of $t_p$ counterclockwise from $t_{p+1}$ that is in
-$P$.}
+  \draw (v1) edge (vi) [dashed];
+  \draw (vi) edge (vj) [dashed];
+  \draw (vj) edge (vl) [dashed];
+  \draw (vl1) edge [bend left] (vk) [dashed];
+  
+  \draw (vl) edge (vl1);
+  \draw (v1) edge (vk);
+  
+  \draw (v1) edge (u);
+  \draw (vk) edge (u);
+
+  \draw (vl) edge (w);
+  \draw (vl1) edge (w);
+  
+  \draw (u) edge (tp) [dashed];
+  \draw (tp) edge (w) [dashed];
+  
+  \draw (tp) edge (vi);
+  
+  \draw (tp) edge (y);
+  \draw (vi) edge (y);
+  \draw (tp) edge (vj);
+\end{tikzpicture}
+\caption{Coloring vertices above $T$ in \textit{Path Trace} (4.4) case 1 (left),
+case 2 (right).}
 \end{center}
 \end{figure}
 
@@ -906,20 +956,20 @@ $\text{Adj}[t_p]$, starting with $t_{p+1}$. In the case $p=d$ we will define
 $t_{p+1}=v_l$. Suppose we visit a neighbor $y\in \text{Int}(C_1)-C_1$ followed
 counterclockwise by a neighbor $v_i\in P$. There are two possible cases.
 
-\textit{Case 1:} Suppose we have previously visited a neighbor of $t_p$ in $P$,
-and let $v_j\in P$ be the most recent such neighbor visited. Note by planarity
-it must be that $i<j$. Note the cycle $C_y=v_iv_{i+1}\ldots v_jt_p$ is chordless
-since $P$ is an induced path.
-We may therefore apply \textit{Path Trace} (4.4) to color $\text{Int}(C_y)$ with
-the vertex $y$ forming the face $yt_pv_i$.
-
-\textit{Case 2:} Suppose none of the neighbors of $t_p$ between $t_{p+1}$ and
-$v_i$ counterclockwise around $t_p$ are in $P$. Let
+\textit{Case 1:} Suppose none of the neighbors of $t_p$ between $t_{p+1}$ and
+$v_i$ counterclockwise are in $P$. Let
 $j$ be the smallest integer such that $t_{p+1}v_j$ is an edge, noting again
 that $i<j$ by planarity. Note since $P$ is an induced path the cycle
 $C_y=t_pv_iv_{i+1}\ldots v_jt_{p+1}$ is chordless by the our selection of $v_j$.
 Thus we may apply \textit{Path Trace} (4.4) to color $\text{Int}(C_y)$ with the
 vertex $y$ forming the face $yt_pv_i$.
+
+\textit{Case 2:} Suppose we have previously visited a neighbor of $t_p$ in $P$,
+and let $v_j\in P$ be the most recent such neighbor visited. Note by planarity
+it must be that $i<j$. Note the cycle $C_y=v_iv_{i+1}\ldots v_jt_p$ is chordless
+since $P$ is an induced path.
+We may therefore apply \textit{Path Trace} (4.4) to color $\text{Int}(C_y)$ with
+the vertex $y$ forming the face $yt_pv_i$.
 
 \noindent\textbf{Complexity:} Let $G$ be a plane graph that has been colored
 with Poh. Let $P$ be a path induced by the path $3$-coloring of $G$. Note each
@@ -1107,8 +1157,8 @@ or $v=y$, $|L'(v)|\ge 1$.
 
 Therefore $L'$ meets the requirements of \textit{Path Color}
 (5.1) with fixed vertices $x$ and $y$. Moreover, by the definition of $L'$, in
-an $L'$-list-coloring of $G-P$ no vertex with a neighbor in $P$ will receive the
-color $c$.
+a path $L'$-list-coloring of $G-P$ no vertex with a neighbor in $P$ will receive
+the color $c$.
 
 \textit{Case 2.1.1:} Suppose $x\ne y$. Then we may apply \textit{Path Color}
 (5.1) to path $L'$-list-color $G-P$ with fixed vertices $x$ and $y$, the new
@@ -1128,7 +1178,7 @@ $L'$-list-color $G-P$ such that the requirements hold.\\
 Let $G$ be a plane graph and $L$ a list assignment such that $|L(v)|\ge 3$
 for all $v\in G$. We may add edges to $G$ until it is triangulated. Then
 we may apply \textit{Path Color} (5.1), with arbitrary fixed vertices, to
-construct an $L$-list-coloring. This yields the following result.
+construct a path $L$-list-coloring. This yields the following result.
 
 \begin{theorem}[Hartman \cite{hartman}]
 All planar graphs are path $3$-choosable.
@@ -1252,7 +1302,7 @@ for each $v\in G$
     \begin{array}{ll}
         L[v]=\{c\} & \text{if } v\in P;\\
 	    |L[v]|\ge 1 & \text{if } v=x \text{ or } v=y;\\
-	    |L[v]|\ge 2 & \text{if } v\in C-P-y;\\
+	    |L[v]|\ge 2 & \text{if } v\in C-P-x-y;\\
 	    |L[v]|\ge 3 & \text{otherwise.}
     \end{array}
 \]
@@ -1266,6 +1316,7 @@ $y$ each receive at most one same color neighbor, and no vertex in
 $G-P$ with a neighbor in $P$ receives the color $c$. If $x=y$ then $x$ will
 receive no same colored neighbors in $G$.
 
+\begin{comment}
 \begin{figure}
 \begin{center}
 \begin{tikzpicture}
@@ -1286,11 +1337,14 @@ receive no same colored neighbors in $G$.
 \end{tikzpicture}
 \end{center}
 
-\caption{The cycles $C_1$ and $C_2$ in the case $v_1u$ is a chord of $C$.}
+\caption{The cycles $C_1$ and $C_2$.}
 \end{figure}
+\end{comment}
 
 \noindent\textbf{Description:} We will remove the path $P$ one vertex at a
-time. In this call we will be removing $v_1$.
+time. In this call we will be ``removing" edges around $v_1$, by updating
+$\text{Nbr}[v]$ to exclude them. We will completely removing $v_1$ from
+$\text{Int}(C)$ if there are no chords $v_1v_i$ of $C$.
 
 Let us iterate counterclockwise through $\text{Adj}[v_1]$ beginning from $v_k$.
 Let $u$ be the current neighbor of $v_1$.
@@ -1333,8 +1387,8 @@ $\text{Int}(C_2)$. There are several cases to consider.
 \begin{tikzpicture}
   \node (c_n) [label=above left:$v_k$, fill] at (-1.5cm, 1.25cm) {};
   \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
-  \node (y) [label=right:$y$] at (1.5cm, 1.25cm) {};
-  \node (x) [label=right:$x$] at (1.5cm, -0.25cm) {};
+  \node (y) [label=above right:$y$] at (1.5cm, 1.25cm) {};
+  \node (x) [label=below right:$x$] at (1.5cm, -0.25cm) {};
   \node (c_i) [label=below:$u$] at (0cm, -1cm) {};
   \node (G_0) [draw=none, fill=none] at (-0.75cm, 0.12cm) {$C_1$};
   \node (G_1) [draw=none, fill=none] at (0.7cm, 0.5cm) {$C_2$};
@@ -1348,51 +1402,7 @@ $\text{Int}(C_2)$. There are several cases to consider.
   \draw (y) edge (x) [dashed];
   \draw (x) edge (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
-\begin{tikzpicture}
-  \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
-  \node (y) [label=right:$y$, fill] at (1.5cm, 1.25cm) {};
-  \node (x) [label=right:$x$, fill] at (1.5cm, -0.25cm) {};
-  \node (c_i) [label=below:$u$, fill] at (0cm, -1cm) {};
-  \node (G_1) [draw=none,fill=none] at (0.7cm, 0.5cm) {$C_2$};
-  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
-  
-  \draw (p) edge (c_i);
-  \draw (p) edge (y) [dashed];
-  \draw (y) edge (x) [dashed];
-  \draw (x) edge (c_i) [dashed];
-\end{tikzpicture}
-$\qquad$
-\begin{tikzpicture}
-  \node (c_n) [label=above left:$v_k$, fill] at (-1.5cm, 1.25cm) {};
-  \node (c_i) [label=below:{$u$}] at (0cm, -1cm) {};
-  \node (G_0) [draw=none, fill=none] at (-0.75cm, 0.12cm) {$C_1$};
-  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
-  
-  \draw (c_i) edge [bend left] (c_n) [dashed];
-  \draw (c_n) edge [bend left] (c_i) [dashed];
-\end{tikzpicture}
-\end{center}
-
-\caption{Case 2.2.1.}
-\end{figure}
-
-\textit{Case 2.2.1:} Suppose $u\in C[x,v_1]$. Note in this case it must be that
-$u\ne v_2$. We will first apply \textit{Remove Path} (5.4) to path $L$-list-color
-$\text{Int}(C_2)$ with fixed vertices $x$ and $y$. Note this colors the vertex
-$u$. We will apply \textit{Remove Path} (5.4) with colored path consisting of
-just the vertex $u$, and the vertices immediately adjacent to $u$ on $C_1$ as
-the fixed vertices. This ensures $u$ receives no same color neighbors in
-$\text{Int}(C_1)$. 
-
-\textit{Case 2.2.2:} Suppose $u\in C[y,x]$, $u\ne y$. Again it must be that
-$u\ne v_2$. We apply \textit{Color Path} (5.3) to path $L$-list-color
-$\text{Int}(C_1)$ with fixed vertices $x$ and $u$, the new path starting at $x$.
-Next we apply \textit{Remove Path} (5.4) to $\text{Int}(C_2)$ with fixed
-vertices $u$ and $y$.
-
-\begin{figure}
-\begin{center}
+$\quad$
 \begin{tikzpicture}
   \node (c_n) [label=above left:$v_k$, fill] at (-1.5cm, 1.25cm) {};
   \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
@@ -1411,49 +1421,7 @@ vertices $u$ and $y$.
   \draw (p) edge [bend left] (y) [dashed];
   \draw (y) edge [bend left] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
-\begin{tikzpicture}
-  \node (c_n) [label=above left:{$v_k$}, fill] at (-1.5cm, 1.25cm) {};
-  \node (x) [label=below left:{$x$}] at (-1.5cm, 0.25cm) {};
-  \node (c_i) [label=below:{$u$}, fill] at (0cm, -1cm) {};
-  \node (G_0) [draw=none,fill=none] at (-0.75cm, 0.12cm) {$C_1$};
-  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
-  \draw (c_i) edge (x) [dashed];
-  \draw (x) edge (c_n) [dashed];
-  \draw (c_n) edge [bend left] (c_i) [dashed];
-\end{tikzpicture}
-$\qquad$
-\begin{tikzpicture}
-  \node (p) [label=above:$v_1$] at (0cm, 2cm) {};
-  \node (y) [label=right:$y$, fill] at (1.5cm, 0.5cm) {};
-  \node (c_i) [label=below:$u$] at (0cm, -1cm) {};
-  \node (G_1) [draw=none,fill=none] at (0.7cm, 0.5cm) {$C_2$};
-  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
-  
-  \draw (p) edge (c_i);
-  \draw (p) edge [bend left] (y) [dashed];
-  \draw (y) edge [bend left] (c_i) [dashed];
-\end{tikzpicture}
-\end{center}
-
-\caption{Case 2.2.2.}
-\end{figure}
-
-\textit{Case 2.2.3:} Suppose $u\in C[v_1,y]$, $u\ne v_2$. We apply
-\textit{Color Path} (5.3) to path $L$-list-color $\text{Int}(C_1)$ with fixed
-vertices $x$ and $y$, the new path starting at $x$. We then apply \textit{Remove
-Path} (5.4) to path $L$-list-color $\text{Int}(C_2)$ with the single fixed 
-vertex $u$. This ensures $u$ receives no same color neighbors in
-$\text{Int}(C_2)$.
-
-\textit{Case 2.2.4:} Suppose $u= v_2$. If $c\in L[u]$ then $u$ is a path vertex
-and we apply \textit{Remove Path} (5.4) to path $L$-list-color $\text{Int}(C_1)$
-with fixed vertices $x$ and $y$. Otherwise, we have reached the end of the path.
-We apply \textit{Color Path} (5.3) to $\text{Int}(C_1)$ with fixed vertices $x$
-and $y$, the new path starting from $x$.
-
-\begin{figure}
-\begin{center}
+$\quad$
 \begin{tikzpicture}
   \node (c_n) [label=above left:$v_k$, fill] at (-1.5cm, 1.25cm) {};
   \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
@@ -1472,34 +1440,37 @@ and $y$, the new path starting from $x$.
   \draw (p) edge (c_i);
   \draw (p) edge [bend left=90] (c_i) [dashed];
 \end{tikzpicture}
-$\qquad$
-\begin{tikzpicture}
-  \node (c_n) [label=above left:{$v_k$}, fill] at (-1.5cm, 1.25cm) {};
-  \node (x) [label=left:{$x$}] at (-1.5cm, 0.25cm) {};
-  \node (y) [label=below left:$y$, fill] at (-1cm, -0.75cm) {};
-  \node (c_i) [label=below:$u$, fill] at (0cm, -1cm) {};
-  \node (G_0) [draw=none,fill=none] at (-0.75cm, 0.05cm) {$C_1$};
-  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
-  
-  \draw (c_i) edge (y) [dashed];
-  \draw (y) edge (x) [dashed];
-  \draw (x) edge (c_n) [dashed];
-  \draw (c_n) edge [bend left] (c_i) [dashed];
-\end{tikzpicture}
-$\qquad$
-\begin{tikzpicture}
-  \node (p) [label=above:{$v_1$}] at (0cm, 2cm) {};
-  \node (c_i) [label=below:$u$] at (0cm, -1cm) {};
-  \node (G_1) [draw=none,fill=none] at (0.5cm, 0.5cm) {$C_2$};
-  \node (null) [draw=none,fill=none] at (270:1.5cm) {};
-  
-  \draw (p) edge (c_i);
-  \draw (p) edge [bend left=90] (c_i) [dashed];
-\end{tikzpicture}
 \end{center}
 
-\caption{Case 2.2.3.}
+\caption{From left to right: case 2.2.1, case 2.2.2, and case 2.2.3.}
 \end{figure}
+
+\textit{Case 2.2.1:} Suppose $u\in C[x,v_1]$. Note in this case it must be that
+$u\ne v_2$. We will first apply \textit{Remove Path} (5.4) to path $L$-list-color
+$\text{Int}(C_2)$ with fixed vertices $x$ and $y$. Note this colors the vertex
+$u$. We will apply \textit{Remove Path} (5.4) with colored path consisting of
+just the vertex $u$, and the vertices immediately adjacent to $u$ on $C_1$ as
+the fixed vertices. This ensures $u$ receives no same color neighbors in
+$\text{Int}(C_1)$. 
+
+\textit{Case 2.2.2:} Suppose $u\in C[y,x]$, $u\ne y$. Again it must be that
+$u\ne v_2$. We apply \textit{Color Path} (5.3) to path $L$-list-color
+$\text{Int}(C_1)$ with fixed vertices $x$ and $u$, the new path starting at $x$.
+Next we apply \textit{Remove Path} (5.4) to $\text{Int}(C_2)$ with fixed
+vertices $u$ and $y$.
+
+\textit{Case 2.2.3:} Suppose $u\in C[v_1,y]$, $u\ne v_2$. We apply
+\textit{Color Path} (5.3) to path $L$-list-color $\text{Int}(C_1)$ with fixed
+vertices $x$ and $y$, the new path starting at $x$. We then apply \textit{Remove
+Path} (5.4) to path $L$-list-color $\text{Int}(C_2)$ with the single fixed 
+vertex $u$. This ensures $u$ receives no same color neighbors in
+$\text{Int}(C_2)$.
+
+\textit{Case 2.2.4:} Suppose $u= v_2$. If $c\in L[u]$ then $u$ is a path vertex
+and we apply \textit{Remove Path} (5.4) to path $L$-list-color $\text{Int}(C_1)$
+with fixed vertices $x$ and $y$. Otherwise, we have reached the end of the path.
+We apply \textit{Color Path} (5.3) to $\text{Int}(C_1)$ with fixed vertices $x$
+and $y$, the new path starting from $x$.
 
 \noindent\textbf{Complexity:} Let $v\in G$. We iterate through $\text{Adj}[v]$
 at most once during \textit{Color Path} (5.3) when looking for the next vertex
