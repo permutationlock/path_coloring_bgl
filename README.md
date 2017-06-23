@@ -21,9 +21,3 @@
  A C++ implementation is provided for all three algorithms, utilizing the Boost
  Graph Library.
 
-## Requirements
- The [Boost Libraries](http://www.boost.org/) and a compiler that supports the
- C++11 standard. The provided makefiles use [GCC](https://gcc.gnu.org/) by
- default; other compilers may be specified by changing the appropriate makefile
- variable.
-
