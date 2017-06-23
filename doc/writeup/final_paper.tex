@@ -6,7 +6,8 @@
 \usepackage{tikz}
 \usepackage{chngcntr}
 \usepackage{indentfirst}
-%\usepackage{minted}
+\usepackage{hyperref}
+\usepackage{listings}
 %\usepackage{appendix}
 
 \title{Implementing Path Coloring Algorithms on Planar Graphs}
@@ -23,6 +24,9 @@
 
 \theoremstyle{definition}
 \newtheorem{algorithm}{Algorithm}[section]
+
+
+\lstset{language=C++}
 
 
 \pgfdeclarelayer{bg}    % declare background layer
@@ -427,7 +431,7 @@ working with computer graph representations. We will provide time complexity
 analysis for all algorithms working with concrete representations.
 
 
-\section{Path Coloring -- the Poh Algorithm}
+\section{Path Coloring and the Poh Algorithm}
 
 In this section we detail two algorithms for path $3$-coloring plane graphs. We
 begin by describing the general procedure proposed by Poh \cite{poh}.\\
@@ -748,8 +752,8 @@ In the next step we perform a breadth first search from the vertex $u$.
 A breadth first search requires at most $m$ lookups. Moreover, the vertex will
 $u$ will be colored following the search. Thus we perform at most one breadth
 first search from each vertex, requiring at most $nm$ operations.
-Therefore the complexity of the algorithm is at worst
-$\mathcal{O}(2m + nm)=\mathcal{O}(n^2)$.
+Therefore the complexity of the algorithm is $\mathcal{O}(2m + nm)
+=\mathcal{O}(n^2)$.
 
 We define the collection of graphs $\{G_k\}_{k\in\mathbb{N}}$, depicted in
 Figure \ref{poh_example}. Let us fix $k\in\mathbb{N}$ and note $G_k$ has
@@ -992,10 +996,11 @@ Thus the time complexity of the algorithm is
     \mathcal{O}\left(\sum_{v=0}^{n-1}3\cdot\text{deg}(v)\right)
     =\mathcal{O}(6m)=\mathcal{O}(n).
 \]
+More specificaly, it is $\Theta(n)$.
 
 
 
-\section{Path List-Coloring -- the Hartman-Skrekovski Algorithm}
+\section{Path List-Coloring and the Hartman-Skrekovski Algorithm}
 
 In this section we describe an algorithm for path
 list-coloring plane graphs with lists of size $3$. The following algorithm on
@@ -1046,7 +1051,6 @@ Let $L'$ be a list assignment for $G$ defined such that for $v\in G$
 				L(v), & \ \text{otherwise}.
 			\end{cases}
 \]
-
 Let $P=v_{j_1}v_{j_2}\ldots v_{j_l}$ be the path constructed above.
 For each vertex in $v_{j_i}\in P$, color $v_i$ with $c$.
 
@@ -1490,6 +1494,7 @@ Therefore the overall complexity of the algorithm is
     \mathcal{O}\left(\sum_{v=0}^{n-1}3\cdot\text{deg}(v)\right)
         =\mathcal{O}(6m)=\mathcal{O}(n).
 \]
+More specificaly, it is $\Theta(n)$.
 
 \subsection{Tracking Vertices on the Outer Cycle}
 
@@ -1539,6 +1544,119 @@ algorithm remains linear.
 
 For full details on managing location marks and disjoint set operations, see the
 provided C++ implementation.
+
+\section{Path Coloring in C++ with the Boost Graph Library}
+
+The Boost Graph Library (BGL) \cite{boost} details a generic interface for working
+with graphs, as well as numerous data structures and algorithms for working with
+graphs. We will begin with a brief introduction to the BGL. Then we will
+discuss implementing the Poh and Hartman-Skrekovski using BGL abstractions.
+
+We will assume familiarity with the C++ language and the
+\verb!C++! Standard Template Library (STL). Full hyperlinked documentation is
+available with the project source code at
+\url{https://github.com/permutationlock/path_coloring_bgl},
+with links to the relevent Boost and STL concepts.
+
+\subsection{The Boost Graph Library}
+
+The BGL provides several abstract concepts for graph data structures.
+The basic \verb!Graph! concept requires that a vertex and edge type to be
+defined, as well as a few properties such as whether the graph is directed or
+undirected. The \verb!VertexListGraph! and \verb!EdgeListGraph! refine this
+concept to additionally require an interface to iterate over the vertex and
+edge sets, respectively. The \verb!VertexAndEdgeListGraph! concept simply
+combines the two refinements.
+
+Although other concepts exist such as
+\verb!AdjacencyGraph!, we will only require that input graphs model
+\verb!VertexListGraph! or \verb!VertexAndEdgeListGraph!. Although
+\verb!AdjacencyGraph! might seem like an obvious choice, we will follow the
+BGL's decision and represent the rotation scheme for planar embeddings as an
+exterior property map.
+
+There are two different types of vertex and edge properties in the BGL: interior
+properties and exterior properties. Interior properties are properties that are
+are stored within the graph data structure. They are accessed or
+assigned via \verb!get! or \verb!put! functions, respectively, on the graph
+structure itself. Exterior properties are properties stored in a separate data
+structure. The structure then allows \verb!get! and/or \verb!put! operations
+to allow reads and/or writes to individual vertex or edge properties.
+
+We will use exterior property maps that satisfy the
+\verb!LvaluePropertyMap! concept. The \verb!LvaluePropertyMap! concept requires
+that the return value for \verb!get! calls on the property map be a reference.
+The BGL defines the \verb!PlanarEmbedding! concept to refine
+\verb!LvaluePropertyMap! to require that each vertex is assigned a range of
+edges, representing the embedding ordered rotation scheme.
+
+\subsection{Poh with BFS in the BGL}
+
+Here we describe our BGL implementation of \textit{Poh with BFS} (4.2). The
+publicly visible function is as follows.\\
+
+\begin{lstlisting}[frame=single]
+template<
+        typename graph_t,
+        typename planar_embedding_t,
+        typename color_map_t,
+        typename mark_map_t,
+        typename neighbor_range_map_t,
+        typename vertex_iterator_t,
+        typename color_t
+    >
+void poh_color(
+        const graph_t & graph,
+        const planar_embedding_t & planar_embedding,
+        color_map_t & color_map,
+        neighbor_range_map_t & neighbor_range_map,
+        mark_map_t & mark_map,
+        vertex_iterator_t p_begin, vertex_iterator_t p_end,
+        vertex_iterator_t q_begin, vertex_iterator_t q_end,
+        color_t c_0, color_t c_1, color_t c_2
+    );
+\end{lstlisting}
+\hfill\\
+
+The function makes the following restrictions on template types.\\
+\begin{center}
+\verb!vertex_t! is  \verb!boost::graph_traits<graph_t>::vertex_descriptor!\\
+\hfill\\
+
+\begin{tabular}{l|l|l}
+Type & Concept & Additional Requirements\\
+\hline
+\verb!graph_t! & \verb!VertexAndEdgeListGraph! & None\\
+\verb!color_t! & \verb!EqualityComparable!, & None\\
+& \verb!CopyAssignable! & \\
+\verb!planar_embedding_t! & \verb!PlanarEmbedding! & None\\
+\verb!color_map_t! & \verb!LvaluePropertyMap! & \verb!value_type! is \verb!color_t!\\
+\verb!mark_map_t! & \verb!LvaluePropertyMap! & \verb!value_type! is an integer\\
+\verb!parent_map_t! & \verb!LvaluePropertyMap! & \verb!value_type! is \verb!vertex_t!\\
+\verb!vertex_iterator_t! & \verb!InputIterator! & \verb!value_type! is \verb!vertex_t!
+\end{tabular}
+\end{center}
+\hfill\\
+
+We assume the provided graph is simple and weakly triangulated and the given
+planar embedding structure represents a valid planar embedding of the graph.
+Finally we assume the two ranges of verteces map are paths in the graph
+satisfying the requirements of \textit{Poh with BFS} (4.2).
+We assume no vertex is already colored any of \verb!c_0!, \verb!c_1!,
+or \verb!c_2!. We also require that all vertices are initially assigned a mark
+of $0$ by \verb!mark_map!.
+
+The implementation almost directly follows the description of (4.2), although
+some decisions had to be made. In order
+to keep the algorithm linear, we must ensure we iterate through the
+adjacency list of a given vertx precisely once during the orientation phase of
+(4.2). This is the step where we would locate the position of $v_k$ in
+$\text{Adj}[v_1]$. To do this we note that at least one of the path endpoint
+vertices $v_1$ or $v_k$ has never been an path endpoint vertex in any call
+before. We then always choose this endpoint as the vertex whose adjacency list
+we search through.
+
+Source code is available online at the link provided earlier.
 
 \begin{comment}
 
@@ -1800,6 +1918,9 @@ provided C++ implementation.
 	Reed, R., ``A new method for drawing a graph given the cyclic order of the
 	edges at each vertex," \textit{Congressus Numerantium}, vol. 56, pp.31-44,
 	1987.
+\bibitem{boost}
+	Siek, J., Lee, L., Lumsdaine, A., \textit{The Boost Graph Library: User
+	Guide and Reference Manual}, Pearson Education, 2001.
 \bibitem{skrekovski}
 	Skrekovski, R., ``List Improper Colourings of Planar Graphs,"
 	\textit{Combinatorics, Probability, and Computing}, vol. 8, pp. 293-299,
