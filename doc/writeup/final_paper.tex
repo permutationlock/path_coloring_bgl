@@ -35,6 +35,7 @@
     	font=\LARGE}
 }
 
+\setcounter{secnumdepth}{1}
 \counterwithin{figure}{section}
 
 \begin{document}
@@ -311,6 +312,7 @@ based on Hartman and Skrekovski's work and show it runs in $\mathcal{O}(n)$
 time.
 
 \section{Graph Representations and Time Complexity}
+
 Let $G$ be a plane graph. Vertices will be represented by integers, that is, we
 shall assume $V(G)=\{0,1,\ldots,n-1\}$. We will always denote
 number of vertices in $G$ with $n$ and the number of edges with $m$.
@@ -533,6 +535,8 @@ following result.
 \begin{theorem}[Poh \cite{poh} and Goddard \cite{goddard}]
 All planar graphs are path $3$-colorable.
 \end{theorem}
+
+\subsection{The Poh Algorithm with Breadth First Search}
 
 In order to implement Poh's algorithm with adjacency lists there are two main
 obstacles. First, we must have a method to efficiently represent colored paths,
@@ -763,6 +767,8 @@ of operations required to path $3$-color $G_k$ is therefore
 \]
 Thus the time complexity of the algorithm is $\Omega(n^{3/2})$. In
 particular the algorithm is not linear.\\
+
+\subsection{The Poh Algorithm in Linear Time}
 
 Poh's proof requests that we find the shortest $uv$-path in $\text{Int}(C)$.
 Therefore Poh's algorithm as written does not appear to admit a linear time
@@ -1184,6 +1190,8 @@ construct a path $L$-list-coloring. This yields the following result.
 All planar graphs are path $3$-choosable.
 \end{theorem}
 
+\subsection{The Hartman-Skrekovski Algorithm with Adjacency Lists}
+
 In order to implement Hartman and Skrekovski's algorithm with adjacency lists
 there are two main challenges. First, we need to be able to remove paths and
 locate the subgraphs for recursive calls. Second, we must be able to track the
@@ -1483,8 +1491,12 @@ Therefore the overall complexity of the algorithm is
         =\mathcal{O}(6m)=\mathcal{O}(n).
 \]
 
-Recall however, the above algorithm and complexity analysis relied on an
-unproven assumption. In \textit{Path Color} (5.3) we assumed we could determine
+\subsection{Tracking Vertices on the Outer Cycle}
+
+The Hartman-Skrekovski algorithm decribed in the previous section relied on the
+assumption that we could immediately
+know the relative location of vertices on the outer cycle. In
+\textit{Path Color} (5.3) we assumed we could determine
 whether a given vertex $u\in C$ was in the path $C[v,y]$, where $v$ was the
 last vertex added to our colored path. Additionally, in \textit{Remove Path}
 (5.4) we assumed for $u\in C$ we could determine whether $u$ was in $C[x,v_l]$,
