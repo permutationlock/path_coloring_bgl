@@ -2,7 +2,8 @@
 
 \usepackage{amssymb, amsthm, amsmath}
 \usepackage[letterpaper, margin=1.25in]{geometry}
-\usepackage{verbatim}
+\usepackage{comment}
+\usepackage{spverbatim}
 \usepackage{tikz}
 \usepackage{chngcntr}
 \usepackage{indentfirst}
@@ -563,7 +564,7 @@ entire path by storing just the vertices $v_1$ and $v_k$.
 We will now describe the first version of Poh's algorithm on adjacency list
 graphs, using a breadth first search to find induced paths and chords.\\
 
-\noindent\textbf{Algorithm 4.2.} (Poh BFS)
+\noindent\textbf{Algorithm 4.2.} (Poh -- BFS)
 
 \noindent\textbf{Assumptions:} Suppose $P=v_1v_2\ldots v_l$ and
 $Q=v_kv_{k-1}\ldots v_{l+1}$ are induced
@@ -760,7 +761,7 @@ Figure \ref{poh_example}. Let us fix $k\in\mathbb{N}$ and note $G_k$ has
 $n=\frac{k^2+k}{2}+3$ vertices.
 
 Suppose we apply \textit{Poh BFS} (4.2) to path $3$-color $G_k$.
-Let the initial $2$-coloring of the outer triangle of $G_k$ assing the top
+Let the initial $2$-coloring of the outer triangle of $G_k$ assign the top
 vertex a color distinct from the bottom two.
 The $(k-i+1)$th recursive call will perform a breadth
 first search visiting each vertex in a subgraph of size $\frac{i^2+i}{2}$,
@@ -784,7 +785,7 @@ that Poh's algorithm is linear if we instead construct an induced $uw$-path
 consisting of vertices in $G-C$ with at least one neighbor in the colored
 path $P$.\\
 
-\noindent\textbf{Algorithm 4.3.} (Poh -- Face Walk)
+\noindent\textbf{Algorithm 4.3.} (Poh -- Path Walk)
 
 \noindent\textbf{Assumptions:} Assume $P=v_1v_2\ldots v_l$ and
 $Q=v_kv_{k-1}\ldots v_{l+1}$ are induced paths, each colored with a distinct
@@ -810,7 +811,7 @@ mark it.
 
 Define the cycles $C_1$ and $C_2$ as usual by dividing $C$ along the chord
 $v_iv_j$. Note $C_1$ is chordless as $P$ and $Q$ are induced paths
-and $v_iv_j$ is the first chord of $C$ encountered. Apply \textit{Face Walk}
+and $v_iv_j$ is the first chord of $C$ encountered. Apply \textit{Path Walk}
 (4.3) to path $3$-color $\text{Int}(C_2)$. It remains to color
 $\text{Int}(C_1)$.
 
@@ -868,7 +869,7 @@ Thus $j=i+1$.
 Therefore the only edges between vertices in $T$ are the edges $t_1t_2,\ldots,
 t_{d-1}t_d$. So $T$ is an induced path.
 
-We apply \textit{Face Walk} (4.3) to path $3$-color $\text{Int}(C_2)$. It remains
+We apply \textit{Path Walk} (4.3) to path $3$-color $\text{Int}(C_2)$. It remains
 to color any uncolored vertices in $\text{Int}(C_1)$.
 
 All vertices in $T$ have at least one neighbor in $P$. Therefore any uncolored
@@ -986,7 +987,7 @@ with Poh. Let $P$ be a path induced by the path $3$-coloring of $G$. Note each
 vertex is in exactly one such path.
 
 Let $v\in P$. We iterated through $\text{Adj}[v]$ exactly once during
-\textit{Face Walk} (4.3). We iterated through $\text{Adj}[v]$ at most twice
+\textit{Path Walk} (4.3). We iterated through $\text{Adj}[v]$ at most twice
 during \textit{Path Trace} (4.4): once to locate
 the starting neighbor, and once to find the next vertex to add to the path and
 find uncolored vertices above $T$.
@@ -996,7 +997,7 @@ Thus the time complexity of the algorithm is
     \mathcal{O}\left(\sum_{v=0}^{n-1}3\cdot\text{deg}(v)\right)
     =\mathcal{O}(6m)=\mathcal{O}(n).
 \]
-More specificaly, it is $\Theta(n)$.
+More specifically, it is $\Theta(n)$.
 
 
 
@@ -1494,11 +1495,11 @@ Therefore the overall complexity of the algorithm is
     \mathcal{O}\left(\sum_{v=0}^{n-1}3\cdot\text{deg}(v)\right)
         =\mathcal{O}(6m)=\mathcal{O}(n).
 \]
-More specificaly, it is $\Theta(n)$.
+More specifically, it is $\Theta(n)$.
 
 \subsection{Tracking Vertices on the Outer Cycle}
 
-The Hartman-Skrekovski algorithm decribed in the previous section relied on the
+The Hartman-Skrekovski algorithm described in the previous section relied on the
 assumption that we could immediately
 know the relative location of vertices on the outer cycle. In
 \textit{Path Color} (5.3) we assumed we could determine
@@ -1550,106 +1551,119 @@ provided C++ implementation.
 The Boost Graph Library (BGL) \cite{boost} details a generic interface for working
 with graphs, as well as numerous data structures and algorithms for working with
 graphs. We will begin with a brief introduction to the BGL. Then we will
-discuss implementing the Poh and Hartman-Skrekovski using BGL abstractions.
+discuss implementing the Poh and Hartman-Skrekovski algorithms using BGL
+abstractions.
 
 We will assume familiarity with the C++ language and the
-\verb!C++! Standard Template Library (STL). Full hyperlinked documentation is
+\texttt{C++} Standard Template Library (STL). Full hyperlinked documentation is
 available with the project source code at
 \url{https://github.com/permutationlock/path_coloring_bgl},
-with links to the relevent Boost and STL concepts.
+with links to the relevant Boost and STL concepts.
 
 \subsection{The Boost Graph Library}
 
 The BGL provides several abstract concepts for graph data structures.
-The basic \verb!Graph! concept requires that a vertex and edge type to be
+The basic \texttt{Graph} concept requires that a vertex and edge type to be
 defined, as well as a few properties such as whether the graph is directed or
-undirected. The \verb!VertexListGraph! and \verb!EdgeListGraph! refine this
+undirected. The \texttt{VertexListGraph} and \texttt{EdgeListGraph} refine this
 concept to additionally require an interface to iterate over the vertex and
-edge sets, respectively. The \verb!VertexAndEdgeListGraph! concept simply
+edge sets, respectively. The \texttt{VertexAndEdgeListGraph} concept simply
 combines the two refinements.
 
 Although other concepts exist such as
-\verb!AdjacencyGraph!, we will only require that input graphs model
-\verb!VertexListGraph! or \verb!VertexAndEdgeListGraph!. Although
-\verb!AdjacencyGraph! might seem like an obvious choice, we will follow the
+\texttt{AdjacencyGraph}, we will only require that input graphs model
+\texttt{VertexListGraph} or \texttt{VertexAndEdgeListGraph}. Although
+\texttt{AdjacencyGraph} might seem like an obvious choice, we will follow the
 BGL's decision and represent the rotation scheme for planar embeddings as an
 exterior property map.
 
 There are two different types of vertex and edge properties in the BGL: interior
 properties and exterior properties. Interior properties are properties that are
 are stored within the graph data structure. They are accessed or
-assigned via \verb!get! or \verb!put! functions, respectively, on the graph
+assigned via \texttt{get} or \texttt{put} functions, respectively, on the graph
 structure itself. Exterior properties are properties stored in a separate data
-structure. The structure then allows \verb!get! and/or \verb!put! operations
-to allow reads and/or writes to individual vertex or edge properties.
+structure. Calls to \texttt{get} and/or \texttt{put} on the property map structure
+then allow reads and/or writes to individual vertex or edge properties.
 
-We will use exterior property maps that satisfy the
-\verb!LvaluePropertyMap! concept. The \verb!LvaluePropertyMap! concept requires
-that the return value for \verb!get! calls on the property map be a reference.
-The BGL defines the \verb!PlanarEmbedding! concept to refine
-\verb!LvaluePropertyMap! to require that each vertex is assigned a range of
+All our properties will be stored in exterior property maps that satisfy the
+\texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} concept. The \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} concept requires
+that \texttt{get} calls on the property map return values by reference.
+The BGL defines the \texttt{PlanarEmbedding} concept to refine
+\texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} to require that each vertex is assigned a range of
 edges, representing the embedding ordered rotation scheme.
 
 \subsection{Poh with BFS in the BGL}
 
-Here we describe our BGL implementation of \textit{Poh with BFS} (4.2). The
-publicly visible function is as follows.\\
+Here we describe our BGL implementation of \textit{Poh -- BFS} (4.2). The
+function prototype, type definitions, and template requirements are shown
+in figures 6.1, 6.2, and 6.3 respectively.
 
+\begin{figure}
 \begin{lstlisting}[frame=single]
 template<
         typename graph_t,
         typename planar_embedding_t,
         typename color_map_t,
         typename mark_map_t,
-        typename neighbor_range_map_t,
+        typename parent_map_t,
         typename vertex_iterator_t,
         typename color_t
     >
-void poh_color(
+void poh_color_bfs(
         const graph_t & graph,
         const planar_embedding_t & planar_embedding,
         color_map_t & color_map,
-        neighbor_range_map_t & neighbor_range_map,
         mark_map_t & mark_map,
+        parent_map_t & parent_map,
         vertex_iterator_t p_begin, vertex_iterator_t p_end,
         vertex_iterator_t q_begin, vertex_iterator_t q_end,
         color_t c_0, color_t c_1, color_t c_2
     );
 \end{lstlisting}
-\hfill\\
+\caption{Publicly visible function prototype for Poh with BFS.}
+\end{figure}
 
-The function makes the following restrictions on template types.\\
+\begin{figure}
 \begin{center}
-\verb!vertex_t! is  \verb!boost::graph_traits<graph_t>::vertex_descriptor!\\
-\hfill\\
+\begin{tabular}{l|l}
+Type & \\
+\hline
+\texttt{vertex\_t} &  \texttt{boost::graph\_traits<graph\_t>::vertex\_descriptor}
+\end{tabular}
+\end{center}
+\caption{Typedefinitions for Poh with BFS.}
+\end{figure}
 
+\begin{figure}
+\begin{center}
 \begin{tabular}{l|l|l}
 Type & Concept & Additional Requirements\\
 \hline
-\verb!graph_t! & \verb!VertexAndEdgeListGraph! & None\\
-\verb!color_t! & \verb!EqualityComparable!, & None\\
-& \verb!CopyAssignable! & \\
-\verb!planar_embedding_t! & \verb!PlanarEmbedding! & None\\
-\verb!color_map_t! & \verb!LvaluePropertyMap! & \verb!value_type! is \verb!color_t!\\
-\verb!mark_map_t! & \verb!LvaluePropertyMap! & \verb!value_type! is an integer\\
-\verb!parent_map_t! & \verb!LvaluePropertyMap! & \verb!value_type! is \verb!vertex_t!\\
-\verb!vertex_iterator_t! & \verb!InputIterator! & \verb!value_type! is \verb!vertex_t!
+\texttt{graph\_t} & \texttt{VertexAndEdgeListGraph} & None\\
+\texttt{color\_t} & \texttt{EqualityComparable}, & None\\
+& \texttt{CopyAssignable} & \\
+\texttt{embedding\_t} & \texttt{PlanarEmbedding} & None\\
+\texttt{color\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_t}\\
+\texttt{mark\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is an integer\\
+\texttt{parent\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{vertex\_t}\\
+\texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}
 \end{tabular}
 \end{center}
-\hfill\\
+\caption{Template requirements for Poh with BFS.}
+\end{figure}
 
 We assume the provided graph is simple and weakly triangulated and the given
 planar embedding structure represents a valid planar embedding of the graph.
-Finally we assume the two ranges of verteces map are paths in the graph
-satisfying the requirements of \textit{Poh with BFS} (4.2).
-We assume no vertex is already colored any of \verb!c_0!, \verb!c_1!,
-or \verb!c_2!. We also require that all vertices are initially assigned a mark
-of $0$ by \verb!mark_map!.
+Finally we assume the two ranges of vertices map are paths in the graph
+satisfying the requirements of \textit{Poh -- BFS} (4.2).
+We assume no vertex is already colored any of \texttt{c\_0}, \texttt{c\_1},
+or \texttt{c\_2}. We also require that all vertices are initially assigned a mark
+of $0$ by \texttt{mark\_map}.
 
 The implementation almost directly follows the description of (4.2), although
 some decisions had to be made. In order
 to keep the algorithm linear, we must ensure we iterate through the
-adjacency list of a given vertx precisely once during the orientation phase of
+adjacency list of a given vertex precisely once during the orientation phase of
 (4.2). This is the step where we would locate the position of $v_k$ in
 $\text{Adj}[v_1]$. To do this we note that at least one of the path endpoint
 vertices $v_1$ or $v_k$ has never been an path endpoint vertex in any call
@@ -1657,6 +1671,235 @@ before. We then always choose this endpoint as the vertex whose adjacency list
 we search through.
 
 Source code is available online at the link provided earlier.
+
+\subsection{Poh with Path Walking in the BGL}
+
+Here we describe our BGL implementation of the linear time Poh algorithm
+described in (4.3) and (4.4). The
+function prototype, type definitions, and template requirements are shown
+in figures 6.4, 6.5, and 6.6 respectively.
+
+\begin{figure}
+\begin{lstlisting}[frame=single]
+template<
+        typename graph_t,
+        typename embedding_t,
+        typename color_map_t,
+        typename mark_map_t,
+        typename n_range_map_t,
+        typename vertex_iterator_t,
+        typename color_t
+    >
+void poh_color(
+        const graph_t & graph,
+        const embedding_t & planar_embedding,
+        color_map_t & color_map,
+        n_range_map_t & neighbor_range_map,
+        mark_map_t & mark_map,
+        vertex_iterator_t p_begin, vertex_iterator_t p_end,
+        vertex_iterator_t q_begin, vertex_iterator_t q_end,
+        color_t c_0, color_t c_1, color_t c_2
+    );
+\end{lstlisting}
+\caption{Publicly visible function prototype for Poh with Path Walking.}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{l|l}
+Type & \\
+\hline
+\texttt{vertex\_t} &  \texttt{boost::graph\_traits<graph\_t>::vertex\_descriptor}\\
+\texttt{n\_iter\_t} & \texttt{boost::property\_traits<embedding\_t>::value\_type}\\
+& $\qquad$\texttt{::const\_iterator}\\
+\texttt{n\_range\_t} & \texttt{std::pair<n\_iter\_t,n\_iter\_t>}
+\end{tabular}
+\end{center}
+\caption{Typedefinitions for Poh with Path Walking.}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{l|l|l}
+Type & Concept & Additional Requirements\\
+\hline
+\texttt{graph\_t} & \texttt{VertexAndEdgeListGraph} & None\\
+\texttt{color\_t} & \texttt{EqualityComparable}, & None\\
+& \texttt{CopyAssignable} & \\
+\texttt{embedding\_t} & \texttt{PlanarEmbedding} & None\\
+\texttt{color\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_t}\\
+\texttt{mark\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is an integer\\
+\texttt{n\_range\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{n\_range\_t}\\
+\texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}
+\end{tabular}
+\end{center}
+\caption{Template requirements for Poh with Path Walking.}
+\end{figure}
+
+We make the exact same assumptions
+about input structures as in our implementation of \textit{Poh -- BFS} (4.2) in
+the previous section.
+
+The implementation follows algorithms (4.3) and (4.4) with the following
+implementation decisions an modifications. We use the
+\texttt{neighbor\_range\_map} structure to track start and stop points in the cyclic
+ordering of neighbors provided by \texttt{planar\_embedding}, similar to the
+neighbor range vertex property described in section 5. This allows us to do a
+single iteration through the neighbors of a vertex to get an ``orientation",
+then remember this orientation for the remainder of the algorithm.
+
+Additionally, we optimize the implementation by combining the steps of (4.3) and
+(4.4). Notice
+the path that is colored in (4.4) is the same path we will walk through in a
+subsequent call to (4.3). We may therefore perform the marking and chord
+finding operations of (4.3) as the path is colored in (4.4). This reduces
+the number of times we visit a particular edge by a factor of $2$.
+
+\subsection{Augmented Embeddings}
+
+In this section we describe the \texttt{Augmented{\allowbreak}Embedding} concept used to store
+embedding ordered augmented adjacency lists for a graph.
+
+The \texttt{Augmented{\allowbreak}Embedding} concept refines \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map}, placing
+additional restrictions on the \texttt{value\_type} of the map. The types are
+described in figure 6.7. Valid expressions are described in figure 6.8.
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{l|l}
+Type & \\
+\hline
+\texttt{augmented\_embedding\_t} &  a type modeling \texttt{Augmented{\allowbreak}Embedding} \\
+\texttt{node\_t} & \texttt{boost::property\_traits<augmented\_embedding\_t>}\\
+    & $\qquad$\texttt{::value\_type::value\_type}\\
+\texttt{iterator\_t} & \texttt{boost::property\_traits<augmented\_embedding\_t>}\\
+    & $\qquad$\texttt{::value\_type::iterator}\\
+\texttt{graph\_t} & the type of the underlying graph\\
+\texttt{vertex\_t} & \texttt{boost::graph\_traits<graph\_t>::vertex\_descriptor}
+\end{tabular}
+\end{center}
+\caption{Types for the AugmentedEmbedding concept.}
+\end{figure}
+
+The object \texttt{embedding} will assign a range of objects of type
+\texttt{node\_t} to each vertex \texttt{v} in the underlying graph. There will be exactly one
+node in this range for each neighbor of \texttt{v} in the underlying graph. We will
+call this range of nodes the augmented adjacency list for \texttt{v}.
+
+The type \texttt{node\_t} will represent a neighboring vertex \texttt{u} in the augmented
+adjacency list for a vertex \texttt{v}. The type \texttt{iterator\_t} will be an iterator for
+the range of \texttt{node\_t} objects for a vertex \texttt{v}.
+
+For a vertex \texttt{v} each node \texttt{n} in the range \texttt{embedding{\allowbreak}[v].begin()} to
+\texttt{embedding{\allowbreak}[v].end()} will have \texttt{n.vertex} be a neighboring vertex \texttt{u}
+and \texttt{n.iterator} be the unique iterator in the range \texttt{embedding{\allowbreak}[u].begin()}
+to \texttt{embedding{\allowbreak}[u].end()} such that \texttt{n.iterator{\allowbreak}->vertex} is equal to \texttt{v}.
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{l|l}
+Object(s) & Description\\
+\hline
+\texttt{u},\texttt{v} & objects of type \texttt{vertex\_t}\\
+\texttt{embedding} & an object of type \texttt{augmented\_embedding\_t}\\
+\texttt{n} & an object of type \texttt{node\_t}
+\end{tabular}
+\end{center}
+\caption{Notation for our discussion of augmented embeddings.}
+\end{figure}
+\begin{figure}
+\begin{center}
+\begin{tabular}{l|l|l}
+Expression & Type & Description\\
+\hline
+\texttt{n.vertex} & \texttt{vertex\_t} & vertex member for the node \texttt{n}\\
+\texttt{n.iterator} & \texttt{iterator\_t} & iterator member for the node \texttt{n}\\
+\texttt{embedding[v].begin()} & \texttt{iterator\_t} & beginning of the range of nodes\\
+\texttt{embedding[v].end()} & \texttt{iterator\_t} & end of the range of nodes\\
+\texttt{embedding[v].push\_back(n)} & \texttt{void} & append \texttt{n} to the range of nodes\\
+\texttt{embedding[v].clear()} & \texttt{void} & clear the range of nodes
+\end{tabular}
+\end{center}
+\caption{Valid expressions for an object modeling \texttt{Augmented{\allowbreak}Embedding}.}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}[frame=single]
+template<
+        typename graph_t,
+        typename embedding_t,
+        typename color_list_map_t,
+        typename n_range_map_t,
+        typename location_map_t,
+        typename face_iterator_t
+    >
+void hartman_skrekovski_color(
+        const graph_t & graph,
+        const embedding_t & augmented_embedding,
+        color_list_map_t & color_list_map,
+        n_range_map_t & neighbor_range_map,
+        location_map_t & face_location_map,
+        face_iterator_t face_begin, face_iterator_t face_end
+    );
+\end{lstlisting}
+\caption{Publicly visible function prototype for Hartman-Skrekovski.}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{l|l}
+Type & \\
+\hline
+\texttt{vertex\_t} &  \texttt{boost::graph\_traits<graph\_t>::vertex\_descriptor}\\
+\texttt{n\_iter\_t} & \texttt{boost::property\_traits<embedding\_t>::value\_type}\\
+& $\qquad$\texttt{::const\_iterator}\\
+\texttt{n\_range\_t} & \texttt{std::pair<n\_iter\_t,n\_iter\_t>}
+\end{tabular}
+\end{center}
+\caption{Typedefinitions for Poh with Path Walking.}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{l|l|l}
+Type & Concept & Additional Requirements\\
+\hline
+\texttt{graph\_t} & \texttt{VertexAndEdgeListGraph} & None\\
+\texttt{color\_t} & \texttt{EqualityComparable}, & None\\
+& \texttt{CopyAssignable} & \\
+\texttt{embedding\_t} & \texttt{PlanarEmbedding} & None\\
+\texttt{color\_list\_t} & \texttt{Sequence{\allowbreak}Container} & \texttt{value\_type} is \texttt{color\_t}\\
+\texttt{color\_list\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_list\_t}\\
+\texttt{location\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is an integer\\
+\texttt{n\_range\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{n\_range\_t}\\
+\texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}
+\end{tabular}
+\end{center}
+\caption{Template requirements for Poh with Path Walking.}
+\end{figure}
+
+\subsection{Hartman-Skrekovski in the BGL}
+
+Here we detail our implementation of the Hartman-Skrekovski algorithm described
+in (5.3) and (5.4). The
+function prototype, type definitions, and template requirements are shown
+in figures 6.10, 6.11, and 6.12 respectively.
+
+We assume the provided graph is simple and weakly triangulated and the given
+\texttt{augmented\_embedding} structure represents a valid planar embedding of
+the graph.
+We assume the range of vertices is a cycle in the provided graph.
+We assume \texttt{color\_list\_map} assigns each vertex in the cycle a sequence
+of at $2$ or more colors, and each vertex interior to the cycle a sequence of
+$3$ or more colors. We also require that all vertices are initially assigned a
+location mark of $0$ by \texttt{location\_map}.
+
+The implementation follows algorithms (5.3) and (5.4) with the following
+optimization. By combining the cases of (5.3) and (5.4) we may draw and remove
+the path simultaneously, one vertex at a time. In the implementation therefore
+perform the operations of both (5.3) and (5.4) simultaneously as each vertex
+is colored. This reduces the number of times we visit a particular edge by a
+factor of $2$.
 
 \begin{comment}
 

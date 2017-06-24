@@ -45,15 +45,22 @@
 
 namespace {
     template<
-            typename graph_t, typename planar_embedding_t, typename color_map_t,
-            typename mark_map_t, typename parent_map_t, typename color_t,
+            typename graph_t,
+            typename planar_embedding_t,
+            typename color_map_t,
+            typename mark_map_t,
+            typename parent_map_t,
+            typename color_t,
             typename vertex_t
                 = typename boost::graph_traits<graph_t>::vertex_descriptor
         >
     void poh_color_bfs_recursive(
-            const graph_t & graph, const planar_embedding_t & planar_embedding,
-            color_map_t & color_map, mark_map_t & mark_map,
-            parent_map_t & parent_map, vertex_t p_0, vertex_t p_n, vertex_t q_0,
+            const graph_t & graph,
+            const planar_embedding_t & planar_embedding,
+            color_map_t & color_map,
+            mark_map_t & mark_map,
+            parent_map_t & parent_map,
+            vertex_t p_0, vertex_t p_n, vertex_t q_0,
             vertex_t q_m, std::size_t count, color_t new_color
         )
     {
@@ -204,16 +211,23 @@ namespace {
  */
 
 template<
-        typename graph_t, typename planar_embedding_t, typename color_map_t,
-        typename mark_map_t, typename parent_map_t, typename vertex_iterator_t,
+        typename graph_t,
+        typename planar_embedding_t,
+        typename color_map_t,
+        typename mark_map_t,
+        typename parent_map_t,
+        typename vertex_iterator_t,
         typename color_t
     >
 void poh_color_bfs(
-        const graph_t & graph, const planar_embedding_t & planar_embedding,
-        color_map_t & color_map, mark_map_t & mark_map,
-        parent_map_t & parent_map, vertex_iterator_t p_begin,
-        vertex_iterator_t p_end, vertex_iterator_t q_begin,
-        vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
+        const graph_t & graph,
+        const planar_embedding_t & planar_embedding,
+        color_map_t & color_map,
+        mark_map_t & mark_map,
+        parent_map_t & parent_map,
+        vertex_iterator_t p_begin, vertex_iterator_t p_end,
+        vertex_iterator_t q_begin, vertex_iterator_t q_end,
+        color_t c_0, color_t c_1, color_t c_2
     )
 { 
     // Color the path P

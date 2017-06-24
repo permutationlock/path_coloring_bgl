@@ -194,16 +194,23 @@ namespace {
  */
 
 template<
-        typename graph_t, typename planar_embedding_t, typename color_map_t,
-        typename mark_map_t, typename neighbor_range_map_t,
-        typename vertex_iterator_t, typename color_t
+        typename graph_t,
+        typename planar_embedding_t,
+        typename color_map_t,
+        typename mark_map_t,
+        typename neighbor_range_map_t,
+        typename vertex_iterator_t,
+        typename color_t
     >
 void poh_color(
-        const graph_t & graph, const planar_embedding_t & planar_embedding,
-        color_map_t & color_map, neighbor_range_map_t & neighbor_range_map,
-        mark_map_t & mark_map, vertex_iterator_t p_begin,
-        vertex_iterator_t p_end, vertex_iterator_t q_begin,
-        vertex_iterator_t q_end, color_t c_0, color_t c_1, color_t c_2
+        const graph_t & graph,
+        const planar_embedding_t & planar_embedding,
+        color_map_t & color_map,
+        neighbor_range_map_t & neighbor_range_map,
+        mark_map_t & mark_map,
+        vertex_iterator_t p_begin, vertex_iterator_t p_end,
+        vertex_iterator_t q_begin, vertex_iterator_t q_end,
+        color_t c_0, color_t c_1, color_t c_2
     )
 {
     // Type definitions

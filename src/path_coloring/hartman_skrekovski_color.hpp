@@ -450,9 +450,12 @@ namespace {
  */
  
 template<
-        typename graph_t, typename augmented_embedding_t,
-        typename color_list_map_t, typename neighbor_range_map_t,
-        typename face_location_map_t, typename face_iterator_t
+        typename graph_t,
+        typename augmented_embedding_t,
+        typename color_list_map_t,
+        typename neighbor_range_map_t,
+        typename face_location_map_t,
+        typename face_iterator_t
     >
 void hartman_skrekovski_color(
         const graph_t & graph,

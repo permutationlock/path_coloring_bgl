@@ -7,7 +7,7 @@
 ### writeup
  This directory contains a formal writeup describing the background
  literature, as well as the correctness and
- complexity or each algorithm. It was completed to satisfy part
+ complexity of each algorithm. It was completed to satisfy part
  of the requirements for my masters in computer science.
 
 ### slides

@@ -310,6 +310,7 @@ size *3* or more for each vertex, based on proofs by Hartman and Skrekovski.
  | *embedding[v].begin()* | *iterator_t* | Returns an iterator to the beginning of the range of nodes for the vertex *v* |
  | *embedding[v].end()* | *iterator_t* | Returns an iterator to the end of the range of nodes for the vertex *v* |
  | *embedding[v].push_back(n)* | *void* | Adds a node *n* to the end of the sequence of nodes for the vertex *v* |
+ | *embedding[v].clear()* | *void* | Clears the range of nodes for *v* |
 
 ### Example Definition
 
