@@ -1856,7 +1856,7 @@ Type & \\
 \texttt{n\_range\_t} & \texttt{std::pair<n\_iter\_t,n\_iter\_t>}
 \end{tabular}
 \end{center}
-\caption{Typedefinitions for Poh with Path Walking.}
+\caption{Typedefinitions for Hartman-Skrekovski.}
 \end{figure}
 
 \begin{figure}
@@ -1875,7 +1875,7 @@ Type & Concept & Additional Requirements\\
 \texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}
 \end{tabular}
 \end{center}
-\caption{Template requirements for Poh with Path Walking.}
+\caption{Template requirements for Hartman-Skrekovski.}
 \end{figure}
 
 \subsection{Hartman-Skrekovski in the BGL}
@@ -1900,6 +1900,24 @@ the path simultaneously, one vertex at a time. In the implementation therefore
 perform the operations of both (5.3) and (5.4) simultaneously as each vertex
 is colored. This reduces the number of times we visit a particular edge by a
 factor of $2$.
+
+\section{Conclusion}
+
+In this project we considered two inductive procedures on plane graphs: one
+computing a path $3$-colorings, and one computing a path list-coloring with
+lists of size at least $3$. We adapted each procedure to an
+algorithm for finding path colorings of graphs with adjacency list
+representations. Finally, we showed each procedure admits an algorithm that
+runs in linear time.
+
+Future work in this area might consider Hartman's procedure for path
+$4$-coloring torus graphs, also found in \cite{hartman}. The procedure first
+collapses a noncontractible cycle in the torus graph down to a
+single vertex to form a plane graph. It then divides the resulting plane graph
+into several subgraphs which are individually colored with Poh' algorithm.
+The combined may then be adapted to a path $4$-coloring of the original torus
+graph. It would be interesting to see if this procedure might be adapted to
+a linear time algorithm.
 
 \begin{comment}
 
