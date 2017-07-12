@@ -579,8 +579,14 @@ void poh_color_bfs_test(const graph_t & graph) {
     
     // Call Poh algorithm
     poh_color_bfs(
-            graph, planar_embedding, color_map, mark_map,
-            parent_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
+            graph,
+            planar_embedding,
+            p.begin(), p.end(),
+            q.begin(), q.end(),
+            1, 2, 3,
+            mark_map,
+            parent_map,
+            color_map
         );
     
     #ifdef SHOW_VISUALIZATION
@@ -644,8 +650,14 @@ void poh_color_test(const graph_t & graph) {
     
     // Call Poh algorithm
     poh_color(
-            graph, planar_embedding, color_map, neighbor_range_map,
-            mark_map, p.begin(), p.end(), q.begin(), q.end(), 1, 2, 3
+            graph,
+            planar_embedding,
+            p.begin(), p.end(),
+            q.begin(), q.end(),
+            1, 2, 3,
+            neighbor_range_map,
+            mark_map,
+            color_map
         );
     
     #ifdef SHOW_VISUALIZATION
@@ -759,9 +771,12 @@ void hartman_skrekovski_test(const graph_t & graph, std::size_t num_colors) {
     
     // Call path list-coloring algorithm
     hartman_skrekovski_color(
-            graph, augmented_embedding, color_list_map,
-            neighbor_range_map, face_location_map,
-            outer_face.begin(), outer_face.end()
+            graph,
+            augmented_embedding,
+            outer_face.begin(), outer_face.end(),
+            neighbor_range_map,
+            face_location_map,
+            color_list_map
         );
     
     // Test correctness of list coloring

@@ -460,10 +460,10 @@ template<
 void hartman_skrekovski_color(
         const graph_t & graph,
         const augmented_embedding_t & augmented_embedding,
-        color_list_map_t & color_list_map,
+        face_iterator_t face_begin, face_iterator_t face_end,
         neighbor_range_map_t & neighbor_range_map,
         face_location_map_t & face_location_map,
-        face_iterator_t face_begin, face_iterator_t face_end
+        color_list_map_t & color_list_map
     )
 {
     // Type definitions
@@ -508,6 +508,65 @@ void hartman_skrekovski_color(
             neighbor_range_map, color_list_map,
             x, y, x,
             -1, before_y, -1
+        );
+}
+
+template<
+        typename graph_t,
+        typename augmented_embedding_t,
+        typename color_list_map_t,
+        typename face_iterator_t
+    >
+void hartman_skrekovski_color(
+        const graph_t & graph,
+        const augmented_embedding_t & augmented_embedding,
+        face_iterator_t face_begin, face_iterator_t face_end,
+        color_list_map_t & color_list_map
+    )
+{
+    // Vertex property map to store vertex marks
+    typedef boost::iterator_property_map<
+            std::vector<int>::iterator,
+            typename boost::property_map<
+                    graph_t, boost::vertex_index_t
+                >::const_type
+        > integer_property_map_t;
+    
+    // Vertex property map type for the neighbor ranges of planar_embedding_t
+    typedef typename boost::property_traits<augmented_embedding_t>::value_type
+            ::const_iterator embedding_iterator_t;
+    typedef typename std::vector<
+            std::pair<embedding_iterator_t, embedding_iterator_t>
+        > neighbor_range_storage_t;
+    typedef boost::iterator_property_map<
+            typename neighbor_range_storage_t::iterator,
+            typename boost::property_map<
+                    graph_t, boost::vertex_index_t
+                >::const_type
+        > neighbor_range_map_t;
+    
+    // Construct a vertex property for neighbor ranges
+    neighbor_range_storage_t neighbor_range_storage(boost::num_vertices(graph));
+    neighbor_range_map_t neighbor_range_map(
+            neighbor_range_storage.begin(),
+            boost::get(boost::vertex_index, graph)
+        );
+    
+    // Construct a vertex property map to store face location marks
+    std::vector<int> face_location_storage(boost::num_vertices(graph));
+    integer_property_map_t face_location_map(
+            face_location_storage.begin(),
+            boost::get(boost::vertex_index, graph)
+        );
+    
+    // Call Poh with the given cycle and color set { 1, 2, 3 }
+    hartman_skrekovski_color(
+            graph,
+            augmented_embedding,
+            face_begin, face_end,
+            neighbor_range_map,
+            face_location_map,
+            color_list_map
         );
 }
 

@@ -222,12 +222,12 @@ template<
 void poh_color_bfs(
         const graph_t & graph,
         const planar_embedding_t & planar_embedding,
-        color_map_t & color_map,
-        mark_map_t & mark_map,
-        parent_map_t & parent_map,
         vertex_iterator_t p_begin, vertex_iterator_t p_end,
         vertex_iterator_t q_begin, vertex_iterator_t q_end,
-        color_t c_0, color_t c_1, color_t c_2
+        color_t c_0, color_t c_1, color_t c_2,
+        mark_map_t & mark_map,
+        parent_map_t & parent_map,
+        color_map_t & color_map
     )
 { 
     // Color the path P
@@ -244,6 +244,67 @@ void poh_color_bfs(
     poh_color_bfs_recursive(
             graph, planar_embedding, color_map, mark_map, parent_map,
             *p_begin, *(--p_end), *q_begin, *(--q_end), 1, c_2
+        );
+}
+
+
+template<
+        typename graph_t,
+        typename planar_embedding_t,
+        typename vertex_iterator_t,
+        typename color_t,
+        typename color_map_t
+    >
+void poh_color_bfs(
+        const graph_t & graph,
+        const planar_embedding_t & planar_embedding,
+        vertex_iterator_t p_begin, vertex_iterator_t p_end,
+        vertex_iterator_t q_begin, vertex_iterator_t q_end,
+        color_t c_0, color_t c_1, color_t c_2,
+        color_map_t & color_map
+    )
+{
+    // Vertex type
+    typedef typename boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
+    
+    // Vertex property map to store vertex marks
+    typedef boost::iterator_property_map<
+            std::vector<int>::iterator,
+            typename boost::property_map<
+                    graph_t, boost::vertex_index_t
+                >::const_type
+        > integer_property_map_t;
+    
+    // Vertex property map to store BFS tree
+    typedef boost::iterator_property_map<
+            typename std::vector<vertex_t>::iterator, 
+            typename boost::property_map<
+                    graph_t, boost::vertex_index_t
+                >::const_type
+        > parent_map_t;
+    
+    // Construct a vertex property map to store vertex marks
+    std::vector<int> mark_storage(num_vertices(graph));
+    integer_property_map_t mark_map(
+            mark_storage.begin(), boost::get(boost::vertex_index, graph)
+        );
+    
+    // Construct a vertex property map to store neighbor ranges
+    std::vector<vertex_t> parent_storage(num_vertices(graph));
+    parent_map_t parent_map(
+            parent_storage.begin(), boost::get(boost::vertex_index, graph)
+        );
+    
+    // Construct the path 3-coloring
+    poh_color_bfs(
+            graph,
+            planar_embedding,
+            p_begin, p_end,
+            q_begin, q_end,
+            c_0, c_1, c_2,
+            mark_map,
+            parent_map,
+            color_map
         );
 }
 

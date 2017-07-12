@@ -56,12 +56,6 @@ typedef iterator_property_map<
         vertex_index_map_t
     > integer_property_map_t;
 
-typedef typename std::vector<vertex_t> parent_storage_t;
-typedef iterator_property_map<
-        typename parent_storage_t::iterator, 
-        vertex_index_map_t
-    > parent_map_t;
-
 // Vertex property map type for a planar embedding
 typedef std::vector<std::vector<edge_t>> planar_embedding_storage_t;
 typedef iterator_property_map<
@@ -128,25 +122,14 @@ int main() {
             color_map_storage.begin(), get(vertex_index, graph)
         );
     
-    // Construct a vertex property map to store vertex marks
-    integer_property_storage_t mark_storage(num_vertices(graph));
-    integer_property_map_t mark_map(
-            mark_storage.begin(), get(vertex_index, graph)
-        );
-    
-    // Construct a vertex property map to store neighbor ranges
-    parent_storage_t parent_storage(num_vertices(graph));
-    parent_map_t parent_map(
-            parent_storage.begin(), get(vertex_index, graph)
-        );
-    
     // Call Poh with the given paths and structurs and color set { 1, 2, 3 }
     poh_color_bfs(
-            graph, planar_embedding, color_map,
-            mark_map, parent_map,
+            graph,
+            planar_embedding,
             path_1.begin(), path_1.end(),
             path_2.begin(), path_2.end(),
-            1, 2, 3
+            1, 2, 3,
+            color_map
         );
     
     // Print the coloring

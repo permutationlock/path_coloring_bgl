@@ -205,12 +205,12 @@ template<
 void poh_color(
         const graph_t & graph,
         const planar_embedding_t & planar_embedding,
-        color_map_t & color_map,
-        neighbor_range_map_t & neighbor_range_map,
-        mark_map_t & mark_map,
         vertex_iterator_t p_begin, vertex_iterator_t p_end,
         vertex_iterator_t q_begin, vertex_iterator_t q_end,
-        color_t c_0, color_t c_1, color_t c_2
+        color_t c_0, color_t c_1, color_t c_2,
+        neighbor_range_map_t & neighbor_range_map,
+        mark_map_t & mark_map,
+        color_map_t & color_map
     )
 {
     // Type definitions
@@ -241,6 +241,69 @@ void poh_color(
             graph, planar_embedding, color_map, mark_map,
             neighbor_range_map, *p_begin, 1, 2,
             c_0, c_2, c_1
+        );
+}
+
+template<
+        typename graph_t,
+        typename planar_embedding_t,
+        typename color_map_t,
+        typename vertex_iterator_t,
+        typename color_t
+    >
+void poh_color(
+        const graph_t & graph,
+        const planar_embedding_t & planar_embedding,
+        vertex_iterator_t p_begin, vertex_iterator_t p_end,
+        vertex_iterator_t q_begin, vertex_iterator_t q_end,
+        color_t c_0, color_t c_1, color_t c_2,
+        color_map_t & color_map
+    )
+{
+    // Vertex property map to store vertex marks
+    typedef boost::iterator_property_map<
+            std::vector<int>::iterator,
+            typename boost::property_map<
+                    graph_t, boost::vertex_index_t
+                >::const_type
+        > integer_property_map_t;
+    
+    // Vertex property map type for the neighbor ranges of planar_embedding_t
+    typedef typename boost::property_traits<planar_embedding_t>::value_type
+            ::const_iterator embedding_iterator_t;
+    typedef typename std::vector<
+            std::pair<embedding_iterator_t, embedding_iterator_t>
+        > neighbor_range_storage_t;
+    typedef boost::iterator_property_map<
+            typename neighbor_range_storage_t::iterator,
+            typename boost::property_map<
+                    graph_t, boost::vertex_index_t
+                >::const_type
+        > neighbor_range_map_t;
+    
+    // Construct a vertex property map to store vertex marks
+    std::vector<int> mark_storage(boost::num_vertices(graph));
+    integer_property_map_t mark_map(
+            mark_storage.begin(), boost::get(boost::vertex_index, graph)
+        );
+    
+    // Construct a vertex property map to store neighbor ranges
+    neighbor_range_storage_t neighbor_range_storage(num_vertices(graph));
+    neighbor_range_map_t neighbor_range_map(
+            neighbor_range_storage.begin(),
+            boost::get(boost::vertex_index, graph)
+        );
+    
+    // Construct the path 3-coloring
+    poh_color(
+            graph,
+            planar_embedding,
+            p_begin, p_end,
+            q_begin, q_end,
+            1, 2, 3,
+            neighbor_range_map,
+            mark_map,
+            color_map
         );
 }
 

@@ -84,17 +84,6 @@ typedef iterator_property_map<
         vertex_index_map_t
     > augmented_embedding_t;
 
-// Vertex property map type for the neighbor ranges of planar_embedding_t
-typedef typename property_traits<augmented_embedding_t>::value_type
-        ::const_iterator embedding_iterator_t;
-typedef typename std::vector<
-        std::pair<embedding_iterator_t, embedding_iterator_t>
-    > neighbor_range_storage_t;
-typedef iterator_property_map<
-        typename neighbor_range_storage_t::iterator,
-        vertex_index_map_t
-    > neighbor_range_map_t;
-
 
 /* 
  * -----------------------------------------------------------------------------
@@ -187,24 +176,12 @@ int main() {
     }
     std::cout << "\n";
     
-    // Construct a vertex property for neighbor ranges
-    neighbor_range_storage_t neighbor_range_storage(num_vertices(graph));
-    neighbor_range_map_t neighbor_range_map(
-            neighbor_range_storage.begin(), get(vertex_index, graph)
-        );
-    
-    // Construct a vertex property map to store face location marks
-    integer_property_storage_t face_location_storage(num_vertices(graph));
-    integer_property_map_t face_location_map(
-            face_location_storage.begin(), get(vertex_index, graph)
-        );
-    
     
     // Call Poh with the given cycle and color set { 1, 2, 3 }
     hartman_skrekovski_color(
-            graph, augmented_embedding, color_list_map,
-            neighbor_range_map, face_location_map,
-            cycle.begin(), cycle.end()
+            graph, augmented_embedding,
+            cycle.begin(), cycle.end(),
+            color_list_map
         );
     
     // Print the coloring

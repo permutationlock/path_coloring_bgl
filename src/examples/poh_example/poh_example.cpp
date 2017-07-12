@@ -26,7 +26,7 @@
 
 using namespace boost;
 
-/* 
+/*
  * -----------------------------------------------------------------------------
  *                         Template type definitions
  * -----------------------------------------------------------------------------
@@ -62,17 +62,6 @@ typedef iterator_property_map<
         typename planar_embedding_storage_t::iterator, 
         vertex_index_map_t
     > planar_embedding_t;
-
-// Vertex property map type for the neighbor ranges of planar_embedding_t
-typedef typename property_traits<planar_embedding_t>::value_type
-        ::const_iterator embedding_iterator_t;
-typedef typename std::vector<
-        std::pair<embedding_iterator_t, embedding_iterator_t>
-    > neighbor_range_storage_t;
-typedef iterator_property_map<
-        typename neighbor_range_storage_t::iterator,
-        vertex_index_map_t
-    > neighbor_range_map_t;
 
 
 /* 
@@ -133,24 +122,14 @@ int main() {
             color_map_storage.begin(), get(vertex_index, graph)
         );
     
-    // Construct a vertex property map to store vertex marks
-    integer_property_storage_t mark_storage(num_vertices(graph));
-    integer_property_map_t mark_map(
-            mark_storage.begin(), get(vertex_index, graph)
-        );
-    
-    // Construct a vertex property map to store neighbor ranges
-    neighbor_range_storage_t neighbor_range_storage(num_vertices(graph));
-    neighbor_range_map_t neighbor_range_map(
-            neighbor_range_storage.begin(), get(vertex_index, graph)
-        );
-    
     // Call Poh with the given paths and structurs and color set { 1, 2, 3 }
     poh_color(
-            graph, planar_embedding, color_map, neighbor_range_map,
-            mark_map, path_1.begin(), path_1.end(),
+            graph,
+            planar_embedding,
+            path_1.begin(), path_1.end(),
             path_2.begin(), path_2.end(),
-            1, 2, 3
+            1, 2, 3,
+            color_map
         );
     
     // Print the coloring
