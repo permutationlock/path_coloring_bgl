@@ -1628,6 +1628,24 @@ add_edge(3, 4, graph);
 \label{example_make_graph}
 \end{figure}
 
+\begin{figure}
+\begin{tikzpicture}
+  \node (v0) [label=above:$0$] at (0cm, 3cm) {};
+  \node (v1) [label=below left:$1$] at (-1.5cm, 0cm) {};
+  \node (v2) [label=below right:$2$] at (1.5cm, 0cm) {};
+  \node (v3) [label=above:$3$] at (-0.75cm, 0cm) {};
+  \node (v4) [label=above:$4$] at (0.75cm, 0cm) {};
+  
+  \begin{pgfonlayer}{bg}
+	  \draw (v0) edge (v1); \draw (v0) edge (v2); \draw (v2) edge (v1);
+	  \draw (v0) edge (v3); \draw (v1) edge (v3); \draw (v0) edge (v4);
+	  \draw (v2) edge (v4); \draw (v3) edge (v4);
+  \end{pgfonlayer}
+  
+\end{tikzpicture}
+\caption{A drawing of the graph constructed in \ref{example_make_graph}.}
+\end{figure}
+
 Code to construct a simple triangulated planar graph may be seen in Figure
 \ref{example_make_graph}. A planar embedding for the graph is constructed
 in Figure \ref{example_embed_graph}. 
@@ -1718,7 +1736,7 @@ or \texttt{c\_2}.
 
 When the algorithm is complete \texttt{color\_map} will be assigned such that
 it represents a valid path $3$-coloring of the subgraph bounded by the cycle
-formed by the two provided paths ($\text{Int}(C)$). The coloring will
+formed by the two provided paths, $\text{Int}(C)$. The coloring will
 also satisfy the output requirements of (4.4).
 
 The implementation follows algorithms (4.3) and (4.4) with the following
