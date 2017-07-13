@@ -1668,7 +1668,7 @@ to refer to the vertex and edge types of \texttt{graph\_t}.
 Here we describe our implementation of the linear time Poh algorithm
 described in (4.3) and (4.4). The
 function prototype, type definitions, and template requirements are shown
-in figures 6.4, 6.5, and 6.6 respectively.
+in Figures \ref{poh_prototype} and Figure \ref{poh_template}, respectively.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
@@ -1689,6 +1689,7 @@ void poh_color(
     );
 \end{lstlisting}
 \caption{Publicly visible function prototype for Poh with Path Walking.}
+\label{poh_prototype}
 \end{figure}
 
 \begin{figure}
@@ -1705,6 +1706,7 @@ Type & Concept & Additional Requirements\\
 \end{tabular}
 \end{center}
 \caption{Template requirements for Poh with Path Walking.}
+\label{poh_template}
 \end{figure}
 
 We assume the provided graph is simple and weakly triangulated and the given
@@ -1772,7 +1774,7 @@ poh_color(
 We also provide an implementation of of \textit{Poh -- BFS} (4.2). Note that
 the BFS algorithm is slower than the algorithm described in (4.3, 4.4). The
 function prototype, type definitions, and template requirements are shown
-in figures 6.1, 6.2, and 6.3 respectively.
+in Figure \ref{poh_bfs_prototype} and Figure \ref{poh_bfs_template}, respectively.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
@@ -1793,6 +1795,7 @@ void poh_color_bfs(
     );
 \end{lstlisting}
 \caption{Publicly visible function prototype for Poh with BFS.}
+\label{poh_bfs_prototype}
 \end{figure}
 
 \begin{figure}
@@ -1809,6 +1812,7 @@ Type & Concept & Additional Requirements\\
 \end{tabular}
 \end{center}
 \caption{Template requirements for Poh with BFS.}
+\label{poh_bfs_template}
 \end{figure}
 
 We make the exact same assumptions
@@ -1842,7 +1846,8 @@ embedding ordered augmented adjacency lists for a graph.
 
 The \texttt{Augmented{\allowbreak}Embedding} concept refines \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map}, placing
 additional restrictions on the \texttt{value\_type} of the map. The types are
-described in figure 6.7. Valid expressions are described in figure 6.8.
+described in Figure \ref{augmented_concept}. Valid expressions are described in
+Figure \ref{valid_expressions}.
 
 \begin{figure}
 \begin{center}
@@ -1859,6 +1864,7 @@ Type & \\
 \end{tabular}
 \end{center}
 \caption{Types for the AugmentedEmbedding concept.}
+\label{augmented_concept}
 \end{figure}
 
 The object \texttt{embedding} will assign a range of objects of type
@@ -1901,6 +1907,7 @@ Expression & Type & Description\\
 \end{tabular}
 \end{center}
 \caption{Valid expressions for an object modeling \texttt{Augmented{\allowbreak}Embedding}.}
+\label{valid_expressions}
 \end{figure}
 
 We implemented an algorithm to construct a data structure modeling \texttt{AugmentedEmbedding}
@@ -1947,8 +1954,9 @@ augment_embedding(
 
 Here we detail our implementation of the Hartman-Skrekovski algorithm described
 in (5.3, 5.4). The
-function prototype, type definitions, and template requirements are shown
-in figures 6.10, 6.11, and 6.12 respectively.
+function prototype and template requirements are shown
+in Figure \ref{hartman_prototype} and Figure \ref{hartman_template},
+respectively.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
@@ -1966,6 +1974,7 @@ void hartman_skrekovski_color(
     );
 \end{lstlisting}
 \caption{Publicly visible function prototype for Hartman-Skrekovski.}
+\label{hartman_prototype}
 \end{figure}
 
 \begin{figure}
@@ -1983,6 +1992,7 @@ Type & Concept & Additional Requirements\\
 \end{tabular}
 \end{center}
 \caption{Template requirements for Hartman-Skrekovski.}
+\label{hartman_template}
 \end{figure}
 
 We assume the provided graph is simple and weakly triangulated and the given
