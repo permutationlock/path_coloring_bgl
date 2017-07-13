@@ -74,9 +74,9 @@ typedef iterator_property_map<
 
 // Vertex property for an augmented embedding
 struct adjacency_node_t {
-        vertex_t vertex;
-        typename std::vector<adjacency_node_t>::iterator iterator;
-    };
+    vertex_t vertex;
+    typename std::vector<adjacency_node_t>::iterator iterator;
+};
 typedef typename std::vector<std::vector<adjacency_node_t>>
     augmented_embedding_storage_t;
 typedef iterator_property_map<
@@ -95,15 +95,15 @@ int main() {
     graph_t graph(5);
     
     // First we will construct a planar graph.
-    boost::add_edge(0, 1, graph);
-    boost::add_edge(1, 2, graph);
-    boost::add_edge(2, 0, graph);
-    boost::add_edge(1, 3, graph);
-    boost::add_edge(0, 3, graph);
-    boost::add_edge(2, 3, graph);
-    boost::add_edge(0, 4, graph);
-    boost::add_edge(2, 4, graph);
-    boost::add_edge(3, 4, graph);
+    add_edge(0, 1, graph);
+    add_edge(1, 2, graph);
+    add_edge(2, 0, graph);
+    add_edge(1, 3, graph);
+    add_edge(0, 3, graph);
+    add_edge(2, 3, graph);
+    add_edge(0, 4, graph);
+    add_edge(2, 4, graph);
+    add_edge(3, 4, graph);
     
     // We choose our outer face to be the triangle 012
     std::vector<vertex_t> cycle = { 0, 1, 2 };

@@ -65,7 +65,9 @@ list. We present a linear time algorithm based on Hartman and Skrekovski's
 proofs.
 
 A C++ implementation is provided for all three algorithms utilizing the Boost
-Graph Library.
+Graph Library. Instructions are given describing how to use the implementation
+to construct colorings for plane graphs represented by Boost Graph data
+structures.
 
 \section{Plane Graphs}
 
@@ -73,7 +75,7 @@ We will be concerned only with simple plane graphs. Informally, a plane graph
 is a network drawn in the plane consisting of a set of points, and a set of
 lines between points such that no lines cross.
 
-Formally a \textit{simple graph} is a pair $G=(V,E)$ consisting of a finite set
+Formally a \textit{simple graph} is an ordered pair $G=(V,E)$ consisting of a finite set
 $V$ of \textit{vertices} and a set $E$ of two element subsets of $V$ known as
 \textit{edges}. We will refer to the the vertex and edge sets of a graph $G$ by
 $V(G)$ and $E(G)$, respectively. All graphs in this project are simple.
@@ -308,7 +310,7 @@ $3$. In 1999 Hull and Eaton \cite{hull} and Skrekovski \cite{skrekovski}
 independently proved that if $G$ is a planar graph, then $G$ is
 $(3,2)$-choosable.
 
-Hartman's proof provides a constructive procedure to construct a path
+Hartman's proof provides a constructive procedure to find a path
 $L$-list-coloring for a plane graph that has been given a list assignment $L$
 with lists of size at least $3$. Interestingly, the proofs of Hartman and
 Skrekovski follow the same coloring algorithm, and thus Skrekovski unknowingly
@@ -358,7 +360,7 @@ to the node for $v$ in $\text{Adj}[u]$.
 An augmented adjacency list
 representation of a graph $G$ may be constructed from a standard adjacency list
 representation in $\mathcal{O}(m)$ time via the following algorithm due to 
-Glenn Chappell.\\
+Glenn Chappell \cite{chappell}.\\
 
 \noindent\textbf{Algorithm 3.1.} (Augment Adjacency Lists)
 
@@ -1546,7 +1548,10 @@ algorithm remains linear.
 For full details on managing location marks and disjoint set operations, see the
 provided C++ implementation.
 
-\section{Path Coloring in C++ with the Boost Graph Library}
+\section{Path $3$-Coloring and Path List-Coloring in C++}
+
+In this section we detail the C++ implementation of each algorithm above.
+Instructions for using each algorithm, as well as brief examples.
 
 The Boost Graph Library (BGL) \cite{boost} details a generic interface for working
 with graphs, as well as numerous data structures and algorithms for working with
@@ -1555,7 +1560,7 @@ discuss implementing the Poh and Hartman-Skrekovski algorithms using BGL
 abstractions.
 
 We will assume familiarity with the C++ language and the
-\texttt{C++} Standard Template Library (STL). Full hyperlinked documentation is
+C++ Standard Template Library (STL). Full hyperlinked documentation is
 available with the project source code at
 \url{https://github.com/permutationlock/path_coloring_bgl},
 with links to the relevant Boost and STL concepts.
@@ -1572,10 +1577,10 @@ combines the two refinements.
 
 Although other concepts exist such as
 \texttt{AdjacencyGraph}, we will only require that input graphs model
-\texttt{VertexListGraph} or \texttt{VertexAndEdgeListGraph}. Although
-\texttt{AdjacencyGraph} might seem like an obvious choice, we will follow the
-BGL's decision and represent the rotation scheme for planar embeddings as an
-exterior property map.
+\texttt{VertexListGraph} or \texttt{VertexAndEdgeListGraph}. The
+\texttt{Adjacency{\allowbreak}Graph} concept might seem like an obvious choice, but we will
+follow the BGL's decision to represent the rotation scheme for planar
+embeddings as an exterior property map.
 
 There are two different types of vertex and edge properties in the BGL: interior
 properties and exterior properties. Interior properties are properties that are
@@ -1592,89 +1597,75 @@ The BGL defines the \texttt{PlanarEmbedding} concept to refine
 \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} to require that each vertex is assigned a range of
 edges, representing the embedding ordered rotation scheme.
 
-\subsection{Poh with BFS in the BGL}
-
-Here we describe our BGL implementation of \textit{Poh -- BFS} (4.2). The
-function prototype, type definitions, and template requirements are shown
-in figures 6.1, 6.2, and 6.3 respectively.
+The BGL provides a concrete \texttt{adjacency\_list} graph data structure that
+models \texttt{VertexAndEdgeListGraph}, among other concepts. We provide wrapper
+functions that will construct fast property maps (\texttt{iterator\_property\_map})
+for all the property maps just used as working space for the algorithms.
+In the examples here we will only discuss \texttt{adjacency\_list} structures,
+but functions are available in the library to allow the algorithms to work on
+arbitrary data structures modeling the necessary BGL concepts.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
-template<
-        typename graph_t,
-        typename planar_embedding_t,
-        typename color_map_t,
-        typename mark_map_t,
-        typename parent_map_t,
-        typename vertex_iterator_t,
-        typename color_t
-    >
-void poh_color_bfs(
-        const graph_t & graph,
-        const planar_embedding_t & planar_embedding,
-        color_map_t & color_map,
-        mark_map_t & mark_map,
-        parent_map_t & parent_map,
-        vertex_iterator_t p_begin, vertex_iterator_t p_end,
-        vertex_iterator_t q_begin, vertex_iterator_t q_end,
-        color_t c_0, color_t c_1, color_t c_2
+adjacency_list<
+        vecS,
+        vecS,
+        undirectedS,
+        property<vertex_index_t, size_t>,
+        property<edge_index_t, size_t>
+    > graph(5);
+add_edge(0, 1, graph);
+add_edge(1, 2, graph);
+add_edge(2, 0, graph);
+add_edge(1, 3, graph);
+add_edge(0, 3, graph);
+add_edge(2, 3, graph);
+add_edge(0, 4, graph);
+add_edge(2, 4, graph);
+add_edge(3, 4, graph);
+\end{lstlisting}
+\caption{Example code to construct a graph in the BGL.}
+\label{example_make_graph}
+\end{figure}
+
+Code to construct a simple triangulated planar graph may be seen in Figure
+\ref{example_make_graph}. A planar embedding for the graph is constructed
+in Figure \ref{example_embed_graph}. 
+This graph and embedding will be used as an example input in the later sections.
+
+\begin{figure}
+\begin{lstlisting}[frame=single]
+vector<vector<edge_t>> planar_embedding_storage(
+        num_vertices(graph)
+    );
+iterator_property_map<
+        typename vector<vector<edge_t>>::iterator, 
+        property_map<graph_t, vertex_index_t>::const_type
+    > planar_embedding(
+        planar_embedding_storage.begin(),
+        get(vertex_index, graph)
+    );
+
+for(size_t v = 0; v < num_vertices(graph); ++v) {
+    planar_embedding[v].reserve(out_degree(v, graph));
+}
+
+boyer_myrvold_planarity_test(
+        boyer_myrvold_params::graph = graph,
+        boyer_myrvold_params::embedding = planar_embedding
     );
 \end{lstlisting}
-\caption{Publicly visible function prototype for Poh with BFS.}
+\caption{Example code to construct a planar embedding in the BGL.}
+\label{example_embed_graph}
 \end{figure}
 
-\begin{figure}
-\begin{center}
-\begin{tabular}{l|l}
-Type & \\
-\hline
-\texttt{vertex\_t} &  \texttt{boost::graph\_traits<graph\_t>::vertex\_descriptor}
-\end{tabular}
-\end{center}
-\caption{Typedefinitions for Poh with BFS.}
-\end{figure}
+We will use \texttt{graph\_t} to refer to some definition of
+\texttt{boost::adjacency\_list}. We will use \texttt{vertex\_t} and \texttt{edge\_t}
+to refer to the vertex and edge types of \texttt{graph\_t}.
 
-\begin{figure}
-\begin{center}
-\begin{tabular}{l|l|l}
-Type & Concept & Additional Requirements\\
-\hline
-\texttt{graph\_t} & \texttt{VertexAndEdgeListGraph} & None\\
-\texttt{color\_t} & \texttt{EqualityComparable}, & None\\
-& \texttt{CopyAssignable} & \\
-\texttt{embedding\_t} & \texttt{PlanarEmbedding} & None\\
-\texttt{color\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_t}\\
-\texttt{mark\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is an integer\\
-\texttt{parent\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{vertex\_t}\\
-\texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}
-\end{tabular}
-\end{center}
-\caption{Template requirements for Poh with BFS.}
-\end{figure}
+\subsection{Poh's Algorithm}
 
-We assume the provided graph is simple and weakly triangulated and the given
-planar embedding structure represents a valid planar embedding of the graph.
-Finally we assume the two ranges of vertices map are paths in the graph
-satisfying the requirements of \textit{Poh -- BFS} (4.2).
-We assume no vertex is already colored any of \texttt{c\_0}, \texttt{c\_1},
-or \texttt{c\_2}. We also require that all vertices are initially assigned a mark
-of $0$ by \texttt{mark\_map}.
-
-The implementation almost directly follows the description of (4.2), although
-some decisions had to be made. In order
-to keep the algorithm linear, we must ensure we iterate through the
-adjacency list of a given vertex precisely once during the orientation phase of
-(4.2). This is the step where we would locate the position of $v_k$ in
-$\text{Adj}[v_1]$. To do this we note that at least one of the path endpoint
-vertices $v_1$ or $v_k$ has never been an path endpoint vertex in any call
-before. We then always choose this endpoint as the vertex whose adjacency list
-we search through.
-
-Source code is available online at the link provided earlier.
-
-\subsection{Poh with Path Walking in the BGL}
-
-Here we describe our BGL implementation of the linear time Poh algorithm
+Here we describe our implementation of the linear time Poh algorithm
 described in (4.3) and (4.4). The
 function prototype, type definitions, and template requirements are shown
 in figures 6.4, 6.5, and 6.6 respectively.
@@ -1683,22 +1674,18 @@ in figures 6.4, 6.5, and 6.6 respectively.
 \begin{lstlisting}[frame=single]
 template<
         typename graph_t,
-        typename embedding_t,
+        typename planar_embedding_t,
         typename color_map_t,
-        typename mark_map_t,
-        typename n_range_map_t,
         typename vertex_iterator_t,
         typename color_t
     >
 void poh_color(
         const graph_t & graph,
-        const embedding_t & planar_embedding,
-        color_map_t & color_map,
-        n_range_map_t & neighbor_range_map,
-        mark_map_t & mark_map,
+        const planar_embedding_t & planar_embedding,
         vertex_iterator_t p_begin, vertex_iterator_t p_end,
         vertex_iterator_t q_begin, vertex_iterator_t q_end,
-        color_t c_0, color_t c_1, color_t c_2
+        color_t c_0, color_t c_1, color_t c_2,
+        color_map_t & color_map
     );
 \end{lstlisting}
 \caption{Publicly visible function prototype for Poh with Path Walking.}
@@ -1706,43 +1693,35 @@ void poh_color(
 
 \begin{figure}
 \begin{center}
-\begin{tabular}{l|l}
-Type & \\
-\hline
-\texttt{vertex\_t} &  \texttt{boost::graph\_traits<graph\_t>::vertex\_descriptor}\\
-\texttt{n\_iter\_t} & \texttt{boost::property\_traits<embedding\_t>::value\_type}\\
-& $\qquad$\texttt{::const\_iterator}\\
-\texttt{n\_range\_t} & \texttt{std::pair<n\_iter\_t,n\_iter\_t>}
-\end{tabular}
-\end{center}
-\caption{Typedefinitions for Poh with Path Walking.}
-\end{figure}
-
-\begin{figure}
-\begin{center}
 \begin{tabular}{l|l|l}
 Type & Concept & Additional Requirements\\
 \hline
-\texttt{graph\_t} & \texttt{VertexAndEdgeListGraph} & None\\
-\texttt{color\_t} & \texttt{EqualityComparable}, & None\\
+\texttt{graph\_t} & none & must be \texttt{adjacency\_list}\\
+\texttt{color\_t} & \texttt{EqualityComparable}, & none\\
 & \texttt{CopyAssignable} & \\
-\texttt{embedding\_t} & \texttt{PlanarEmbedding} & None\\
-\texttt{color\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_t}\\
-\texttt{mark\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is an integer\\
-\texttt{n\_range\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{n\_range\_t}\\
-\texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}
+\texttt{embedding\_t} & \texttt{PlanarEmbedding} & none\\
+\texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}\\
+\texttt{color\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_t}
 \end{tabular}
 \end{center}
 \caption{Template requirements for Poh with Path Walking.}
 \end{figure}
 
-We make the exact same assumptions
-about input structures as in our implementation of \textit{Poh -- BFS} (4.2) in
-the previous section.
+We assume the provided graph is simple and weakly triangulated and the given
+planar embedding structure represents a valid planar embedding of the graph.
+We assume the two ranges of vertices map are paths in the graph
+satisfying the requirements of \textit{Poh -- Face Walk} (4.4).
+Finally we assume no vertex is already colored any of \texttt{c\_0}, \texttt{c\_1},
+or \texttt{c\_2}.
+
+When the algorithm is complete \texttt{color\_map} will be assigned such that
+it represents a valid path $3$-coloring of the subgraph bounded by the cycle
+formed by the two provided paths ($\text{Int}(C)$). The coloring will
+also satisfy the output requirements of (4.4).
 
 The implementation follows algorithms (4.3) and (4.4) with the following
-implementation decisions an modifications. We use the
-\texttt{neighbor\_range\_map} structure to track start and stop points in the cyclic
+implementation decisions an modifications. We use a property map to track start
+and stop points in the cyclic
 ordering of neighbors provided by \texttt{planar\_embedding}, similar to the
 neighbor range vertex property described in section 5. This allows us to do a
 single iteration through the neighbors of a vertex to get an ``orientation",
@@ -1754,6 +1733,107 @@ the path that is colored in (4.4) is the same path we will walk through in a
 subsequent call to (4.3). We may therefore perform the marking and chord
 finding operations of (4.3) as the path is colored in (4.4). This reduces
 the number of times we visit a particular edge by a factor of $2$.
+
+A brief code snippet in Figure \ref{example_poh} shows how to apply Poh to the
+graph constructed earlier in Figure \ref{example_make_graph}.
+Source code, documentation, and complete examples are available online at the
+link provided earlier.
+
+\begin{figure}
+\begin{lstlisting}[frame=single]
+vector<int> color_map_storage(num_vertices(graph));
+iterator_property_map<
+        vector<int>::iterator,
+        typename property_map<
+                graph_t, vertex_index_t
+            >::const_type
+    > color_map(
+        color_map_storage.begin(), get(vertex_index, graph)
+    );
+
+vector<vertex_t> path_1 = { 0 };
+vector<vertex_t> path_2 = { 1, 2 };
+
+poh_color(
+        graph,
+        planar_embedding,
+        path_1.begin(), path_1.end(),
+        path_2.begin(), path_2.end(),
+        1, 2, 3,
+        color_map
+    );
+\end{lstlisting}
+\caption{Example code to color a graph with Poh.}
+\label{example_poh}
+\end{figure}
+
+\subsection{Poh with BFS}
+
+We also provide an implementation of of \textit{Poh -- BFS} (4.2). Note that
+the BFS algorithm is slower than the algorithm described in (4.3, 4.4). The
+function prototype, type definitions, and template requirements are shown
+in figures 6.1, 6.2, and 6.3 respectively.
+
+\begin{figure}
+\begin{lstlisting}[frame=single]
+template<
+        typename graph_t,
+        typename planar_embedding_t,
+        typename vertex_iterator_t,
+        typename color_t,
+        typename color_map_t
+    >
+void poh_color_bfs(
+        const graph_t & graph,
+        const planar_embedding_t & planar_embedding,
+        vertex_iterator_t p_begin, vertex_iterator_t p_end,
+        vertex_iterator_t q_begin, vertex_iterator_t q_end,
+        color_t c_0, color_t c_1, color_t c_2,
+        color_map_t & color_map
+    );
+\end{lstlisting}
+\caption{Publicly visible function prototype for Poh with BFS.}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{l|l|l}
+Type & Concept & Additional Requirements\\
+\hline
+\texttt{graph\_t} & none & must be \texttt{adjacency\_list}\\
+\texttt{color\_t} & \texttt{EqualityComparable}, & none\\
+& \texttt{CopyAssignable} & \\
+\texttt{embedding\_t} & \texttt{PlanarEmbedding} & none\\
+\texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}\\
+\texttt{color\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_t}
+\end{tabular}
+\end{center}
+\caption{Template requirements for Poh with BFS.}
+\end{figure}
+
+We make the exact same assumptions
+about input structures as in our implementation of (4.3, 4.4) in
+the previous section.
+
+When the algorithm is complete \texttt{color\_map} will be assigned such that
+it represents a valid path $3$-coloring of the subgraph bounded by the cycle
+formed by the two provided paths ($\text{Int}(C)$). The coloring will
+also satisfy the output requirements of (4.2).
+
+The implementation almost directly follows the description of (4.2), although
+some decisions had to be made. In order
+to keep the algorithm $\mathcal{O}(n^2)$, we must ensure we iterate through the
+adjacency list of a given vertex precisely once during the orientation phase of
+(4.2). This is the step where we would locate the position of $v_k$ in
+$\text{Adj}[v_1]$. To do this we note that at least one of the path endpoint
+vertices $v_1$ or $v_k$ has never been an path endpoint vertex in any call
+before. We then always choose this endpoint as the vertex whose adjacency list
+we search through.
+
+Source code, documentation, and complete examples are available online at the
+link provided earlier.
+
+
 
 \subsection{Augmented Embeddings}
 
@@ -1823,23 +1903,66 @@ Expression & Type & Description\\
 \caption{Valid expressions for an object modeling \texttt{Augmented{\allowbreak}Embedding}.}
 \end{figure}
 
+We implemented an algorithm to construct a data structure modeling \texttt{AugmentedEmbedding}
+from a structure modeling \texttt{PlanarEmbedding} based on \textit{Augment
+Embedding} (3.1).
+
+An code snippet in Figure \ref{example_augment_embedding} shows how to
+construct an augmented embedding structure for the graph from Figure
+\ref{example_make_graph}.
+
+\begin{figure}
+\begin{lstlisting}[frame=single]
+struct adjacency_node_t {
+    vertex_t vertex;
+    typename vector<adjacency_node_t>::iterator iterator;
+};
+
+vector<vector<adjacency_node_t>> augmented_embedding_storage(
+        num_vertices(graph)
+    );
+iterator_property_map<
+        vector<vector<adjacency_node_t>>::iterator,
+        typename property_map<
+                graph_t, vertex_index_t
+            >::const_type
+    >  augmented_embedding(
+        augmented_embedding_storage.begin(),
+        get(vertex_index, graph)
+    );
+
+for(size_t v = 0; v < num_vertices(graph); ++v) {
+    augmented_embedding[v].reserve(out_degree(v, graph));
+}
+
+augment_embedding(
+        graph, planar_embedding, augmented_embedding
+    );
+\end{lstlisting}
+\caption{Example code to construct an augmented embedding.}
+\label{example_augment_embedding}
+\end{figure}
+
+\subsection{Hartman-Skrekovski in the BGL}
+
+Here we detail our implementation of the Hartman-Skrekovski algorithm described
+in (5.3, 5.4). The
+function prototype, type definitions, and template requirements are shown
+in figures 6.10, 6.11, and 6.12 respectively.
+
 \begin{figure}
 \begin{lstlisting}[frame=single]
 template<
         typename graph_t,
-        typename embedding_t,
+        typename augmented_embedding_t,
         typename color_list_map_t,
-        typename n_range_map_t,
-        typename location_map_t,
         typename face_iterator_t
     >
 void hartman_skrekovski_color(
         const graph_t & graph,
-        const embedding_t & augmented_embedding,
-        color_list_map_t & color_list_map,
-        n_range_map_t & neighbor_range_map,
-        location_map_t & face_location_map,
-        face_iterator_t face_begin, face_iterator_t face_end
+        const augmented_embedding_t & augmented_embedding,
+        face_iterator_t face_begin, face_iterator_t face_end,
+        color_list_map_t & color_list_map
     );
 \end{lstlisting}
 \caption{Publicly visible function prototype for Hartman-Skrekovski.}
@@ -1847,52 +1970,34 @@ void hartman_skrekovski_color(
 
 \begin{figure}
 \begin{center}
-\begin{tabular}{l|l}
-Type & \\
-\hline
-\texttt{vertex\_t} &  \texttt{boost::graph\_traits<graph\_t>::vertex\_descriptor}\\
-\texttt{n\_iter\_t} & \texttt{boost::property\_traits<embedding\_t>::value\_type}\\
-& $\qquad$\texttt{::const\_iterator}\\
-\texttt{n\_range\_t} & \texttt{std::pair<n\_iter\_t,n\_iter\_t>}
-\end{tabular}
-\end{center}
-\caption{Typedefinitions for Hartman-Skrekovski.}
-\end{figure}
-
-\begin{figure}
-\begin{center}
 \begin{tabular}{l|l|l}
 Type & Concept & Additional Requirements\\
 \hline
-\texttt{graph\_t} & \texttt{VertexAndEdgeListGraph} & None\\
-\texttt{color\_t} & \texttt{EqualityComparable}, & None\\
+\texttt{graph\_t} & none & must be \texttt{adjacency\_list}\\
+\texttt{color\_t} & \texttt{EqualityComparable}, & none\\
 & \texttt{CopyAssignable} & \\
-\texttt{embedding\_t} & \texttt{PlanarEmbedding} & None\\
+\texttt{embedding\_t} & \texttt{PlanarEmbedding} & none\\
+\texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}\\
 \texttt{color\_list\_t} & \texttt{Sequence{\allowbreak}Container} & \texttt{value\_type} is \texttt{color\_t}\\
-\texttt{color\_list\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_list\_t}\\
-\texttt{location\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is an integer\\
-\texttt{n\_range\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{n\_range\_t}\\
-\texttt{vertex\_iterator\_t} & \texttt{InputIterator} & \texttt{value\_type} is \texttt{vertex\_t}
+\texttt{color\_list\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_list\_t}
 \end{tabular}
 \end{center}
 \caption{Template requirements for Hartman-Skrekovski.}
 \end{figure}
 
-\subsection{Hartman-Skrekovski in the BGL}
-
-Here we detail our implementation of the Hartman-Skrekovski algorithm described
-in (5.3) and (5.4). The
-function prototype, type definitions, and template requirements are shown
-in figures 6.10, 6.11, and 6.12 respectively.
-
 We assume the provided graph is simple and weakly triangulated and the given
 \texttt{augmented\_embedding} structure represents a valid planar embedding of
 the graph.
-We assume the range of vertices is a cycle in the provided graph.
-We assume \texttt{color\_list\_map} assigns each vertex in the cycle a sequence
+We assume the range of vertices is a cycle in
+the provided plane graph, with vertices listed in clockwise order.
+We finally assume \texttt{color\_list\_map} assigns each vertex in the cycle a sequence
 of at $2$ or more colors, and each vertex interior to the cycle a sequence of
-$3$ or more colors. We also require that all vertices are initially assigned a
-location mark of $0$ by \texttt{location\_map}.
+$3$ or more colors.
+
+When the algorithm is complete \texttt{color\_list\_map} will have been modified
+such that a single color remains in each list. The remaining colors will
+represent a valid path coloring of the subgraph bounded by the provided cycle
+($\text{Int}(C)$).
 
 The implementation follows algorithms (5.3) and (5.4) with the following
 optimization. By combining the cases of (5.3) and (5.4) we may draw and remove
@@ -1900,6 +2005,41 @@ the path simultaneously, one vertex at a time. In the implementation therefore
 perform the operations of both (5.3) and (5.4) simultaneously as each vertex
 is colored. This reduces the number of times we visit a particular edge by a
 factor of $2$.
+
+A brief code snippet in Figure \ref{example_hartman} shows how to apply Poh to the
+graph constructed earlier in Figure \ref{example_make_graph}.
+Source code, documentation, and complete examples are available online at the
+link provided earlier.
+
+\begin{figure}
+\begin{lstlisting}[frame=single]
+std::vector<vertex_t> cycle = { 0, 1, 2 };
+
+vector<list<int>> color_list_storage(num_vertices(graph));
+iterator_property_map<
+        vector<list<int>>::iterator,
+        typename property_map<
+                graph_t, vertex_index_t
+            >::const_type
+    > color_list_map(
+        color_list_storage.begin(), get(vertex_index, graph)
+    );
+
+color_list_map[0] = { 1, 2 };
+color_list_map[1] = { 2, 3 };
+color_list_map[2] = { 1, 4 };
+color_list_map[3] = { 1, 3, 4 };
+color_list_map[4] = { 1, 2, 4 };
+
+hartman_skrekovski_color(
+        graph, augmented_embedding,
+        cycle.begin(), cycle.end(),
+        color_list_map
+    );
+\end{lstlisting}
+\caption{Example code to color a graph with Hartman-Skrekovski.}
+\label{example_hartman}
+\end{figure}
 
 \section{Conclusion}
 
@@ -1915,8 +2055,8 @@ $4$-coloring torus graphs, also found in \cite{hartman}. The procedure first
 collapses a noncontractible cycle in the torus graph down to a
 single vertex to form a plane graph. It then divides the resulting plane graph
 into several subgraphs which are individually colored with Poh' algorithm.
-The combined may then be adapted to a path $4$-coloring of the original torus
-graph. It would be interesting to see if this procedure might be adapted to
+The combined coloring may then be adapted to a path $4$-coloring of the original
+torus graph. It would be interesting to see if this procedure might be adapted to
 a linear time algorithm.
 
 \begin{comment}
@@ -2108,69 +2248,71 @@ a linear time algorithm.
 
 \begin{thebibliography}{99}  % "2" because there are two references
 \bibitem{appel1}
-	Appel, K., Haken, W., ``Every planar map is four colorable. Part I:
+	Appel, K., W. Haken, ``Every planar map is four colorable. Part I:
 	Discharging," \textit{Illinois Journal of Mathematics}, vol. 21, pp. 429-490,
 	1977.
 \bibitem{appel2}
-	Appel, K., Haken, W., ``Every planar map is four colorable. Part II:
+	Appel, K., W. Haken, ``Every planar map is four colorable. Part II:
 	Reducibility," \textit{Illinois Journal of Mathematics}, vol. 21, pp.
 	491-567, 1977.
 \bibitem{jacobson}
-	Andrews, J., Jacobson, M., ``On a generalization of chromatic number,"
+	Andrews, J., M. Jacobson, J. Koch ``On a generalization of chromatic number,"
 	\textit{Congressus Numerantium}, vol. 47, pp. 33-48, 1989.
 \bibitem{booth}
-	Booth, K., Lueker, C., ``Testing for the consecutive ones property interval
+	Booth, K., C. Lueker, ``Testing for the consecutive ones property interval
 	graphs and graph planarity using PQ-tree algorithms," \textit{Journal of
 	Computer and System Sciences}, vol. 13, pp. 335-379, 1976.
 \bibitem{boyer}
-	Boyer, J., Myrvold, W., ``On the cutting edge: simplified $\mathcal{O}(n)$ planarity by
+	Boyer, J., W. Myrvold, ``On the cutting edge: simplified $\mathcal{O}(n)$ planarity by
 	edge addition," \textit{Journal of Graph Algorithms and Applications}, vol.
 	8, pp. 241-273, 2004.
 \bibitem{broere}
-	Broere, I., Mynhardt, C. M., ``Generalized colorings of outerplanar and planar
+	Broere, I., C. M. Mynhardt, ``Generalized colorings of outerplanar and planar
 	graphs," \textit{Graph theory with applications to algorithms and computer science}
 	(Kalmazoo, Mich., 1984) pp. 151-161, Wiley-Intersci. Publ., Wiley, New York. 1985.
+\bibitem{chappell} Bross, A., G. G. Chappell, and C. Hartman, ``Path
+    coloring algorithms for plane graphs," in preparation.
 \bibitem{chartrand}
-	Chartrand, G., Geller, D. P., Hedetniemi, S., ``A generalization of the
+	Chartrand, G., D. P. Geller, S. Hedetniemi, ``A generalization of the
 	chromatic number," \textit{Mathematical Proceedings of the Cambridge
 	Philosophical Society}, vol. 64, Cambridge University Press, 1968.
 \bibitem{lempel}
-	Cederbaum, I., Even, S., Lempel, A., ``An algorithm for planarity testing of
+	Cederbaum, I., S. Even, A. Lempel, ``An algorithm for planarity testing of
 	graphs," \textit{Theory of graphs: International Symposium}, pp.215-232,
 	1967.
 \bibitem{kronk}
-    Chartrand, G., Kronk, H. V., "The point-arboricity of planar graphs,"
+    Chartrand, G., H. V. Kronk, "The point-arboricity of planar graphs,"
     \textit{J. London. Math. Soc.}, vol. 44, pp. 612-616, 1969.
 \bibitem{cowen}
-	Cowen, L., Cowen, R., Woodall, D., ``Defective colorings of graphs in
+	Cowen, L., R. Cowen, D. Woodall, ``Defective colorings of graphs in
 	surfaces: partitions into subgraphs of bounded valency,"
 	\textit{Journal of Graph Theory}, vol. 10, pp. 187-195, 1986.
 \bibitem{hull}
-	Eaton, N., Hull, N., ``Defective list colorings of planar graphs,"
+	Eaton, N., N. Hull, ``Defective list colorings of planar graphs,"
 	\emph{Bulletin of the Institute for Combinatorics and its Applications},
 	1999.
 \bibitem{erdos}
-	Erd{\"o}s, P., Rubin, A., Taylor, H., ``Choosability in graphs,"
+	Erd{\"o}s, P., A. Rubin, H. Taylor, ``Choosability in graphs,"
 	\textit{Congressus Numerantium}, vol. 26, pp. 125-157, 1979.
 \bibitem{eswaran}
-	Eswaran, K., Tarjan, R., ``Augmentation problems," \textit{SIAM Journal of
+	Eswaran, K., R. Tarjan, ``Augmentation problems," \textit{SIAM Journal of
 	Computing}, vol. 5, pp. 653-665, 1976.
 \bibitem{goddard}
     Goddard, W., "Acyclic colorings of planar graphs," \textit{Discrete Math},
     vol. 91, pp. 91-94, 1991.
 \bibitem{hagerup}
-	Hagerup, T., Uhrig, C., ``Triangulating a planar graph," \textit{Library of
+	Hagerup, T., C. Uhrig, ``Triangulating a planar graph," \textit{Library of
 	Efficient Datatypes and Algorithms}, software package, Max Planck Institute
 	for Informatics, Saarbr{\"u}cken, 1991.
 \bibitem{jones}
-	Harary, F., Jones, K., ``Conditional colorability II: bipartite variations,"
+	Harary, F., K. Jones, ``Conditional colorability II: bipartite variations,"
 	\textit{Congressus Numerantium}, vol. 50, pp. 205-218, 1985.
 \bibitem{hartman}
 	Hartman, C.,
 	``Extremal Problems in Graph Theory," Ph.D. Thesis, Department of
 	Mathematics University of Illinois at Urbana-Champaign, 1997.
 \bibitem{tarjan}
-	Hopcroft, J., Tarjan, E., ``Efficient planarity testing," \textit{Journal of
+	Hopcroft, J., E. Tarjan, ``Efficient planarity testing," \textit{Journal of
 	the ACM}, vol. 21, pp. 549-568, 1974.
 \bibitem{poh}
 	Poh, K., ``On the linear vertex-arboricity of a planar graph,"
@@ -2180,14 +2322,14 @@ a linear time algorithm.
 	edges at each vertex," \textit{Congressus Numerantium}, vol. 56, pp.31-44,
 	1987.
 \bibitem{boost}
-	Siek, J., Lee, L., Lumsdaine, A., \textit{The Boost Graph Library: User
+	Siek, J., L. Lee, A. Lumsdaine, \textit{The Boost Graph Library: User
 	Guide and Reference Manual}, Pearson Education, 2001.
 \bibitem{skrekovski}
 	Skrekovski, R., ``List Improper Colourings of Planar Graphs,"
 	\textit{Combinatorics, Probability, and Computing}, vol. 8, pp. 293-299,
 	1999.
 \bibitem{thomassen}
-	Thomassen, C., ``Every planar graph is 4-choosable,"
+	Thomassen, C., ``Every planar graph is 5-choosable,"
 	\emph{Journal of Combinatorial Theory Series B}, 1994.
 \bibitem{voigt}
 	Voigt, M., ``List colorings of planar graphs,"
