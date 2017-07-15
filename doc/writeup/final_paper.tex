@@ -66,7 +66,7 @@ proofs.
 
 A C++ implementation is provided for all three algorithms utilizing the Boost
 Graph Library. Instructions are given describing how to use the implementation
-to construct colorings for plane graphs represented by Boost Graph data
+to construct colorings for plane graphs represented by Boost data
 structures.
 
 \section{Plane Graphs}
@@ -1554,8 +1554,8 @@ In this section we detail the C++ implementation of each algorithm above.
 Instructions for using each algorithm are provided, as well as brief examples.
 
 The Boost Graph Library (BGL) \cite{boost} details a generic interface for working
-with graphs, as well as numerous data structures and algorithms for working with
-graphs. We will begin with a brief introduction to the BGL. Then we will
+with graphs, as well as numerous data structures and algorithms. We will begin
+with a brief introduction to the BGL. Then we will
 discuss implementing the Poh and Hartman-Skrekovski algorithms using BGL
 abstractions.
 
@@ -1578,9 +1578,10 @@ combines the two refinements.
 Although other concepts exist such as
 \texttt{AdjacencyGraph}, we will only require that input graphs model
 \texttt{VertexListGraph} or \texttt{VertexAndEdgeListGraph}. The
-\texttt{Adjacency{\allowbreak}Graph} concept might seem like an obvious choice, but we will
-follow the BGL's decision to represent the rotation scheme for planar
-embeddings as an exterior property map.
+\texttt{Adjacency{\allowbreak}Graph} concept might seem like an obvious choice,
+but we follow the BGL's decision and represent the rotation scheme for planar
+embeddings as an exterior property map. Thus the graph data structure itself
+remains fairly simple.
 
 There are two different types of vertex and edge properties in the BGL: interior
 properties and exterior properties. Interior properties are properties that are
@@ -1983,10 +1984,12 @@ struct adjacency_node_t {
     typename vector<adjacency_node_t>::iterator iterator;
 };
 
-// Create a structure to store the augmented embeddin
+// Create a structure to store the augmented embedding
 vector<vector<adjacency_node_t>> augmented_embedding_storage(
         num_vertices(graph)
     );
+
+// Map each vertex to its augmented adjacency list
 iterator_property_map<
         vector<vector<adjacency_node_t>>::iterator,
         typename property_map<
