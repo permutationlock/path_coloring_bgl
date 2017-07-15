@@ -1551,7 +1551,7 @@ provided C++ implementation.
 \section{Path $3$-Coloring and Path List-Coloring in C++}
 
 In this section we detail the C++ implementation of each algorithm above.
-Instructions for using each algorithm, as well as brief examples.
+Instructions for using each algorithm are provided, as well as brief examples.
 
 The Boost Graph Library (BGL) \cite{boost} details a generic interface for working
 with graphs, as well as numerous data structures and algorithms for working with
@@ -1599,21 +1599,29 @@ edges, representing the embedding ordered rotation scheme.
 
 The BGL provides a concrete \texttt{adjacency\_list} graph data structure that
 models \texttt{VertexAndEdgeListGraph}, among other concepts. We provide wrapper
-functions that will construct fast property maps (\texttt{iterator\_property\_map})
+functions that will construct fast property maps (\texttt{boost::iterator\_property\_map})
 for all the property maps just used as working space for the algorithms.
-In the examples here we will only discuss \texttt{adjacency\_list} structures,
+In the examples here we will only discuss \texttt{boost::adjacency\_list} structures,
 but functions are available in the library to allow the algorithms to work on
 arbitrary data structures modeling the necessary BGL concepts.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
-adjacency_list<
+// Define our the graph, edge, and vertex types
+typedef adjacency_list<
         vecS,
         vecS,
         undirectedS,
         property<vertex_index_t, size_t>,
         property<edge_index_t, size_t>
-    > graph(5);
+    > graph_t;
+typedef typename graph_traits<graph_t>
+    ::vertex_descriptor vertex_t;
+typedef typename graph_traits<graph_t>
+    ::edge_descriptor edge_t;
+
+// Construct a simple planar graph on 5 vertices
+graph_t graph(5);
 add_edge(0, 1, graph);
 add_edge(1, 2, graph);
 add_edge(2, 0, graph);
@@ -1655,9 +1663,12 @@ This graph and embedding will be used as an example input in the later sections.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
+// Create a data structure to store the embedding
 vector<vector<edge_t>> planar_embedding_storage(
         num_vertices(graph)
     );
+
+// Map each vertex to its rotation scheme
 iterator_property_map<
         typename vector<vector<edge_t>>::iterator, 
         property_map<graph_t, vertex_index_t>::const_type
@@ -1666,10 +1677,12 @@ iterator_property_map<
         get(vertex_index, graph)
     );
 
+// Researve space so push_back is O(1)
 for(size_t v = 0; v < num_vertices(graph); ++v) {
     planar_embedding[v].reserve(out_degree(v, graph));
 }
 
+// Construct the planar embedding
 boyer_myrvold_planarity_test(
         boyer_myrvold_params::graph = graph,
         boyer_myrvold_params::embedding = planar_embedding
@@ -1681,7 +1694,8 @@ boyer_myrvold_planarity_test(
 
 We will use \texttt{graph\_t} to refer to some definition of
 \texttt{boost::adjacency\_list}. We will use \texttt{vertex\_t} and \texttt{edge\_t}
-to refer to the vertex and edge types of \texttt{graph\_t}.
+to refer to the vertex and edge types of \texttt{graph\_t} (see the type
+definitions in Figure \ref{example_make_graph} for an example).
 
 \subsection{Poh's Algorithm}
 
@@ -1763,6 +1777,7 @@ link provided earlier.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
+// Create a data structure to store the coloring
 vector<int> color_map_storage(num_vertices(graph));
 iterator_property_map<
         vector<int>::iterator,
@@ -1773,14 +1788,16 @@ iterator_property_map<
         color_map_storage.begin(), get(vertex_index, graph)
     );
 
-vector<vertex_t> path_1 = { 0 };
-vector<vertex_t> path_2 = { 1, 2 };
+// Construct the paths P and Q for the example graph
+vector<vertex_t> path_p = { 0 };
+vector<vertex_t> path_q = { 1, 2 };
 
+// Color the graph with Poh
 poh_color(
         graph,
         planar_embedding,
-        path_1.begin(), path_1.end(),
-        path_2.begin(), path_2.end(),
+        path_p.begin(), path_p.end(),
+        path_q.begin(), path_q.end(),
         1, 2, 3,
         color_map
     );
@@ -1960,11 +1977,13 @@ construct an augmented embedding structure for the graph from Figure
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
+// Struct to store (v,r) pairs for augmented adjacency list
 struct adjacency_node_t {
     vertex_t vertex;
     typename vector<adjacency_node_t>::iterator iterator;
 };
 
+// Create a structure to store the augmented embeddin
 vector<vector<adjacency_node_t>> augmented_embedding_storage(
         num_vertices(graph)
     );
@@ -1978,10 +1997,12 @@ iterator_property_map<
         get(vertex_index, graph)
     );
 
+// Researve space so push_back is O(1)
 for(size_t v = 0; v < num_vertices(graph); ++v) {
     augmented_embedding[v].reserve(out_degree(v, graph));
 }
 
+// Fill in the augmented embedding structure
 augment_embedding(
         graph, planar_embedding, augmented_embedding
     );
@@ -2063,8 +2084,10 @@ link provided earlier.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
+// Structure listing vertices on the outer cycle
 vector<vertex_t> cycle = { 0, 1, 2 };
 
+// Create a structure to store the list assignment
 vector<list<int>> color_list_storage(num_vertices(graph));
 iterator_property_map<
         vector<list<int>>::iterator,
@@ -2075,12 +2098,14 @@ iterator_property_map<
         color_list_storage.begin(), get(vertex_index, graph)
     );
 
+// Assign each vertex a list of the appropriate size
 color_list_map[0] = { 1, 2 };
 color_list_map[1] = { 2, 3 };
 color_list_map[2] = { 1, 4 };
 color_list_map[3] = { 1, 3, 4 };
 color_list_map[4] = { 1, 2, 4 };
 
+// Construct the path list-coloring
 hartman_skrekovski_color(
         graph, augmented_embedding,
         cycle.begin(), cycle.end(),
@@ -2139,8 +2164,8 @@ using each algorithm, alongside example code.
 
 Future work in this area might consider Hartman's procedure for path
 $4$-coloring torus graphs, also found in \cite{hartman}. The procedure first
-collapses a noncontractible cycle in the torus graph down to a
-single vertex to form a plane graph. It then divides the resulting plane graph
+cuts and collapses a noncontractible cycle in the torus graph to form a plane
+graph. It then divides the resulting plane graph
 into several subgraphs which are individually colored with Poh' algorithm.
 The combined coloring may then be adapted to a path $4$-coloring of the original
 torus graph. It would be interesting to see if this procedure might be adapted to
