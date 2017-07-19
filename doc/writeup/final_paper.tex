@@ -64,8 +64,8 @@ computes a path coloring of $G$ such that each vertex receives a color from its
 list. We present a linear time algorithm based on Hartman and Skrekovski's
 proofs.
 
-A C++ implementation is provided for all three algorithms utilizing the Boost
-Graph Library. Instructions are given describing how to use the implementation
+A C++ implementation is provided for all three algorithms, utilizing the Boost
+Graph Library. Instructions are given on how to use the implementation
 to construct colorings for plane graphs represented by Boost data
 structures.
 
@@ -106,10 +106,10 @@ $v_1v_2,$ $v_2v_3,$ $\ldots,$ $v_{n-1}v_n$. A length $n$ cycle, or $n$-cycle, co
 a length $n$ path and the additional edge $v_1v_n$. We will often denote a path
 or cycle $G$ by simply listing its vertices in order, i.e. $G=v_1v_2\ldots v_n$.
 
-If a path $P=v_1v_2\ldots v_n$ is a subgraph of a graph $G$, we say $P$ is a
+If a path $P=v_1v_2\ldots v_n$ is a subgraph of a graph $G$ we say $P$ is a
 \textit{$v_1v_n$-path} in $G$. A graph $G$ is \textit{connected} if for every
-$u,v\in V(G)$, there exists a $uv$-path in $G$. If any $k$ vertices may be
-removed from a graph $G$ with $G$ remaining connected, we say $G$ is
+$u,v\in V(G)$ there exists a $uv$-path in $G$. If any $k$ vertices may be
+removed from a graph $G$ with $G$ remaining connected we say $G$ is
 \textit{$k$-connected}.
 
 In all figures a dashed line between a pair of vertices $u,v\in G$ will
@@ -421,17 +421,17 @@ Thus while the algorithms presented will often assume that input graphs are
 triangulated and plane embedded, arbitrary planar graphs may be modified in
 linear time to fit these criteria.
 
+Some algorithm entries, for example \textit{Poh $3$-Coloring} (4.1), will
+describe procedures on abstract graphs. Others, for example
+\textit{Augment Adjacency Lists} (3.1), will describe algorithms
+working with computer graph representations. We will provide time complexity
+analysis for all algorithms working with concrete representations.
+
 Each algorithm presented in this project will allocate some fixed number
 of vertex properties, independent of the size of the graph. The size of all
 other data structures constructed will be $\mathcal{O}(n)$ at all points during
-the operation of each algorithm. Therefore the size complexity of every
+the operation of each algorithm. Therefore the space complexity of every
 algorithm is $\mathcal{O}(n)$.
-
-Some algorithm entries, for example \textit{Poh $3$-Coloring} (4.1), will
-describe procedures on abstract graphs. Others, for example
-\textit{Augment Adjacency Lists} (3.1) below, will describe algorithms
-working with computer graph representations. We will provide time complexity
-analysis for all algorithms working with concrete representations.
 
 
 \section{Path Coloring and the Poh Algorithm}
@@ -467,7 +467,7 @@ $v_iv_j$ in common, the combined coloring forms a path $3$-coloring of $G$.
 \textit{Case 2:} Suppose no chords of $C$ exist. Let $u$ be the neighbor of
 $v_k$ immediately clockwise from $v_1$ and let $w$ be the neighbor of $v_l$
 immediately clockwise from $v_{l+1}$. That is, $u,w\in\text{Int}(C)$ are the
-unique, but possibly not distinct, vertices such that the cycles $uv_1v_k$ and
+unique, but possibly not distinct vertices such that the cycles $uv_1v_k$ and
 $wv_lv_{l+1}$ are each faces of $G$.
 
 Since $G$ is weakly triangulated, $G-C$ is nonempty, and $C$ has no chords, it
@@ -2080,8 +2080,8 @@ perform the operations of both (5.3) and (5.4) simultaneously as each vertex
 is colored. This reduces the number of times we visit a particular edge by a
 factor of $2$.
 
-A brief code snippet in Figure \ref{example_hartman} shows how to apply Poh to the
-graph constructed earlier in Figure \ref{example_make_graph}.
+A brief code snippet in Figure \ref{example_hartman} shows how to apply
+Hartman-Skrekovski to the graph constructed earlier in Figure \ref{example_make_graph}.
 Source code, documentation, and complete examples are available online at the
 link provided earlier.
 
