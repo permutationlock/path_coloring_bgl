@@ -19,5 +19,7 @@
  a linear time algorithm based on Hartman and Skrekovski's proofs.
 
  A C++ implementation is provided for all three algorithms, utilizing the Boost
- Graph Library.
+ Graph Library. Instructions are given on how to use the implementation
+ to construct colorings for plane graphs represented by Boost data
+ structures.
 
