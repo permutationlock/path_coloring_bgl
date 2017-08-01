@@ -47,6 +47,10 @@ void augment_embedding(
     {
         vertex_t v = *v_iter;
         
+        // Clear the augmented adjacency list, we will be constructing our own
+        augmented_embedding[v].clear();
+        
+        // Construct v's augmented adjacency list, iterators uninitialized
         for(auto edge_iter = planar_embedding[v].begin();
                 edge_iter != planar_embedding[v].end(); ++edge_iter
             )
