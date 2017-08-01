@@ -411,12 +411,12 @@ Therefore the overall complexity of the algorithm is $\mathcal{O}(m)$.\\
 
 If $G$ is a planar graph without a given embedding we may still construct an
 adjacency list representation of $G$, with neighbors simply listed in arbitrary
-order. There exist numerous algorithms to then simultaneously find an embedding
-of $G$ and construct an embedding ordered adjacency list representation of the
-corresponding plane graph in $\mathcal{O}(n)$ time \cite{tarjan, lempel, boyer,
-booth}. Additionally, there exist $\mathcal{O}(n)$ algorithms to add edges
-to the adjacency list representation in order to connect, $2$-connect, or
-triangulate $G$ while maintaining planarity \cite{hagerup,reed,eswaran}.
+order. There exist numerous $\mathcal{O}(n)$ time algorithms to then reorder the
+adjacency list representation of $G$ so that it corresponds to a valid planar
+embedding of $G$ \cite{tarjan, lempel, boyer,
+booth}. Additionally, there exist $\mathcal{O}(n)$ time algorithms to add edges
+to the adjacency list representation in order to connect, $2$-connect, and
+triangulate $G$, while maintaining planarity \cite{hagerup,reed,eswaran}.
 Thus while the algorithms presented will often assume that input graphs are
 triangulated and plane embedded, arbitrary planar graphs may be modified in
 linear time to fit these criteria.
@@ -1968,11 +1968,12 @@ Expression & Type & Description\\
 \label{valid_expressions}
 \end{figure}
 
-We implemented an algorithm to construct a data structure modeling \texttt{AugmentedEmbedding}
+We implement an algorithm to construct a data structure modeling
+\texttt{Augmented{\allowbreak}Embedding}
 from a structure modeling \texttt{PlanarEmbedding} based on \textit{Augment
 Embedding} (3.1).
 
-An code snippet in Figure \ref{example_augment_embedding} shows how to
+A code snippet in Figure \ref{example_augment_embedding} shows how to
 construct an augmented embedding structure for the graph from Figure
 \ref{example_make_graph}.
 
@@ -2388,7 +2389,7 @@ a linear time algorithm.
     coloring algorithms for plane graphs, in preparation.
 \bibitem{chartrand}
 	Chartrand, G., D. P. Geller, and S. Hedetniemi, A generalization of the
-	chromatic number, \textit{Proc. Cambridge Philos. Soc.} \textbf{64} (1968)
+	chromatic number, \textit{Proc. Cambridge Philos. Soc.} \textbf{64} (1968),
 	265-271.
 \bibitem{kronk}
     Chartrand, G. and H. V. Kronk, The point-arboricity of planar graphs,
@@ -2396,7 +2397,7 @@ a linear time algorithm.
 \bibitem{cowen}
 	Cowen, L., R. Cowen, and D. Woodall, Defective colorings of graphs in
 	surfaces: partitions into subgraphs of bounded valency,
-	\textit{J. Graph Theory} \textbf{10} (1986) 187-195.
+	\textit{J. Graph Theory} \textbf{10} (1986), 187-195.
 \bibitem{hull}
 	Eaton, N. and N. Hull, Defective list colorings of planar graphs,
 	\emph{Bull. Inst. Combin. Appl.} \textbf{25} (1999), 79-87.
