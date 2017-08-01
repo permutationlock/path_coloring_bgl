@@ -34,7 +34,7 @@ using namespace boost;
  * -----------------------------------------------------------------------------
  */
 
-// Define the graph type for all test graphs
+// Define the graph type
 typedef adjacency_list<
         vecS,
         vecS,
@@ -47,7 +47,7 @@ typedef adjacency_list<
 typedef typename graph_traits<graph_t>::vertex_descriptor vertex_t;
 typedef typename graph_traits<graph_t>::edge_descriptor edge_t;
 
-// Vertex and edge index map types
+// Vertex index map type
 typedef typename property_map<graph_t, vertex_index_t>::const_type
     vertex_index_map_t;
 
@@ -87,7 +87,7 @@ typedef iterator_property_map<
 
 /* 
  * -----------------------------------------------------------------------------
- *               Main: path 3-color a plane graph
+ *               Main: path list-color a plane graph
  * -----------------------------------------------------------------------------
  */
 
@@ -177,7 +177,7 @@ int main() {
     std::cout << "\n";
     
     
-    // Call Poh with the given cycle and color set { 1, 2, 3 }
+    // Call Hartman-Skrekovski with the given cycle and list assignment
     hartman_skrekovski_color(
             graph, augmented_embedding,
             cycle.begin(), cycle.end(),

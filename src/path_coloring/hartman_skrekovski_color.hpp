@@ -559,7 +559,7 @@ void hartman_skrekovski_color(
             boost::get(boost::vertex_index, graph)
         );
     
-    // Call Poh with the given cycle and color set { 1, 2, 3 }
+    // Call Hartman-Skrekovski with the given cycle and 
     hartman_skrekovski_color(
             graph,
             augmented_embedding,
