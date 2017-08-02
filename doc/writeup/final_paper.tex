@@ -2225,21 +2225,20 @@ $\qquad$
 \section{Conclusion}
 
 In this project we considered two inductive procedures on plane graphs: one
-computing a path $3$-colorings, and one computing a path list-coloring with
+computing a path $3$-coloring, and one computing a path list-coloring given
 lists of size at least $3$. We adapted each procedure to an
 algorithm for finding path colorings of graphs with adjacency list
 representations. Additionally, we showed each procedure admits an algorithm that
 runs in linear time.
-Finally, we implemented each algorithm in C++ and give instructions for
-using each algorithm, alongside example code.
+Finally, we provided a docmented implementation of each algorithm in C++.
 
 Future work in this area might consider Hartman's procedure for path
 $4$-coloring torus graphs, also found in \cite{hartman}. The procedure first
 cuts and collapses a noncontractible cycle in the torus graph to form a plane
 graph. It then divides the resulting plane graph
 into several subgraphs which are individually colored with Poh's algorithm.
-The combined coloring may then be adapted to a path $4$-coloring of the original
-torus graph. It would be interesting to see if this procedure might be adapted to
+The combined coloring is then adapted to a path $4$-coloring of the original
+torus graph. It would be interesting to see if this procedure can be adapted to
 a linear time algorithm.
 
 \begin{comment}
