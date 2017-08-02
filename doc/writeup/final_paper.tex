@@ -112,9 +112,6 @@ $u,v\in V(G)$ there exists a $uv$-path in $G$. If any $k$ vertices may be
 removed from a graph $G$ with $G$ remaining connected we say $G$ is
 \textit{$k$-connected}.
 
-In all figures a dashed line between a pair of vertices $u,v\in G$ will
-represent a $uv$-path in $G$.
-
 \begin{figure}
 \begin{center}
 \begin{tikzpicture}
@@ -181,6 +178,9 @@ embedding} is a drawing where edge curves intersect only at their
 endpoints. We say a graph is \textit{planar} if it admits a planar embedding. A
 planar graph together with a particular planar embedding is called a
 \textit{plane graph}.
+
+In some graph drawings in this project, such as Figure \ref{poh_figure}, a
+dashed line between a pair of vertices $u,v$ will denote a $uv$-path.
 
 Let $G$ be a plane graph. A \textit{face} of $G$ is a maximal region
 of the plane not containing any point used in the embedding. The unbounded face
@@ -530,6 +530,7 @@ $\qquad$
 \end{tikzpicture}
 
 \caption{The case of a chord (left) and the case no chord exists (right).}
+\label{poh_figure}
 \end{center}
 \end{figure}
 
@@ -1061,7 +1062,31 @@ Suppose
 $i\in\{1,\ldots,l-1\}$ such that $j_i+1<j_{i+1}$. We apply \textit{Remove Path}
 (5.2) to path $L'$-list-color the subgraph bounded by the cycle consisting of
 $C[v_{j_i},v_{j_{i+1}}]$ and the edge $v_{j_i}v_{j_{i+1}}$, with colored path
-$v_{j_{i+1}}v_{j_i}$, and fixed vertices $v_{j_i+1}$ and $v_{j_{i+1}-1}$.
+$v_{j_{i+1}}v_{j_i}$, and fixed vertices $v_{(j_i)+1}$ and $v_{(j_{i+1})-1}$.
+
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+  \node (x) [label=below left:$x$] at (225:1.5cm) {};
+  \node (vj_i) [label=above left:$v_{j_i}$] at (165:1.5cm) {};
+  \node (vj1_i) [label=above:$v_{(j_i)+1}$] at (135:1.5cm) {};
+  \node (vj1_i1) [label=above:$v_{(j_{i+1})-1}$] at (45:1.5cm) {};
+  \node (vj_i1) [label=above right:$v_{j_{i+1}}$] at (15:1.5cm) {};
+  \node (y) [label=below right:$y$] at (315:1.5cm) {};
+  
+  \draw (x) edge [bend left] (vj_i) [dashed];
+  \draw (vj_i) edge (vj1_i);
+  \draw (vj1_i) edge [bend left] (vj1_i1) [dashed];
+  \draw (vj1_i1) edge (vj_i1);
+  \draw (vj_i1) edge [bend left] (y) [dashed];
+  \draw (y) edge [bend left] (x) [dashed];
+  
+  \draw (vj_i) edge (vj_i1);
+\end{tikzpicture}
+
+\caption{The case the path $P$ uses a chord of $C$.}
+\end{center}
+\end{figure}
 
 If $y\in P$ let us define $y'=v_{j_l+1}$, otherwise $y'=y$.
 We may apply \text{Remove Path} (5.2) to path $L'$-list-color the
@@ -1114,6 +1139,48 @@ such that $v_i\in P$ and $v_iv_j$ is a chord of $C$. Let $C_1$ be the cycle
 consisting of $C[v_j,v_i]$ and the edge $v_iv_j$. Similarly, let $C_2$ be the
 cycle consisting of $C[v_i,v_j]$ and the edge $v_iv_j$. Let
 $P_1=v_1v_2\ldots v_i$ and $P_2=v_iv_{i+1}\ldots v_l$.
+
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+  \node (p0) [label=above left:$v_1$] at (160:1.5cm) {};
+  \node (p1) [label=above:$v_i$] at (90:1.25cm) {};
+  \node (pn) [label=above right:$v_l$] at (20:1.5cm) {};
+  \node (q1) [label=below:$v_j$] at (270:1.25cm) {};
+  \node (qn) [label=below right:$y$] at (340:1.5cm) {};
+  
+  \node (C1) [draw=none, fill=none] at (180:0.75cm) {$C_1$};
+  \node (C2) [draw=none, fill=none] at (0:0.75cm) {$C_2$};
+  
+  \draw (p0) edge [bend left] (p1) [dashed];
+  \draw (p1) edge [bend left] (pn) [dashed];
+  \draw (p0) edge [bend right] (q1) [dashed];
+  \draw (q1) edge [bend right] (qn) [dashed];
+  \draw (pn) edge (qn) [dashed];
+  \draw (p1) edge (q1);
+\end{tikzpicture}
+$\qquad$
+\begin{tikzpicture}
+  \node (p0) [label=above left:$v_1$] at (160:1.5cm) {};
+  \node (p1) [label=above:$v_i$] at (90:1.25cm) {};
+  \node (pn) [label=above right:$v_l$] at (20:1.5cm) {};
+  \node (q0) [label=below left:$y$] at (200:1.5cm) {};
+  \node (q1) [label=below:$v_j$] at (270:1.25cm) {};
+  
+  \node (C1) [draw=none, fill=none] at (180:0.75cm) {$C_1$};
+  \node (C2) [draw=none, fill=none] at (0:0.75cm) {$C_2$};
+  
+  \draw (p0) edge [bend left] (p1) [dashed];
+  \draw (p1) edge [bend left] (pn) [dashed];
+  \draw (q0) edge [bend right] (q1) [dashed];
+  \draw (q1) edge [bend right] (pn) [dashed];
+  \draw (p0) edge (q0) [dashed];
+  \draw (p1) edge (q1);
+\end{tikzpicture}
+
+\caption{Hartman-Skrekovski case 1.1 (left) and case 1.2 (right).}
+\end{center}
+\end{figure}
 
 \textit{Case 1.1:} Suppose $y\in C[v_{l+2},x]$ and $v_j\in C[v_{l+2},y]$.
 Then $x,y\in C_1$. We will first apply \textit{Remove Path} (5.2) to path
@@ -1664,12 +1731,12 @@ This graph and embedding will be used as an example input in the later sections.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
-// Create a data structure to store the embedding
+// A vector to store embedding ordered incidence lists
 vector<vector<edge_t>> planar_embedding_storage(
         num_vertices(graph)
     );
 
-// Map each vertex to its rotation scheme
+// Map each vertex to its incidence list
 iterator_property_map<
         typename vector<vector<edge_t>>::iterator, 
         property_map<graph_t, vertex_index_t>::const_type
@@ -1778,7 +1845,7 @@ link provided earlier.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
-// Create a data structure to store the coloring
+// Create a vertex property map to store the coloring
 vector<int> color_map_storage(num_vertices(graph));
 iterator_property_map<
         vector<int>::iterator,
@@ -1985,7 +2052,7 @@ struct adjacency_node_t {
     typename vector<adjacency_node_t>::iterator iterator;
 };
 
-// Create a structure to store the augmented embedding
+// Create a vector to store augmented adjacency lists
 vector<vector<adjacency_node_t>> augmented_embedding_storage(
         num_vertices(graph)
     );
@@ -2088,7 +2155,7 @@ link provided earlier.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
-// Structure listing vertices on the outer cycle
+// Vector listing vertices on the outer cycle
 vector<vertex_t> cycle = { 0, 1, 2 };
 
 // Create a structure to store the list assignment
@@ -2360,7 +2427,7 @@ a linear time algorithm.
 %\section{Boost Graph Implementation}
 
 
-
+\pagebreak
 
 \begin{thebibliography}{99}
 \bibitem{jacobson}
