@@ -1421,8 +1421,9 @@ receive no same colored neighbors in $G$.
 \end{comment}
 
 \noindent\textbf{Description:} We will remove the path $P$ one vertex at a
-time. In this call we will be ``removing" edges around $v_1$, by updating
-$\text{Nbr}[v]$ to exclude them. We will completely removing $v_1$ from
+time. In this call we will be ``removing" edges $v_1u$ around $v_1$, by updating
+$\text{Nbr}[u]$ to exclude the edge. Note if $u\not\in C$ we must first
+construct $\text{Nbr}[u]$. We will completely remove $v_1$ from
 $\text{Int}(C)$ if there are no chords $v_1v_i$ of $C$.
 
 Let us iterate counterclockwise through $\text{Adj}[v_1]$ beginning from $v_k$.
