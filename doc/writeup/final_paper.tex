@@ -268,7 +268,7 @@ remained one of the premier open questions in graph theory until it was verified
 by Appel and Haken in 1976 \cite{appel1, appel2}.
 
 A $(k,l)$-coloring, or a $k$-coloring with defect $l$, is a
-$k$-coloring such that each vertex has at most $l$ same color neighbors.
+$k$-coloring such that each vertex shares a color with at most $l$ neighbors.
 Generalizations of proper colorings were first introduced in 1968 by Chartrand et al.\ in
 \cite{chartrand}. Defective colorings in particular were introduced about
 simultaneously around 1985 by Cowen et al.\ \cite{cowen}, Harary et al.\ \cite{jones}, and
@@ -576,7 +576,8 @@ endpoints as described above.
 
 \noindent\textbf{Output:} An extension of the $2$-coloring of $C$ to
 a path $3$-coloring of $\text{Int}(C)$ such that
-no vertex in $C$ receives a same color neighbor in $\text{Int}(C)-C$.
+no vertex in $\text{Int}(C)-C$ receives a the same color as a neighbor of that
+vertex in $C$.
 
 \begin{figure}
 \begin{center}
@@ -796,7 +797,8 @@ color of the path $Q$.
 
 \noindent\textbf{Output:} An extension of the $2$-coloring of $C$ to
 a path $3$-coloring of $\text{Int}(C)$ such that
-no vertex in $C$ receives a same color neighbor in $\text{Int}(C)-C$.
+no vertex in $\text{Int}(C)-C$ receives a the same color as a neighbor of that
+vertex in $C$.
 
 \noindent\textbf{Description:} 
 We will iterate through the vertices of $P$ until we find a chord. All interior
@@ -1031,7 +1033,7 @@ uncolored except for potentially $x$ and $y$. If $x$ or $y$ are colored, assume 
 $L(x)$, $L(y)$ contain only the color they have been assigned. 
 
 \noindent\textbf{Output:} A path $L$-list-coloring of $G$ such that the fixed
-vertices $x$ and $y$ each receive at most one same color neighbor.
+vertices $x$ and $y$ each share a color with at most one of their neighbors.
 
 \noindent\textbf{Description:} If $x$ is already colored
 let $c$ be the color of $x$. Otherwise select arbitrary $c\in L(x)$. We will 
@@ -1093,8 +1095,8 @@ colored path $P$, and fixed vertices $v_k$ and $y'$.
 Pairwise all subgraphs above have only vertices in the path $P$ in common.
 By \textit{Remove Path} (5.2), no vertex with a neighbor in $P$ will
 receive the color $c$. Therefore the combined coloring is a path
-$L$-list-coloring of $G$ such that $x,y$ receive at most one same color
-neighbor.\\
+$L$-list-coloring of $G$ such that $x,y$ each share a color with at most one of
+their neighbors.\\
 
 \noindent\textbf{Algorithm 5.2.} (Hartman-\v{S}krekovski -- Remove Path)
 
@@ -1119,9 +1121,9 @@ vertices are uncolored except for potentially $x$ and $y$. If $x$ or $y$ are
 colored assume that $L(x)$, $L(y)$ contain only the color they have been assigned.
 
 \noindent\textbf{Output:} A path $L$-list-coloring of $G$ such that $x$ and
-$y$ each receive at most one same color neighbor, and no vertex in
+$y$ each share a color with at most one their neighbors, and no vertex in
 $G-P$ with a neighbor in $P$ receives the color $c$. If $x=y$ then $x$ will
-receive no same colored neighbors in $G$.
+not share a color with any of its neighbors in $G$.
 
 \noindent\textbf{Description:}
 Note that $G$ is $2$-connected and weakly triangulated. Thus to disconnect $G$ by
@@ -1188,9 +1190,10 @@ fixed vertex $v_j$.
 
 The subgraphs $\text{Int}(C_1)$ and $\text{Int}(C_2)$ have only the chord
 $v_iv_j$ in common. The vertex $v_i$ is an endpoint of the colored path in both
-$\text{Int}(C_1)$ and $\text{Int}(C_2)$. Thus $v_i$ will receive at most one
-same color neighbor in each. Since $v_j$ is the single fixed vertex in
-$\text{Int}(C_2)$, $v_j$ will receive no same color neighbors in
+$\text{Int}(C_1)$ and $\text{Int}(C_2)$. Thus $v_i$ will share a color with at
+most one neighbor in each of $\text{Int}(C_1)$ and $\text{Int}(C_2)$. Since
+$v_j$ is the single fixed vertex in
+$\text{Int}(C_2)$, $v_j$ will not share a color with any of its neighbors in
 $\text{Int}(C_2)$. Thus the combined coloring is a path $L$-list-coloring of
 $G$ with $x,y$ receiving the correct number of shared color neighbors.
 
@@ -1202,8 +1205,9 @@ $\text{Int}(C_2)$ with colored path $P_2$, and fixed vertices $v_j$ and $y$.
 
 Again $\text{Int}(C_1)$ and $\text{Int}(C_2)$ have only the chord $v_iv_j$ in
 common. In both $\text{Int}(C_1)$ and $\text{Int}(C_2)$ the vertex $v_j$ is
-fixed vertex, and $v_i$ is an endpoint of the colored path. Therefore $v_i$ and
-$v_j$ will both have at most one same color neighbor in each subgraph. Thus the
+fixed vertex, and $v_i$ is an endpoint of the colored path. Therefore $v_i$ will
+share a color with at most one of its neighbors in each subgraph, and similarly
+for $v_j$. Thus the
 combined coloring is a path $L$-list-coloring of $G$ with $x,y$ receiving the
 correct number of shared color neighbors.
 
@@ -1323,7 +1327,7 @@ $\text{Nbr}[v_i]$ as described above.
 \noindent\textbf{Input:} The fixed vertices $x$ and $y$.
 
 \noindent\textbf{Output:} A path $L$-list-coloring of $\text{Int}(C)$ such that
-$x$ and $y$ each receive at most one same color neighbor.
+$x$ and $y$ each share a color with at most one of their neighbors.
 
 \noindent\textbf{Description:} If $x$ is colored let $c$ be the color of $x$.
 Otherwise let $c$ be the first color in $L[x]$ and assign
@@ -1385,15 +1389,17 @@ for each $v\in G$
 	    \big|L[v]\big|\ge 3 & \text{otherwise.}
     \end{array}
 \]
-Assume that for every $v\in C[x,v_k]$, $c\not\in L(v)$. Additionally, assume that for
+Assume that for every $v\in C[x,v_k]$, $c\not\in L(v)$. Assume that for
 every $v\in C[v_{l+1},y]$, if $v$ has a neighbor in $P$ then $c\not\in L(v)$.
+Finally, assume that for each $v_i\in C$ we have constructed
+$\text{Nbr}[v_i]$ as described above.
 
 \noindent\textbf{Input:} The vertices $v_1$, $x$, and $y$.
 
 \noindent\textbf{Output:} A path $L$-list-coloring of $G$ such that $x$ and
-$y$ each receive at most one same color neighbor, and no vertex in
-$G-P$ with a neighbor in $P$ receives the color $c$. If $x=y$ then $x$ will
-receive no same colored neighbors in $G$.
+$y$ each share a color with at most one of their neighbors, and no vertex in
+$G-P$ with a neighbor in $P$ receives the color $c$. If $x=y$ then no neighbor
+of $x$ in $G$ will receive the same color as $x$.
 
 \begin{comment}
 \begin{figure}
@@ -1530,8 +1536,8 @@ $u\ne v_2$. We will first apply \textit{Remove Path} (5.4) to path $L$-list-colo
 $\text{Int}(C_2)$ with fixed vertices $x$ and $y$. Note that this colors the vertex
 $u$. We will apply \textit{Remove Path} (5.4) with colored path consisting of
 just the vertex $u$, and the vertices immediately adjacent to $u$ on $C_1$ as
-the fixed vertices. This ensures $u$ receives no same color neighbors in
-$\text{Int}(C_1)$. 
+the fixed vertices. This ensures no neighbor of $u$ in
+$\text{Int}(C_1)$ receives the same color as $u$. 
 
 \textit{Case 2.2.2:} Suppose $u\in C[y,x]$, $u\ne y$. Again it must be that
 $u\ne v_2$. We apply \textit{Color Path} (5.3) to path $L$-list-color
@@ -1543,8 +1549,8 @@ vertices $u$ and $y$.
 \textit{Color Path} (5.3) to path $L$-list-color $\text{Int}(C_1)$ with fixed
 vertices $x$ and $y$, the new path starting at $x$. We then apply \textit{Remove
 Path} (5.4) to path $L$-list-color $\text{Int}(C_2)$ with the single fixed 
-vertex $u$. This ensures $u$ receives no same color neighbors in
-$\text{Int}(C_2)$.
+vertex $u$. This ensures no neighbor of $u$ in
+$\text{Int}(C_2)$ receives the same color as $u$.
 
 \textit{Case 2.2.4:} Suppose $u= v_2$. If $c\in L[u]$ then $u$ is a path vertex
 and we apply \textit{Remove Path} (5.4) to path $L$-list-color $\text{Int}(C_1)$
@@ -1611,7 +1617,7 @@ structure requires $\mathcal{O}(n)$ time. Hence the overall performance of the
 algorithm remains linear.
 
 For full details on managing location marks and disjoint set operations, see the
-provided C++ implementation.
+provided C++ implementation \cite{code}.
 
 \section{Path $3$-Coloring and Path List-Coloring in C++}
 
@@ -1671,7 +1677,7 @@ arbitrary data structures modeling the necessary BGL concepts.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
-// Define our the graph, edge, and vertex types
+// Define the graph, edge, and vertex types
 typedef adjacency_list<
         vecS,
         vecS,
@@ -2418,9 +2424,6 @@ a linear time algorithm.
 \end{comment}
 
 %\section{Boost Graph Implementation}
-
-
-\pagebreak
 
 \begin{thebibliography}{99}
 \bibitem{jacobson}
