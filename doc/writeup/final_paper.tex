@@ -464,8 +464,8 @@ color classes induce the paths $P=v_1v_2\ldots v_l$ and
 $Q=v_{k}v_{k-1}\ldots v_{l+1}$.
 
 \noindent\textbf{Output:} An extension of the $2$-coloring of $C$ to
-a path $3$-coloring of $G$ such that no vertex in $C$ receives a same color
-neighbor in $G-C$.
+a path $3$-coloring of $G$ such that no vertex in $G-C$ recieves the same color
+as a neighbor of that vertex in $C$.
 
 \noindent\textbf{Description:} If $G-C$ is empty there are no vertices remaining
 to color. Otherwise the algorithm proceeds as follows.
@@ -1318,7 +1318,7 @@ colored if $\big|L[v]\big|=1$.
 
 For each vertex $v_i\in C$ we will store a vertex property $\text{Nbr}[v_i]$
 called a \textit{neighbor range}. The neighbor range of $v_i$ will contain a pair of
-references to nodes in $\text{Adj}[v_i]$, that is $\text{Nbr}[v_i]=(r_1,r_2)$.
+references to nodes in $\text{Adj}[v_i]$, that is, $\text{Nbr}[v_i]=(r_1,r_2)$.
 The first reference $r_1$ will point to the
 node for $v_{i-1}$ in $\text{Adj}[v_i]$ and the reference $r_2$ will point to
 the node for $v_{i+1}$.
@@ -1369,8 +1369,8 @@ $u\in C[v,y]$, and $c\in L(u)$, that is, suppose we may add $u$ to $P$.
 There are two cases to consider.
 
 \textit{Case 2.1:} Suppose the start node of $\text{Nbr}[u]$ is not $v$. Then
-$u\ne v_{j_l +1}$. Let $\text{Nbr}[u]=(r_1,r_2)$ and
-$\text{Nbr}[v_{j_l}]=(s_1,s_2)$. Let $r_v$ be the reference to the node for
+$u\ne v_{j_l +1}$. Let $(r_1,r_2)=\text{Nbr}[u]$ and
+$(s_1,s_2)=\text{Nbr}[v_{j_l}]$. Let $r_v$ be the reference to the node for
 $v$ in $\text{Adj}[u]$ and $s_u$ be the reference to the node for $u$ in
 $\text{Adj}[v]$.
 
@@ -1464,7 +1464,7 @@ and $r_2$ is a reference to the node immediately subsequent to $v_1$.
 
 \textit{Case 2:} Suppose $u\in C$. There are several cases to consider.
 
-\textit{Case 2.1:} Suppose $u=v_k$. Let $\text{Nbr}[u]=(r_1,r_2)$. By our
+\textit{Case 2.1:} Suppose $u=v_k$. Let $(r_1,r_2)=\text{Nbr}[u]$. By our
 assumptions $r_2$ is a reference to the node for $v_1$ in $\text{Adj}[u]$.
 Reassign $r_2$ to be a reference to the node immediately prior to $v_1$ in
 $\text{Adj}[u]$. This removes $v_1$ from the set of neighbors of $u$ contained
@@ -1475,8 +1475,8 @@ chord of $C$ or $u=v_2$. Let $N$ be the $v_ku$-path consisting of the neighbors
 of $v_1$. Let $C_1$ be the cycle consisting of $N$ and $C[u,v_k]$. If $u\ne v_2$
 let $C_2$ be the cycle consisting of $C[v_1,u]$ and the edge $v_1u$.
 
-Let $\text{Nbr}[u]=(r_1,r_2)$ and
-$\text{Nbr}[v]=(s_1,s_2)$. Let $r_v$ be the reference to the node for
+Let $(r_1,r_2)=\text{Nbr}[u]$ and
+$(s_1,s_2)=\text{Nbr}[v]$. Let $r_v$ be the reference to the node for
 $v$ in $\text{Adj}[u]$ and $s_u$ be the reference to the node for $u$ in
 $\text{Adj}[v]$.
 
