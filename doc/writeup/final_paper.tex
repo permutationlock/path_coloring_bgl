@@ -49,19 +49,19 @@
 
 \section*{Abstract}
 A path coloring of a graph partitions its vertex set into color classes such
-that each class induces a disjoint union of paths. In this project we consider
-implementing several algorithms to compute path colorings of graphs embedded in
+that each class induces a disjoint union of paths. In this project we implement
+several algorithms to compute path colorings of graphs embedded in
 the plane.
 
 We present two algorithms to path color plane graphs with $3$ colors
-based on a proof by Poh's in 1990. First we describe a naive algorithm that
+based on a proof by Poh in 1990. First we describe a naive algorithm that
 directly follows Poh's procedure, then we give a modified algorithm
 that runs in linear time.
 
-Independent results of Hartman and Skrekovski describe a procedure that takes
+Independent results of Hartman and \v{S}krekovski describe a procedure that takes
 a plane graph $G$ and a list of $3$ colors for each vertex, and
 computes a path coloring of $G$ such that each vertex receives a color from its
-list. We present a linear time algorithm based on Hartman and Skrekovski's
+list. We present a linear time implementation based on Hartman and \v{S}krekovski's
 proofs.
 
 A C++ implementation is provided for all three algorithms, utilizing the Boost
@@ -81,8 +81,8 @@ $V$ of \textit{vertices} and a set $E$ of two element subsets of $V$ known as
 $V(G)$ and $E(G)$, respectively. All graphs in this project are simple.
 
 As shorthand we will denote an edge $\{u,v\}\in E(G)$ simply as $uv$ or $vu$.
-Furthermore, if it is clear by context that $v\in V(G)$ is a vertex, or $uv\in
-E(G)$ an edge, we will use the notation $v\in G$, or $uv,\in G$.
+Furthermore, if it is clear from context that $v\in V(G)$ is a vertex, or $uv\in
+E(G)$ an edge, then we will use the notation $v\in G$ or $uv\in G$.
 
 Two vertices $u,v\in V(G)$ are \textit{adjacent} if $uv\in E(G)$. Vertices $u$
 and $v$ are known as the \textit{endpoints} of $uv$. The edge $uv$ is said to be
@@ -91,25 +91,25 @@ vertex $v$ are known as the \textit{neighbors} of $v$. The number of neighbors
 of a vertex $v$ is its \textit{degree}, denoted $\text{deg}(v)$.
 
 A graph $H$ is a \textit{subgraph} of $G$ if $V(H)\subseteq V(G)$ and
-$E(H)\subseteq E(G)$. If $S\subseteq V(G)$ the \textit{induced subgraph} of
+$E(H)\subseteq E(G)$. If $S\subseteq V(G)$ then the \textit{induced subgraph} of
 $S$ on $G$ is the subgraph $H$ defined by $V(H)=S$ and
 $E(H)=\{uv\in E(G) \ | \ u,v\in S\}$. We say a subgraph $H$ of a graph $G$ is
 \textit{induced} if it is the induced subgraph of its vertex set on $G$.
 
-If $v\in V(G)$ we will use $G-v$ to denote the subgraph obtained by removing $v$
+If $v\in V(G)$ then we will use $G-v$ to denote the subgraph obtained by removing $v$
 and its incident edges from $G$. Similarly, if $H$ is a subgraph of a graph $G$,
-we define $G-H$ to be the subgraph obtained by removing from $G$ all vertices in
+then we define $G-H$ to be the subgraph obtained by removing from $G$ all vertices in
 $H$ and all edges incident to a vertex in $H$.
 
-A length $n$ path consists of the vertices $v_1,v_2,\ldots,v_n$ and the edges
+A $n$-vertex path consists of the vertices $v_1,v_2,\ldots,v_n$ and the edges
 $v_1v_2,$ $v_2v_3,$ $\ldots,$ $v_{n-1}v_n$. A length $n$ cycle, or $n$-cycle, consists of
-a length $n$ path and the additional edge $v_1v_n$. We will often denote a path
+an $n$-vertex path and the additional edge $v_1v_n$. We will often denote a path
 or cycle $G$ by simply listing its vertices in order, i.e. $G=v_1v_2\ldots v_n$.
 
-If a path $P=v_1v_2\ldots v_n$ is a subgraph of a graph $G$ we say $P$ is a
+If a path $P=v_1v_2\ldots v_n$ is a subgraph of a graph $G$ then we say $P$ is a
 \textit{$v_1v_n$-path} in $G$. A graph $G$ is \textit{connected} if for every
-$u,v\in V(G)$ there exists a $uv$-path in $G$. If any $k$ vertices may be
-removed from a graph $G$ with $G$ remaining connected we say $G$ is
+$u,v\in V(G)$ there exists a $uv$-path in $G$. If any $k-1$ vertices may be
+removed from a graph $G$ with $G$ remaining connected, then we say $G$ is
 \textit{$k$-connected}.
 
 \begin{figure}
@@ -167,7 +167,7 @@ $\qquad$
 	\draw (a) -- (b) -- (c) -- (d) -- (e) -- (f) -- (a);
 \end{tikzpicture}
 
-\caption{Drawings of $K_3$, $K_4$, $K_5$ (nonplanar), a length $4$ path, and a
+\caption{Drawings of $K_3$, $K_4$, $K_5$ (nonplanar), an $4$-vertex path, and a
 	$6$-cycle.}
 \end{center}
 \end{figure}
@@ -195,13 +195,13 @@ then $n-m+f=2$.
 \end{theorem}
 
 A simple corollary of Euler's Formula states that if $n\ge 3$, then $m\le 3n-6$.
-A planar graph is said to be \textit{triangulated} if adding any new edge
+A plane graph is said to be \textit{triangulated} if adding any new edge
 results in a nonplanar graph. Triangulated plane graphs with $n\ge 3$ vertices
 have exactly $3n-6$ edges.
 
 A face is said to be a \textit{triangle} if it is a
 $3$-cycle. It is easy to see that all faces in a triangulated
-plane graph are triangles: if any face has more than three vertices then we may
+plane graph are triangles: if any face has more than three vertices, then we may
 add an edge curve connecting two face vertices without crossing existing edges.
 Conversely if all faces in a plane graph are triangles, then it is triangulated.
 
@@ -234,7 +234,7 @@ $\qquad$
 \end{comment}
 
 If a plane graph has triangles for all but one face we shall say it is
-\textit{weakly triangulated}. We will always assume the non-triangle face is the
+\textit{weakly triangulated}. We will always assume that the non-triangle face is the
 outer face. A $2$-connected weakly triangulated plane graph has a cycle for its
 nontriangle face.
 
@@ -269,31 +269,31 @@ by Appel and Haken in 1976 \cite{appel1, appel2}.
 
 A $(k,l)$-coloring, or a $k$-coloring with defect $l$, is a
 $k$-coloring such that each vertex has at most $l$ same color neighbors.
-Generalizations of proper colorings were first introduced in 1968 by Chartrand et al. in
+Generalizations of proper colorings were first introduced in 1968 by Chartrand et al.\ in
 \cite{chartrand}. Defective colorings in particular were introduced about
-simultaneously around 1985 by Cowen et al. \cite{cowen}, Harary et al. \cite{jones}, and
-Andrews et al. \cite{jacobson}. It was shown in \cite{cowen} that all
+simultaneously around 1985 by Cowen et al.\ \cite{cowen}, Harary et al.\ \cite{jones}, and
+Andrews et al.\ \cite{jacobson}. It was shown in \cite{cowen} that all
 planar graphs admit a $(3,2)$-coloring.
 
 A \textit{path $k$-coloring} is a
 $k$-coloring such that the induced subgraph of each color class consists of one
 or more disjoint paths. Note that path $k$-coloring is equivalent to
 $(k,2)$-coloring with the added restriction that path coloring forbids cycles.
-It was conjectured by Broere et. al. \cite{broere} that all planar graphs may
+It was conjectured by Broere et al.\ \cite{broere} that all planar graphs may
 be path $3$-colored. In 1990 Poh \cite{poh} and Goddard \cite{goddard}
 independently proved the conjecture. Planar graphs that do not admit a path $3$-coloring
-were described by Chartrand et. al. \cite{kronk}, and thus the result is best possible.
+were described by Chartrand et al.\ \cite{kronk}, and thus the result is best possible.
 
 Poh's proof is constructive and may easily be adapted to an algorithm for path
-$3$-coloring plane graphs. Here we describe a naive version of Poh's algorithm,
+$3$-coloring plane graphs. We describe a naive version of Poh's algorithm,
 as well as a modified algorithm that runs in $\mathcal{O}(n)$ time.
 
 Let $G$ be a graph. A \textit{list assignment} for $G$ is a map $L$ assigning
 each vertex $v\in V(G)$ a list of colors. Given a list assignment $L$ an
 \textit{$L$-list-coloring} of $G$, first introduced
-by Erd{\"o}s et al. in \cite{erdos}, maps each $v\in V(G)$ to a color in $L(v)$.
+by Erd{\"o}s et al.\ in \cite{erdos}, maps each $v\in V(G)$ to a color in $L(v)$.
 We say a graph $G$ is \textit{$k$-choosable} if given any list assignment $L$ such that
-$|L(v)|\ge k$ for all $v\in V(G)$, $G$ admits a proper $L$-list-coloring.
+$\big|L(v)\big|\ge k$ for all $v\in V(G)$, $G$ admits a proper $L$-list-coloring.
 
 In 1994 Thomassen \cite{thomassen} proved that if $G$ is planar, then $G$ is
 $5$-choosable. A planar graph that is not $4$-choosable was
@@ -303,26 +303,26 @@ We may equivalently define the properties \textit{$(k,l)$-choosable} and
 \textit{path $k$-choosable}. In 1997 Hartman \cite{hartman} proved that all
 planar graphs are path $3$-choosable. Hartman's result is best possible since
 path $3$-coloring is a special case of path $L$-list-coloring with lists of size
-$3$. In 1999 Hull and Eaton \cite{hull} and Skrekovski \cite{skrekovski}
+$3$. In 1999 Hull and Eaton \cite{hull} and \v{S}krekovski \cite{skrekovski}
 independently proved that if $G$ is a planar graph, then $G$ is
 $(3,2)$-choosable.
 
 Hartman's proof provides a constructive procedure to find a path
 $L$-list-coloring for a plane graph that has been given a list assignment $L$
 with lists of size at least $3$. Interestingly, the proofs of Hartman and
-Skrekovski follow the same coloring algorithm, and thus Skrekovski unknowingly
+\v{S}krekovski follow the same coloring algorithm, and thus \v{S}krekovski unknowingly
 showed the stronger path $3$-choosability result. We describe an algorithm
-based on Hartman and Skrekovski's work and show it runs in $\mathcal{O}(n)$
+based on Hartman and \v{S}krekovski's work and show it runs in $\mathcal{O}(n)$
 time.
 
 \section{Graph Representations and Time Complexity}
 
-Let $G$ be a plane graph. Vertices will be represented by integers, that is, we
-shall assume $V(G)=\{0,1,\ldots,n-1\}$. We will always denote
-number of vertices in $G$ with $n$ and the number of edges with $m$.
+Let $G$ be a connected plane graph. Vertices will be represented by integers, that is, we
+shall assume that $V(G)=\{0,1,\ldots,n-1\}$. We will always denote the
+number of vertices in $G$ by $n$ and the number of edges by $m$.
 
 The input size for each algorithm, given input graph $G$, will be the
-number of vertices $n$. However, since $G$ is a plane graph, if $n\ge 3$ then
+number of vertices $n$. However, since $G$ is a connected plane graph, if $n\ge 3$ then
 $m\le 3n-6$. Thus $\mathcal{O}(m)= \mathcal{O}(n)$. Hence it is equivalent to
 take the input size to be the number of edges $m$.
 
@@ -393,7 +393,7 @@ will also have removed the entry $(w,r_{w,u})$ from $\text{Wrk}[u]$. It remains
 to handle edges $uv\in E(G)$ with $v>u$.
 
 For each $v$ from $n-1$ to $0$ let us walk through $\text{Wrk}[v]$. For $i$ from
-$1$ to $\text{deg}(v)$ take $(u,r_{u,v})=\text{Wrk}[v][i]$. Note $u<v$ by our
+$1$ to $\text{deg}(v)$ take $(u,r_{u,v})=\text{Wrk}[v][i]$. Note that $u<v$ by our
 assumptions above. Moreover, $\text{Wrk}[u]$ contains no entries for neighbors
 greater than $v$ so $(v,r_{v,u})$ is the last element of $\text{Wrk}[u]$. Thus
 we may lookup $r_{v,u}$ to find $u$'s node in $\text{Adj}'[v]$ and initialize
@@ -418,7 +418,7 @@ Thus while the algorithms presented will often assume that input graphs are
 triangulated and plane embedded, arbitrary planar graphs may be modified in
 linear time to fit these criteria.
 
-Some algorithm entries, for example \textit{Poh $3$-Coloring} (4.1), will
+Some of the algorithms we discuss, for example \textit{Poh $3$-Coloring} (4.1), will
 describe procedures on abstract graphs. Others, for example
 \textit{Augment Adjacency Lists} (3.1), will describe algorithms
 working with computer graph representations. We will provide time complexity
@@ -443,7 +443,7 @@ with outer cycle $C=v_1v_2\ldots v_k$ and a $2$-coloring of $C$ such that the
 color classes induce the paths $P=v_1v_2\ldots v_l$ and
 $Q=v_{k}v_{k-1}\ldots v_{l+1}$.
 
-\noindent\textbf{Output:} We find an extension of the $2$-coloring of $C$ to
+\noindent\textbf{Output:} An extension of the $2$-coloring of $C$ to
 a path $3$-coloring of $G$ such that no vertex in $C$ receives a same color
 neighbor in $G-C$.
 
@@ -455,7 +455,7 @@ $v_iv_j\in E(G)\setminus E(C)$
 with $i<j$. Since $P$ and $Q$ are induced paths it must be that $v_i\in P$ and
 $v_j\in Q$. Let $C_1$ by the cycle consisting of $C[v_j,v_i]$ and the
 edge $v_iv_j$, and $C_2$ the cycle consisting of $C[v_i,v_j]$ and the edge
-$v_iv_j$. Observe $C_1$ and $C_2$ are each $2$-colored
+$v_iv_j$. Observe that $C_1$ and $C_2$ are each $2$-colored
 such that each color class induces a path. Thus we may apply the algorithm to
 path $3$-color $\text{Int}(C_1)$ and $\text{Int}(C_2)$. Since the subgraphs
 $\text{Int}(C_1)$ and $\text{Int}(C_2)$ have only the vertices of the chord
@@ -555,8 +555,8 @@ $C$ in $G$ and produce a path $3$-coloring of $\text{Int}(C)$ according to the
 specifications of Poh's algorithm.
 
 To represent induced paths in $G$ we will simply use the color vertex property.
-Suppose $P=v_1v_2\ldots v_k$ is an induced path in $G$ that has been colored
-with $c_P$. Assume the coloring constructed so far is a path coloring. If
+Suppose $P=v_1v_2\ldots v_k$ is an induced path in $G$, and each vertex of $P$
+has been assigned $c_P$. Assume that the coloring constructed so far is a path coloring. If
 $v_i\in P$ then a neighbor $u$ of $v_i$ will have the color $c_P$ if and only if
 $u\in P$, that is, $u=v_{i-1}$ or $u=v_{i+1}$. Therefore we may represent the
 entire path by storing just the vertices $v_1$ and $v_k$. 
@@ -568,13 +568,13 @@ graphs, using a breadth first search to find induced paths and chords.\\
 
 \noindent\textbf{Assumptions:} Suppose $P=v_1v_2\ldots v_l$ and
 $Q=v_kv_{k-1}\ldots v_{l+1}$ are induced
-paths such that $C=v_1v_2\ldots v_k$ is a cycle. Additionally, assume each
+paths such that $C=v_1v_2\ldots v_k$ is a cycle. Additionally, assume that each
 path has been colored with a distinct color.
 
 \noindent\textbf{Input:} The paths $P$ and $Q$, each represented by their
 endpoints as described above.
 
-\noindent\textbf{Output:} We find an extension of the $2$-coloring of $C$ to
+\noindent\textbf{Output:} An extension of the $2$-coloring of $C$ to
 a path $3$-coloring of $\text{Int}(C)$ such that
 no vertex in $C$ receives a same color neighbor in $\text{Int}(C)-C$.
 
@@ -670,7 +670,7 @@ produces an induced $uw$-path $T$, colored with the remaining color not used on
 $P$ or $Q$.
 
 Define the paths $P_1=v_1v_2\ldots v_i$, $P_2=v_ip_{i+1}\ldots v_l$,
-$Q_1=v_kv_{k-1}\ldots v_j$, and $Q_2=v_jq_{j-1}\ldots v_{l+1}$. Observe we
+$Q_1=v_kv_{k-1}\ldots v_j$, and $Q_2=v_jq_{j-1}\ldots v_{l+1}$. Observe that we
 have a cycle $C_1$ consisting of $P_1$, $T$, and the edges $v_1u$ and $v_iw$.
 Similarly we have a cycle $C_2$ consisting of $T$, $Q_1$, and the edges $v_ku$
 and $v_jw$. We apply the algorithm to $P_1$ and $T$ to color $\text{Int}(C_1)$
@@ -681,7 +681,7 @@ $j=l+1$ we are done. Otherwise, we have the cycle $C_3$ consisting of $P_2$,
 $Q_2$ and the edges $v_iv_j$ and $v_lv_{l+1}$, and we may apply the algorithm to
 color $\text{Int}(C_3)$.
 
-Note the combined coloring forms a path $3$-coloring of $\text{Int}(C)$ by the
+Note that the combined coloring forms a path $3$-coloring of $\text{Int}(C)$ by the
 same argument as in \textit{Poh $3$-Coloring} (4.1).
 
 \begin{figure}
@@ -757,7 +757,7 @@ Therefore the complexity of the algorithm is $\mathcal{O}(2m + nm)
 =\mathcal{O}(n^2)$.
 
 We define the collection of graphs $\{G_k\}_{k\in\mathbb{N}}$, depicted in
-Figure \ref{poh_example}. Let us fix $k\in\mathbb{N}$ and note $G_k$ has
+Figure \ref{poh_example}. Let us fix $k\in\mathbb{N}$ and note that $G_k$ has
 $n=\frac{k^2+k}{2}+3$ vertices.
 
 Suppose we apply \textit{Poh BFS} (4.2) to path $3$-color $G_k$.
@@ -781,20 +781,20 @@ algorithm.
 
 However, the correctness of Poh's algorithm does not require that $T$
 be the shortest $uw$-path, only that $T$ be an induced $uw$-path. We will show
-that Poh's algorithm is linear if we instead construct an induced $uw$-path
+that Poh's algorithm becomes linear if we instead construct an induced $uw$-path
 consisting of vertices in $G-C$ with at least one neighbor in the colored
 path $P$.\\
 
 \noindent\textbf{Algorithm 4.3.} (Poh -- Path Walk)
 
-\noindent\textbf{Assumptions:} Assume $P=v_1v_2\ldots v_l$ and
+\noindent\textbf{Assumptions:} Assume that $P=v_1v_2\ldots v_l$ and
 $Q=v_kv_{k-1}\ldots v_{l+1}$ are induced paths, each colored with a distinct
 color, such that $C=v_1v_2\ldots v_k$ is a cycle.
 
 \noindent\textbf{Input:} The path $P$, represented by its endpoints, and the
 color of the path $Q$.
 
-\noindent\textbf{Output:} We find an extension of the $2$-coloring of $C$ to
+\noindent\textbf{Output:} An extension of the $2$-coloring of $C$ to
 a path $3$-coloring of $\text{Int}(C)$ such that
 no vertex in $C$ receives a same color neighbor in $\text{Int}(C)-C$.
 
@@ -810,7 +810,7 @@ and we stop. Otherwise $v\in \text{Int}(C)-C$ with the neighbor $v_i\in P$ and w
 mark it.
 
 Define the cycles $C_1$ and $C_2$ as usual by dividing $C$ along the chord
-$v_iv_j$. Note $C_1$ is chordless as $P$ and $Q$ are induced paths
+$v_iv_j$. Note that $C_1$ is chordless as $P$ and $Q$ are induced paths
 and $v_iv_j$ is the first chord of $C$ encountered. Apply \textit{Path Walk}
 (4.3) to path $3$-color $\text{Int}(C_2)$. It remains to color
 $\text{Int}(C_1)$.
@@ -818,7 +818,7 @@ $\text{Int}(C_1)$.
 If we never encountered a vertex in $\text{Int}(C)-C$ during our walk through
 the neighbors of $v_1,\ldots,v_i$, then $\text{Int}(C_1)-C_1$ is empty and thus
 $\text{Int}(C_1)$ is already colored. Otherwise let $u$ be the first such
-neighbor encountered. Note $u$ is the unique vertex
+neighbor encountered. Note that $u$ is the unique vertex
 such that $uv_1v_l$ is a face. We may therefore apply \textit{Path Trace} (4.4)
 to path $3$-color $\text{Int}(C_1)$.
 
@@ -838,9 +838,9 @@ $\text{Int}(C)- C$ with at least one neighbor in $P$ have been marked.
 \noindent\textbf{Input:} The vertex $u\in \text{Int}(C)-C$ such that the cycle
 $uv_1v_k$ is a face, as well as the respective colors of the paths $P$ and $Q$.
 
-\noindent\textbf{Output:} We find an extension of the $2$-coloring of $C$ to a
-path $3$-coloring of $\text{Int}(C)$ such that no vertex in $C$ receives a same
-color vertex in $\text{Int}(C)-C$.
+\noindent\textbf{Output:} An extension of the $2$-coloring of $C$ to a
+path $3$-coloring of $\text{Int}(C)$ such that no vertex in $C$ receives the same
+color as a neighbor of that vertex in $\text{Int}(C)-C$.
 
 \noindent\textbf{Description:} Initialize $T$ as the path consisting of the
 single vertex $u$, coloring $u$ with the remaining color. We will recursively
@@ -855,7 +855,7 @@ in $P$ we color $v$, assign $T=t_1\ldots t_dv$, and repeat the process with $v$ 
 the new end vertex. If $v\in P$ it must be that $t_d=w$ and we are finished
 constructing $T$. Otherwise ignore $v$ and move to the next neighbor.
 
-Note the process above must terminate since each vertex in $T$ has at least
+Note that the process above must terminate since each vertex in $T$ has at least
 one neighbor in $P$.
 
 Let $T=t_1t_2\ldots t_d$ be the path constructed above. Suppose $t_it_j$ is an
@@ -970,20 +970,20 @@ counterclockwise by a neighbor $v_i\in P$. There are two possible cases.
 \textit{Case 1:} Suppose none of the neighbors of $t_p$ between $t_{p+1}$ and
 $v_i$ counterclockwise are in $P$. Let
 $j$ be the smallest integer such that $t_{p+1}v_j$ is an edge, noting again
-that $i<j$ by planarity. Note since $P$ is an induced path the cycle
+that $i<j$ by planarity. Note that since $P$ is an induced path the cycle
 $C_y=t_pv_iv_{i+1}\ldots v_jt_{p+1}$ is chordless by the our selection of $v_j$.
 Thus we may apply \textit{Path Trace} (4.4) to color $\text{Int}(C_y)$ with the
 vertex $y$ forming the face $yt_pv_i$.
 
 \textit{Case 2:} Suppose we have previously visited a neighbor of $t_p$ in $P$,
-and let $v_j\in P$ be the most recent such neighbor visited. Note by planarity
-it must be that $i<j$. Note the cycle $C_y=v_iv_{i+1}\ldots v_jt_p$ is chordless
+and let $v_j\in P$ be the most recent such neighbor visited. Note that by planarity
+it must be that $i<j$. Thus the cycle $C_y=v_iv_{i+1}\ldots v_jt_p$ is chordless
 since $P$ is an induced path.
 We may therefore apply \textit{Path Trace} (4.4) to color $\text{Int}(C_y)$ with
 the vertex $y$ forming the face $yt_pv_i$.
 
 \noindent\textbf{Complexity:} Let $G$ be a plane graph that has been colored
-with Poh. Let $P$ be a path induced by the path $3$-coloring of $G$. Note each
+with Poh. Let $P$ be a path induced by the path $3$-coloring of $G$. Note that each
 vertex is in exactly one such path.
 
 Let $v\in P$. We iterated through $\text{Adj}[v]$ exactly once during
@@ -1001,19 +1001,19 @@ More specifically, it is $\Theta(n)$.
 
 
 
-\section{Path List-Coloring and the Hartman-Skrekovski Algorithm}
+\section{Path List-Coloring and the Hartman-\v{S}krekovski Algorithm}
 
 In this section we describe an algorithm for path
 list-coloring plane graphs with lists of size $3$. The following algorithm on
 abstract graphs is due to the independent work of Hartman \cite{hartman} and
-Skrekovski \cite{skrekovski}.
+\v{S}krekovski \cite{skrekovski}.
 
 Note that the description of the algorithm given below is structured differently
-than the descriptions given by both Hartman and Skrekovski. This restructuring is, in
+from the descriptions given by both Hartman and \v{S}krekovski. This restructuring is, in
 many ways, less elegant than both original proofs, but helps illuminate how the
 algorithm will operate on a graph with an adjacency list representation.\\
 
-\noindent\textbf{Algorithm 5.1.} (Hartman-Skrekovski -- Path Color)
+\noindent\textbf{Algorithm 5.1.} (Hartman-\v{S}krekovski -- Path Color)
 
 \noindent\textbf{Input:} Let $G$ be a $2$-connected weakly triangulated plane
 graph with outer cycle $C=v_1v_2\ldots v_k$. Let $x=v_1$ and $y\in C-x$.
@@ -1021,13 +1021,13 @@ Suppose $L$ is a list assignment for $G$ such that
 for each vertex $v\in G$
 \[
     \begin{array}{ll}
-	    |L(v)|\ge 1 & \text{if } v=x \text{ or } v=y;\\
-	    |L(v)|\ge 2 & \text{if } v\in C-x-y;\\
-	    |L(v)|\ge 3 & \text{otherwise.}
+	    \big|L(v)\big|\ge 1 & \text{if } v=x \text{ or } v=y;\\
+	    \big|L(v)\big|\ge 2 & \text{if } v\in C-x-y;\\
+	    \big|L(v)\big|\ge 3 & \text{otherwise.}
     \end{array}
 \]
-We will call $x$ and $y$ the \textit{fixed} vertices. Assume all vertices are
-uncolored except for potentially $x$ and $y$. If $x$ or $y$ are colored assume
+We will call $x$ and $y$ the \textit{fixed} vertices. Assume that all vertices are
+uncolored except for potentially $x$ and $y$. If $x$ or $y$ are colored, assume that
 $L(x)$, $L(y)$ contain only the color they have been assigned. 
 
 \noindent\textbf{Output:} A path $L$-list-coloring of $G$ such that the fixed
@@ -1096,7 +1096,7 @@ receive the color $c$. Therefore the combined coloring is a path
 $L$-list-coloring of $G$ such that $x,y$ receive at most one same color
 neighbor.\\
 
-\noindent\textbf{Algorithm 5.2.} (Hartman-Skrekovski -- Remove Path)
+\noindent\textbf{Algorithm 5.2.} (Hartman-\v{S}krekovski -- Remove Path)
 
 \noindent\textbf{Input:} Let $G$ be a $2$-connected weakly triangulated plane
 graph with outer cycle $C=v_1v_2\ldots v_k$. Let $P=v_1v_2\ldots v_l$ be an
@@ -1105,18 +1105,18 @@ assignment for $G$ such that for $v\in G$
 \[
     \begin{array}{ll}
         L(v)=\{c\} & \text{if } v\in P;\\
-	    |L(v)|\ge 1 & \text{if } v=x \text{ or } v=y;\\
-	    |L(v)|\ge 2 & \text{if } v\in C-P-x-y;\\
-	    |L(v)|\ge 3 & \text{otherwise.}
+	    \big|L(v)\big|\ge 1 & \text{if } v=x \text{ or } v=y;\\
+	    \big|L(v)\big|\ge 2 & \text{if } v\in C-P-x-y;\\
+	    \big|L(v)\big|\ge 3 & \text{otherwise.}
     \end{array}
 \]
-Assume if $|L(x)|=1$ then $c\not\in L(x)$. Additionally, assume for every
+Assume that if $\big|L(x)\big|=1$ then $c\not\in L(x)$. Additionally, assume that for every
 $v\in C[v_{l+1},y]$, if $v$ has a neighbor in $P$ then $c\not\in L(v)$.
 
 We will once again refer to $x$ and $y$ as fixed vertices, although in this
-algorithm it may be the case that $x=y$. Assume all
+algorithm it may be the case that $x=y$. Assume that all
 vertices are uncolored except for potentially $x$ and $y$. If $x$ or $y$ are
-colored assume $L(x)$, $L(y)$ contain only the color they have been assigned.
+colored assume that $L(x)$, $L(y)$ contain only the color they have been assigned.
 
 \noindent\textbf{Output:} A path $L$-list-coloring of $G$ such that $x$ and
 $y$ each receive at most one same color neighbor, and no vertex in
@@ -1124,10 +1124,10 @@ $G-P$ with a neighbor in $P$ receives the color $c$. If $x=y$ then $x$ will
 receive no same colored neighbors in $G$.
 
 \noindent\textbf{Description:}
-Note $G$ is $2$-connected and weakly triangulated. Thus to disconnect $G$ by
+Note that $G$ is $2$-connected and weakly triangulated. Thus to disconnect $G$ by
 removing vertices from $C$ we would need to remove vertices
 $v_i,v_j\in C$ such that $v_iv_j$ is a chord of $C$.
-Observe $P$ is a subgraph of $C$ and an induced path in $G$, so no vertices in
+Observe that $P$ is a subgraph of $C$ and an induced path in $G$, so no vertices in
 $P$ induce a chord of $C$. So $G-P$ is connected.
 
 \textit{Case 1:} Suppose there is a chord of $C$ with an endpoint in $P$. Let us
@@ -1175,7 +1175,7 @@ $\qquad$
   \draw (p1) edge (q1);
 \end{tikzpicture}
 
-\caption{Hartman-Skrekovski case 1.1 (left) and case 1.2 (right).}
+\caption{Hartman-\v{S}krekovski case 1.1 (left) and case 1.2 (right).}
 \end{center}
 \end{figure}
 
@@ -1220,16 +1220,16 @@ Let $L'$ be a list assignment for $G-P$ defined by
 \textit{Case 2.1:} Suppose $G-P$ is $2$-connected. Let $v\in G-P$.
 
 Suppose $v$ is not on the outer face of $G-P$. Then $v$ has no neighbors in $P$
-and $|L'(v)|=|L(v)|\ge 3$.
+and $|L'(v)|=\big|L(v)\big|\ge 3$.
 
 Suppose $v$ is on the outer face of $G-P$, $v\not\in C$. Then $v$ has at
-least one neighbor in $P$ and $|L'(v)|\ge |L(v)|-1\ge 2$.
+least one neighbor in $P$ and $|L'(v)|\ge \big|L(v)\big|-1\ge 2$.
 
 Finally, suppose $v\in C$. Since there are no chords of $C$ with endpoints in
 $P$ the only vertices in $C-P$ with neighbors in $P$ are $x$ and $v_{l+1}$.
 Recall we assumed that if $v\in C[v_{l+1},y]$ and $v$ has at least one neighbor
-in $P$ then $c\not\in L(v)$. Thus if $v\ne x$, $v\ne y$, then
-$|L'(v)|=|L(v)|\ge 2$. We ensured $c\not\in L(x)$ if $|L(x)|=1$. Thus if $v=x$
+in $P$ then $c\not\in L(v)$. Thus if $v\ne x$ and $v\ne y$, then
+$|L'(v)|=\big|L(v)\big|\ge 2$. We ensured $c\not\in L(x)$ if $\big|L(x)\big|=1$. Thus if $v=x$
 or $v=y$, $|L'(v)|\ge 1$.
 
 Therefore $L'$ meets the requirements of \textit{Path Color}
@@ -1252,7 +1252,7 @@ receives no same colored neighbors in $G$.
 complete graph on one or two vertices. It is simple to check we may
 $L'$-list-color $G-P$ such that the requirements hold.\\
 
-Let $G$ be a plane graph and $L$ a list assignment such that $|L(v)|\ge 3$
+Let $G$ be a plane graph and $L$ a list assignment such that $\big|L(v)\big|\ge 3$
 for all $v\in G$. We may add edges to $G$ until it is triangulated. Then
 we may apply \textit{Path Color} (5.1), with arbitrary fixed vertices, to
 construct a path $L$-list-coloring. This yields the following result.
@@ -1261,9 +1261,9 @@ construct a path $L$-list-coloring. This yields the following result.
 All planar graphs are path $3$-choosable.
 \end{theorem}
 
-\subsection{The Hartman-Skrekovski Algorithm with Adjacency Lists}
+\subsection{The Hartman-\v{S}krekovski Algorithm with Adjacency Lists}
 
-In order to implement Hartman and Skrekovski's algorithm with adjacency lists
+In order to implement Hartman and \v{S}krekovski's algorithm with adjacency lists
 there are two main challenges. First, we must be able to remove paths and
 locate the subgraphs for recursive calls. Second, we must be able to track the
 location of vertices on the outer face with respect to the fixed vertices
@@ -1271,15 +1271,15 @@ $x$, and $y$. For example: when adding a vertex to the path
 $P=v_{j_1}v_{j_2}\ldots v_{j_l}$ in \textit{Path Color} (5.1), we need to know
 which neighbors of $v_{j_l}$ lie in $C[v_{j_l},y]$.
 
-For now, let us assume we have solved the second challenge described above. That
-is, given vertices $u,v,w\in C$, assume we can determine whether $v\in C[u,w]$
+For now, let us assume that we have solved the second challenge described above. That
+is, given vertices $u,v,w\in C$, assume that we can determine whether $v\in C[u,w]$
 in $\mathcal{O}(1)$ time.
 
 Let $G$ be a $2$-connected weakly triangulated plane graph with an augmented
 adjacency list representation. Just as in Poh's algorithm, each call will be
 provided with a cycle $C=v_1v_2\ldots v_k$ in $G$. The
 job of a particular recursive call is then to color the subgraph $\text{Int}(C)$
-such that the requirements of the Hartman-Skrekovski algorithm hold.
+such that the requirements of the Hartman-\v{S}krekovski algorithm hold.
 
 We will provide each vertex in $G$ with a boolean vertex property to represent
 its state. All vertices in $C$ will be have a state indicating they are on the
@@ -1288,9 +1288,9 @@ indicating they are not in $C$.
 
 The list assignment $L$ will be represented by vertex property storing a linked
 list of colors $L[v]$ for each $v\in G$. We will denote the number of colors
-in the linked list by $|L[v]|$. We will produce a coloring of $G$ by reducing
+in the linked list by $\big|L[v]\big|$. We will produce a coloring of $G$ by reducing
 the size of each color list to one. Thus we consider a vertex $v$
-colored if $|L[v]|=1$.
+colored if $\big|L[v]\big|=1$.
 
 For each vertex $v_i\in C$ we will store a vertex property $\text{Nbr}[v_i]$
 called a \textit{neighbor range}. The neighbor range of $v_i$ will contain a pair of
@@ -1304,20 +1304,20 @@ vertices of $v_i$ in $C$. Additionally, they give start and stop nodes in
 $\text{Adj}[v_i]$ for the list of neighbors of $v_i$ that are contained in the
 subgraph $\text{Int}(C)$.\\
 
-\noindent\textbf{Algorithm 5.3.} (Hartman-Skrekovski -- Path Color)
+\noindent\textbf{Algorithm 5.3.} (Hartman-\v{S}krekovski -- Path Color)
 
 \noindent\textbf{Assumptions:} Suppose $C=v_1v_2\ldots v_k$ is a cycle, $x=v_1$,
-and $y\in C-x$. Assume for each $v\in \text{Int}(C)$
+and $y\in C-x$. Assume that for each $v\in \text{Int}(C)$
 \[
     \begin{array}{ll}
-	    |L[v]|\ge 1 & \text{if } v=x \text{ or } v=y;\\
-	    |L[v]|\ge 2 & \text{if } v\in C-x-y;\\
-	    |L[v]|\ge 3 & \text{otherwise.}
+	    \big|L[v]\big|\ge 1 & \text{if } v=x \text{ or } v=y;\\
+	    \big|L[v]\big|\ge 2 & \text{if } v\in C-x-y;\\
+	    \big|L[v]\big|\ge 3 & \text{otherwise.}
     \end{array}
 \]
-Assume the vertices of
-$\text{Int}(C)$ have been assigned according to whether they are in $C$ or
-$\text{Int}(C)-C$. Finally, assume for each $v_i\in C$ we have constructed
+Assume that the vertices of
+$\text{Int}(C)$ have been marked according to whether they are in $C$ or
+$\text{Int}(C)-C$. Finally, assume that for each $v_i\in C$ we have constructed
 $\text{Nbr}[v_i]$ as described above.
 
 \noindent\textbf{Input:} The fixed vertices $x$ and $y$.
@@ -1371,7 +1371,7 @@ vertices $v_k$ and $y'$.
 
 \noindent\textbf{Complexity:} See \textit{Remove Path} (5.4).\\
 
-\noindent\textbf{Algorithm 5.4.} (Hartman-Skrekovski -- Remove Path)
+\noindent\textbf{Algorithm 5.4.} (Hartman-\v{S}krekovski -- Remove Path)
 
 \noindent\textbf{Assumptions:} Suppose $C=v_1v_2\ldots v_k$ is a cycle. Let
 $P=v_1v_2\ldots v_l$ be an induced path in $C$ colored with some color $c$. Let
@@ -1380,12 +1380,12 @@ for each $v\in G$
 \[
     \begin{array}{ll}
         L[v]=\{c\} & \text{if } v\in P;\\
-	    |L[v]|\ge 1 & \text{if } v=x \text{ or } v=y;\\
-	    |L[v]|\ge 2 & \text{if } v\in C-P-x-y;\\
-	    |L[v]|\ge 3 & \text{otherwise.}
+	    \big|L[v]\big|\ge 1 & \text{if } v=x \text{ or } v=y;\\
+	    \big|L[v]\big|\ge 2 & \text{if } v\in C-P-x-y;\\
+	    \big|L[v]\big|\ge 3 & \text{otherwise.}
     \end{array}
 \]
-Assume for every $v\in C[x,v_k]$, $c\not\in L(v)$. Additionally, assume for
+Assume that for every $v\in C[x,v_k]$, $c\not\in L(v)$. Additionally, assume that for
 every $v\in C[v_{l+1},y]$, if $v$ has a neighbor in $P$ then $c\not\in L(v)$.
 
 \noindent\textbf{Input:} The vertices $v_1$, $x$, and $y$.
@@ -1524,9 +1524,9 @@ $\quad$
 \caption{From left to right: case 2.2.1, case 2.2.2, and case 2.2.3.}
 \end{figure}
 
-\textit{Case 2.2.1:} Suppose $u\in C[x,v_1]$. Note in this case it must be that
+\textit{Case 2.2.1:} Suppose $u\in C[x,v_1]$. Note that in this case it must be that
 $u\ne v_2$. We will first apply \textit{Remove Path} (5.4) to path $L$-list-color
-$\text{Int}(C_2)$ with fixed vertices $x$ and $y$. Note this colors the vertex
+$\text{Int}(C_2)$ with fixed vertices $x$ and $y$. Note that this colors the vertex
 $u$. We will apply \textit{Remove Path} (5.4) with colored path consisting of
 just the vertex $u$, and the vertices immediately adjacent to $u$ on $C_1$ as
 the fixed vertices. This ensures $u$ receives no same color neighbors in
@@ -1565,19 +1565,19 @@ More specifically, it is $\Theta(n)$.
 
 \subsection{Tracking Vertices on the Outer Cycle}
 
-The Hartman-Skrekovski algorithm described in the previous section relied on the
+The Hartman-\v{S}krekovski algorithm described in the previous section relied on the
 assumption that we could immediately
 know the relative location of vertices on the outer cycle. In
-\textit{Path Color} (5.3) we assumed we could determine
+\textit{Path Color} (5.3) we assumed that we could determine
 whether a given vertex $u\in C$ was in the path $C[v,y]$, where $v$ was the
 last vertex added to our colored path. Additionally, in \textit{Remove Path}
-(5.4) we assumed for $u\in C$ we could determine whether $u$ was in $C[x,v_l]$,
+(5.4) we assumed that for $u\in C$ we could determine whether $u$ was in $C[x,v_l]$,
 $C[y,x]$, or $C[v_1,y]$. We will now describe how this check may be accomplished
 in $\mathcal{O}(1)$ time.
 
 Let us define an integer vertex property to store a location mark for each
-vertex on the outer cycle. Assume we are given the input for \textit{Remove
-Path} (5.4). Also assume vertices in $C[v_1,y]$ have been assigned the mark $n_1$,
+vertex on the outer cycle. Assume that we are given the input for \textit{Remove
+Path} (5.4). Also, assume that vertices in $C[v_1,y]$ have been assigned the mark $n_1$,
 vertices in $C[y,x]$ have the mark $n_2$, and vertices in $C[y,v_k]$ have
 the mark $n_3$.
 
@@ -1620,7 +1620,7 @@ Instructions for using each algorithm are provided, as well as brief examples.
 The Boost Graph Library (BGL) \cite{boost} details a generic interface for working
 with graphs, as well as numerous data structures and algorithms. We will begin
 with a brief introduction to the BGL. Then we will
-discuss implementing the Poh and Hartman-Skrekovski algorithms using BGL
+discuss implementing the Poh and Hartman-\v{S}krekovski algorithms using BGL
 abstractions.
 
 We will assume familiarity with the C++ language and the
@@ -1632,8 +1632,8 @@ with links to the relevant Boost and STL concepts.
 \subsection{The Boost Graph Library}
 
 The BGL provides several abstract concepts for graph data structures.
-The basic \texttt{Graph} concept requires that a vertex and edge type to be
-defined, as well as a few properties such as whether the graph is directed or
+The basic \texttt{Graph} concept requires that vertex and edge types are
+defined, as well as a few other properties such as whether the graph is directed or
 undirected. The \texttt{VertexListGraph} and \texttt{EdgeListGraph} refine this
 concept to additionally require an interface to iterate over the vertex and
 edge sets, respectively. The \texttt{VertexAndEdgeListGraph} concept simply
@@ -1742,7 +1742,7 @@ iterator_property_map<
         get(vertex_index, graph)
     );
 
-// Researve space so push_back is O(1)
+// Reserve space so push_back is O(1)
 for(size_t v = 0; v < num_vertices(graph); ++v) {
     planar_embedding[v].reserve(out_degree(v, graph));
 }
@@ -1808,11 +1808,11 @@ Type & Concept & Additional Requirements\\
 \label{poh_template}
 \end{figure}
 
-We assume the provided graph is simple and weakly triangulated and the given
+We assume that the provided graph is simple and weakly triangulated and the given
 planar embedding structure represents a valid planar embedding of the graph.
-We assume the two ranges of vertices map are paths in the graph
+We assume that the two ranges of vertices map are paths in the graph
 satisfying the requirements of \textit{Poh -- Path Walk} (4.3).
-Finally we assume no vertex is already colored any of \texttt{c\_0}, \texttt{c\_1},
+Finally, we assume that no vertex is already colored any of \texttt{c\_0}, \texttt{c\_1},
 or \texttt{c\_2}.
 
 When the algorithm is complete \texttt{color\_map} will be assigned such that
@@ -2065,7 +2065,7 @@ iterator_property_map<
         get(vertex_index, graph)
     );
 
-// Researve space so push_back is O(1)
+// Reserve space so push_back is O(1)
 for(size_t v = 0; v < num_vertices(graph); ++v) {
     augmented_embedding[v].reserve(out_degree(v, graph));
 }
@@ -2079,9 +2079,9 @@ augment_embedding(
 \label{example_augment_embedding}
 \end{figure}
 
-\subsection{Hartman-Skrekovski in the BGL}
+\subsection{Hartman-\v{S}krekovski in the BGL}
 
-Here we detail our implementation of the Hartman-Skrekovski algorithm described
+Here we detail our implementation of the Hartman-\v{S}krekovski algorithm described
 in (5.3, 5.4). The
 function prototype and template requirements are shown
 in Figure \ref{hartman_prototype} and Figure \ref{hartman_template},
@@ -2102,7 +2102,7 @@ void hartman_skrekovski_color(
         color_list_map_t & color_list_map
     );
 \end{lstlisting}
-\caption{Publicly visible function prototype for Hartman-Skrekovski.}
+\caption{Publicly visible function prototype for Hartman-\v{S}krekovski.}
 \label{hartman_prototype}
 \end{figure}
 
@@ -2120,16 +2120,16 @@ Type & Concept & Additional Requirements\\
 \texttt{color\_list\_map\_t} & \texttt{Lvalue{\allowbreak}Property{\allowbreak}Map} & \texttt{value\_type} is \texttt{color\_list\_t}
 \end{tabular}
 \end{center}
-\caption{Template requirements for Hartman-Skrekovski.}
+\caption{Template requirements for Hartman-\v{S}krekovski.}
 \label{hartman_template}
 \end{figure}
 
-We assume the provided graph is simple and weakly triangulated and the given
+We assume that the provided graph is simple and weakly triangulated and the given
 \texttt{augmented\_embedding} structure represents a valid planar embedding of
 the graph.
-We assume the range of vertices is a cycle in
+We assume that the range of vertices is a cycle in
 the provided plane graph, with vertices listed in clockwise order.
-We finally assume \texttt{color\_list\_map} assigns each vertex in the cycle a sequence
+We finally assume that \texttt{color\_list\_map} assigns each vertex in the cycle a sequence
 of at $2$ or more colors, and each vertex interior to the cycle a sequence of
 $3$ or more colors.
 
@@ -2146,7 +2146,7 @@ is colored. This reduces the number of times we visit a particular edge by a
 factor of $2$.
 
 A brief code snippet in Figure \ref{example_hartman} shows how to apply
-Hartman-Skrekovski to the graph constructed earlier in Figure \ref{example_make_graph}.
+Hartman-\v{S}krekovski to the graph constructed earlier in Figure \ref{example_make_graph}.
 Source code, documentation, and complete examples are available online at the
 link provided earlier.
 
@@ -2180,7 +2180,7 @@ hartman_skrekovski_color(
         color_list_map
     );
 \end{lstlisting}
-\caption{Example code to color a graph with Hartman-Skrekovski.}
+\caption{Example code to color a graph with Hartman-\v{S}krekovski.}
 \label{example_hartman}
 \end{figure}
 
@@ -2227,7 +2227,7 @@ lists of size at least $3$. We adapted each procedure to an
 algorithm for finding path colorings of graphs with adjacency list
 representations. Additionally, we showed each procedure admits an algorithm that
 runs in linear time.
-Finally, we provided a docmented implementation of each algorithm in C++.
+Finally, we provided a documented implementation of each algorithm in C++.
 
 Future work in this area might consider Hartman's procedure for path
 $4$-coloring torus graphs, also found in \cite{hartman}. The procedure first
@@ -2433,11 +2433,11 @@ a linear time algorithm.
 	Appel, K. and W. Haken, Every planar map is four colorable. I.
 	Discharging, \textit{Illinois J. Math} \textbf{21} (1991), no. 3, 429-490.
 \bibitem{appel2}
-	Appel, K. and W. Haken, Every planar map is four colorable. II.
+	Appel, K., W. Haken, J. Koch, Every planar map is four colorable. II.
 	Reducibility, \textit{Illinois J. Math} \textbf{21} (1991), no. 3, 491-567.
 \bibitem{booth}
 	Booth, K. and C. Lueker, Testing for the consecutive ones property interval
-	graphs and graph planarity using $PQ$-tree algorithms," \textit{J. Comput.
+	graphs and graph planarity using $PQ$-tree algorithms, \textit{J. Comput.
 	System Sci.} \textbf{13} (1976), 335-379.
 \bibitem{boyer}
 	Boyer, J. and W. Myrvold, On the cutting edge: simplified $\mathcal{O}(n)$ planarity by
@@ -2492,7 +2492,7 @@ a linear time algorithm.
 \bibitem{lempel}
 	Lempel, A., S. Even, and I. Cederbaum, An algorithm for planarity testing of
 	graphs, \textit{Theory of graphs (Internat. Sympos., Rme, 1966)}, 215-232,
-	Gordon and Breach, New York; Dunod, Paris.
+	Gordon and Breach, New York; Dunod, Paris, 1967.
 \bibitem{poh}
 	Poh, K. S., On the linear vertex-arboricity of a planar graph,
 	\emph{J. Graph Theory} \textbf{14} (1990), 73-75.
@@ -2505,14 +2505,14 @@ a linear time algorithm.
 	Siek, J., L. Lee, and A. Lumsdaine, \textit{The Boost Graph Library: User
 	Guide and Reference Manual}, Pearson Education, 2001.
 \bibitem{skrekovski}
-	Skrekovski, R., List improper colourings of planar graphs,
+	\v{S}krekovski, R., List improper colourings of planar graphs,
 	\textit{Combin. Probab. Comput.} \textbf{8} (1999), 293-299.
 \bibitem{thomassen}
 	Thomassen, C., Every planar graph is $5$-choosable,
 	\emph{J. Combin. Theory Ser. B} \textbf{62} (1994), no. 1, 180-181.
 \bibitem{voigt}
 	Voigt, M., List colorings of planar graphs,
-	\textit{Discrete Mathematics} \textbf{120}, 215-219.
+	\textit{Discrete Mathematics} \textbf{120} (1993), 215-219.
 \bibitem{west}
 	West, D., \textit{Introduction to Graph Theory},
 	2nd ed., Pearson, 2001.
@@ -2527,8 +2527,8 @@ a linear time algorithm.
 \subsection{Poh with face tracing (4.3, 4.4)}
 %\inputminted{C++}{../../src/path_coloring/poh_color.hpp}
 
-\subsection{Hartman-Skrekovski (5.3, 5.4)}
-%\inputminted{C++}{../../src/path_coloring/hartman_skrekovski_choose.hpp}
+\subsection{Hartman-\v{S}krekovski (5.3, 5.4)}
+%\inputminted{C++}{../../src/path_coloring/hartman_\v{S}krekovski_choose.hpp}
 
 \subsection{Embedding helper functions}
 
