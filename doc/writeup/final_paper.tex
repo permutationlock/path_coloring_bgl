@@ -1227,7 +1227,7 @@ most one neighbor in each of $\text{Int}(C_1)$ and $\text{Int}(C_2)$. Since
 $v_j$ is the single fixed vertex in
 $\text{Int}(C_2)$, $v_j$ will not share a color with any of its neighbors in
 $\text{Int}(C_2)$. Thus the combined coloring is a path $L$-list-coloring of
-$G$ with $x,y$ receiving the correct number of shared color neighbors.
+$G$ with $x,y$ sharing a color with the correct number neighbors.
 
 \textit{Case 1.2:} Otherwise $v_j\in C[y,v_{k-1}]$, $v_j\ne y$. Again, we first
 apply \textit{Remove Path} (5.2) to path $L$-list-color $\text{Int}(C_1)$ with
@@ -1240,8 +1240,8 @@ common. In both $\text{Int}(C_1)$ and $\text{Int}(C_2)$ the vertex $v_j$ is
 fixed vertex, and $v_i$ is an endpoint of the colored path. Therefore $v_i$ will
 share a color with at most one of its neighbors in each subgraph, and similarly
 for $v_j$. Thus the
-combined coloring is a path $L$-list-coloring of $G$ with $x,y$ receiving the
-correct number of shared color neighbors.
+combined coloring is a path $L$-list-coloring of $G$ with $x,y$ sharing a color
+with the correct number neighbors.
 
 \textit{Case 2:} Suppose there are no chords of $C$ with endpoints in $P$.
 Let $L'$ be a list assignment for $G-P$ defined by
