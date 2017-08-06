@@ -8,6 +8,7 @@
 \usepackage{chngcntr}
 \usepackage{indentfirst}
 \usepackage{hyperref}
+\usepackage{setspace}
 \usepackage{listings}
 %\usepackage{appendix}
 
@@ -45,7 +46,36 @@
 
 \begin{document}
 
-\maketitle
+\begin{titlepage}
+    \centering
+    \doublespacing
+    {\scshape\Large PATH COLORING ALGORITHMS ON PLANAR GRAPHS \par}
+    {By\par}
+    {\scshape\large Daniel Aven Bross\par}
+    \vspace{2cm}
+    {A Project Submitted in Partial Fulfillment of the Requirements for the
+        Degree of\par}
+    \vspace{2cm}
+    {\textsc{Master of Science}\par}
+    {in \par}
+    {\textsc{Computer Science}\par}
+    \vspace{3cm}
+    {\textsc{University of Alaska Fairbanks}\par}
+    {\textsc{August 2017}\par}
+    \vfill
+    {\textsc{Approved:}}
+    \raggedleft
+    \begin{minipage}[t]{.50\textwidth}
+        \singlespacing
+        \footnotesize\textsc{Dr. Glenn Chappell, Committe Chair}\\
+        \footnotesize\textsc{Dr. Orion Lawlor, Committe Member}\\
+        \footnotesize\textsc{Dr. Chris Hartman, Committe Member}\\
+        \footnotesize\textsc{Dr. John Genetti, Department Chair}\\
+        \noindent{\phantom{a}}\hfill\textsc{Department of Computer Science}
+    \end{minipage}
+\end{titlepage}
+
+\pagebreak
 
 \section*{Abstract}
 A path coloring of a graph partitions its vertex set into color classes such
@@ -68,6 +98,8 @@ A C++ implementation is provided for all three algorithms, utilizing the Boost
 Graph Library. Instructions are given on how to use the implementation
 to construct colorings for plane graphs represented by Boost data
 structures.
+
+\pagebreak
 
 \section{Plane Graphs}
 
@@ -111,6 +143,13 @@ If a path $P=v_1v_2\ldots v_n$ is a subgraph of a graph $G$ then we say $P$ is a
 $u,v\in V(G)$ there exists a $uv$-path in $G$. If any $k-1$ vertices may be
 removed from a graph $G$ with $G$ remaining connected, then we say $G$ is
 \textit{$k$-connected}.
+
+A \textit{drawing} of a graph maps each vertex to a point in the
+plane and each edge to a curve connecting its endpoints. A \textit{planar
+embedding} is a drawing where edge curves intersect only at their
+endpoints. We say a graph is \textit{planar} if it admits a planar embedding. A
+planar graph together with a particular planar embedding is called a
+\textit{plane graph}.
 
 \begin{figure}
 \begin{center}
@@ -171,13 +210,6 @@ $\qquad$
 	$6$-cycle.}
 \end{center}
 \end{figure}
-
-A \textit{drawing} of a graph maps each vertex to a point in the
-plane and each edge to a curve connecting its endpoints. A \textit{planar
-embedding} is a drawing where edge curves intersect only at their
-endpoints. We say a graph is \textit{planar} if it admits a planar embedding. A
-planar graph together with a particular planar embedding is called a
-\textit{plane graph}.
 
 Let $G$ be a plane graph. A \textit{face} of $G$ is a maximal region
 of the plane not containing any point used in the embedding. The unbounded face
@@ -2424,6 +2456,8 @@ a linear time algorithm.
 \end{comment}
 
 %\section{Boost Graph Implementation}
+
+\pagebreak
 
 \begin{thebibliography}{99}
 \bibitem{jacobson}
