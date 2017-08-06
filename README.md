@@ -1,4 +1,4 @@
-# Path Coloring Algorithms on Plane Graphs
+# Path Coloring Algorithms for Plane Graphs
  A C++ implementation in the [Boost Graph Library](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/index.html) of two algorithms for path
  coloring and path list-coloring plane graphs.
 
