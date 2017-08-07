@@ -4,8 +4,8 @@
 
 ## Abstract
  A path coloring of a graph partitions its vertex set into color classes such
- that each class induces a disjoint union of paths. In this project we consider
- implementing several algorithms to compute path colorings of graphs embedded in
+ that each class induces a disjoint union of paths. In this project we
+ implement several algorithms to compute path colorings of graphs embedded in
  the plane.
 
  We present two algorithms to path color plane graphs with *3* colors, based on

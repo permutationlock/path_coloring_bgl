@@ -1409,8 +1409,8 @@ for each $v\in G$
 	    \big|L[v]\big|\ge 3 & \text{otherwise.}
     \end{array}
 \]
-Assume that for every $v\in C[x,v_k]$, $c\not\in L(v)$. Assume that for
-every $v\in C[v_{l+1},y]$, if $v$ has a neighbor in $P$ then $c\not\in L(v)$.
+Assume that for every $v\in C[x,v_k]$, $c$ is not in $L[v]$. Assume that for
+every $v\in C[v_{l+1},y]$, if $v$ has a neighbor in $P$ then $c$ is not in $L[v]$.
 Finally, assume that for each $v_i\in C$ we have constructed
 $\text{Nbr}[v_i]$ as described above.
 
@@ -1572,7 +1572,7 @@ Path} (5.4) to path $L$-list-color $\text{Int}(C_2)$ with the single fixed
 vertex $u$. This ensures no neighbor of $u$ in
 $\text{Int}(C_2)$ receives the same color as $u$.
 
-\textit{Case 2.2.4:} Suppose $u= v_2$. If $c\in L[u]$ then $u$ is a path vertex
+\textit{Case 2.2.4:} Suppose $u= v_2$. If $c$ is in $L[u]$ then $u$ is a path vertex
 and we apply \textit{Remove Path} (5.4) to path $L$-list-color $\text{Int}(C_1)$
 with fixed vertices $x$ and $y$. Otherwise, we have reached the end of the path.
 We apply \textit{Color Path} (5.3) to $\text{Int}(C_1)$ with fixed vertices $x$
@@ -1968,7 +1968,7 @@ the previous section.
 
 When the algorithm is complete \texttt{color\_map} will be assigned such that
 it represents a valid path $3$-coloring of the subgraph bounded by the cycle
-formed by the two provided paths ($\text{Int}(C)$). The coloring will
+formed by the two provided paths, $\text{Int}(C)$. The coloring will
 also satisfy the output requirements of (4.2).
 
 The implementation almost directly follows the description of (4.2), although
@@ -2164,8 +2164,8 @@ represent a valid path coloring of the subgraph bounded by the provided cycle
 
 The implementation follows algorithms (5.3) and (5.4) with the following
 optimization. By combining the cases of (5.3) and (5.4) we may draw and remove
-the path simultaneously, one vertex at a time. In the implementation therefore
-perform the operations of both (5.3) and (5.4) simultaneously as each vertex
+the path simultaneously, one vertex at a time. Therefore in the implementation
+we perform the operations of both (5.3) and (5.4) simultaneously as each vertex
 is colored. This reduces the number of times we visit a particular edge by a
 factor of $2$.
 
