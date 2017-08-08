@@ -396,7 +396,7 @@ $v\in V(G)$.
 
 We fill in $\text{Wrk}$ as follows. For each $v$ from $0$ to $n-1$ let us walk
 through $\text{Adj}'[v]$. At each neighbor $u$ in $\text{Adj}'[v]$ let
-$r_{v,u}$ be the reference to $u$'s position in $\text{Adj}'[v]$ and append the
+$r_{v,u}$ be a reference to $u$'s position in $\text{Adj}'[v]$ and append the
 pair $(v,r_{v,u})$ to $\text{Wrk}[u]$.
 
 After this process finishes each $u\in V(G)$ will have an array $\text{Wrk}[u]$
@@ -407,8 +407,8 @@ We will now initialize the references of each node of
 the augmented adjacency lists.
 Iterate through the vertices in descending order. Let $v$ be the current
 vertex. For each 
-$uw\in E(G)$ such that $u<w$ and $v<w$ we shall have initialized the reference
-for $u$ in $\text{Adj}'[w]$ and the reference for $w$ in $\text{Adj}'[u]$. We
+$uw\in E(G)$ such that $u<w$ and $v<w$ we shall have initialized a reference
+for $u$ in $\text{Adj}'[w]$ and a reference for $w$ in $\text{Adj}'[u]$. We
 will also have removed the entry $(w,r_{w,u})$ from $\text{Wrk}[u]$. It remains
 to handle edges $uv\in E(G)$ with $v>u$.
 
@@ -1370,8 +1370,8 @@ There are two cases to consider.
 
 \textit{Case 2.1:} Suppose the start node of $\text{Nbr}[u]$ is not $v$. Then
 $u\ne v_{j_l +1}$. Let $(r_1,r_2)=\text{Nbr}[u]$ and
-$(s_1,s_2)=\text{Nbr}[v_{j_l}]$. Let $r_v$ be the reference to the node for
-$v$ in $\text{Adj}[u]$ and $s_u$ be the reference to the node for $u$ in
+$(s_1,s_2)=\text{Nbr}[v_{j_l}]$. Let $r_v$ be a reference to the node for
+$v$ in $\text{Adj}[u]$ and $s_u$ be a reference to the node for $u$ in
 $\text{Adj}[v]$.
 
 Let us assign $\text{Nbr}[u]=(r_1,r_v)$ and $\text{Nbr}[v]=(s_u,s_2)$. We will
@@ -1476,9 +1476,11 @@ of $v_1$. Let $C_1$ be the cycle consisting of $N$ and $C[u,v_k]$. If $u\ne v_2$
 let $C_2$ be the cycle consisting of $C[v_1,u]$ and the edge $v_1u$.
 
 Let $(r_1,r_2)=\text{Nbr}[u]$ and
-$(s_1,s_2)=\text{Nbr}[v]$. Let $r_v$ be the reference to the node for
-$v$ in $\text{Adj}[u]$ and $s_u$ be the reference to the node for $u$ in
-$\text{Adj}[v]$.
+$(s_1,s_2)=\text{Nbr}[v]$. Let $r_v$ be a reference to the node for
+$v$ in $\text{Adj}[u]$ and $s_u$ be a reference to the node for $u$ in
+$\text{Adj}[v]$. Note that the reference $s_u$ may be located in $\mathcal{O}(1)$
+time from the node for $u$ in $\text{Adj}[v]$ since we have an augmented adjacency
+list representation of $G$.
 
 In all cases below, before we apply an algorithm to color
 $\text{Int}(C_1)$ we will assign $\text{Nbr}[u]=(r_v,r_2)$ and $\text{Nbr}[v]=
@@ -1690,7 +1692,7 @@ edges, representing the embedding ordered rotation scheme.
 The BGL provides the concrete \texttt{boost::adjacency\_list} graph data structure that
 models \texttt{VertexAndEdgeListGraph}, among other concepts. We provide wrapper
 functions that will construct fast property maps (\texttt{boost::iterator\_property\_map})
-for all the property maps just used as working space for the algorithms.
+for the property maps that are used only as working space for the algorithms.
 In the examples here we will only discuss \texttt{boost::adjacency\_list} structures,
 but functions are available in the library to allow the algorithms to work on
 arbitrary data structures modeling the necessary BGL concepts.
@@ -1791,8 +1793,8 @@ definitions in Figure \ref{example_make_graph} for an example).
 
 Here we describe our implementation of the linear time Poh algorithm
 described in (4.3) and (4.4). The
-function prototype, type definitions, and template requirements are shown
-in Figures \ref{poh_prototype} and Figure \ref{poh_template}, respectively.
+function prototype and template requirements are shown
+in Figure \ref{poh_prototype} and Figure \ref{poh_template}, respectively.
 
 \begin{figure}
 \begin{lstlisting}[frame=single]
@@ -1920,7 +1922,7 @@ poh_color(
 
 We also provide an implementation of of \textit{Poh -- BFS} (4.2). Note that
 the BFS algorithm is slower than the algorithm described in (4.3, 4.4). The
-function prototype, type definitions, and template requirements are shown
+function prototype and template requirements are shown
 in Figure \ref{poh_bfs_prototype} and Figure \ref{poh_bfs_template}, respectively.
 
 \begin{figure}
