@@ -244,6 +244,12 @@ void poh_color(
         );
 }
 
+/*
+ * A wrapper that automatically construct fast property maps for the mark_map
+ * and neighbor_range_map, but requires that graph_t is some definition of
+ * boost::adjacency_list.
+ */
+
 template<
         typename graph_t,
         typename planar_embedding_t,

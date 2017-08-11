@@ -511,6 +511,12 @@ void hartman_skrekovski_color(
         );
 }
 
+/*
+ * A wrapper that automatically construct fast property maps for the
+ * face_location_map and neighbor_range_map, but requires that graph_t is some
+ * definition of boost::adjacency_list.
+ */
+
 template<
         typename graph_t,
         typename augmented_embedding_t,

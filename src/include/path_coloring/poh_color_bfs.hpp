@@ -248,6 +248,12 @@ void poh_color_bfs(
 }
 
 
+/*
+ * A wrapper that automatically construct fast property maps for the parent_map
+ * and neighbor_range_map, but requires that graph_t is some definition of
+ * boost::adjacency_list.
+ */
+
 template<
         typename graph_t,
         typename planar_embedding_t,
