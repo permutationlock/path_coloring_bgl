@@ -22,9 +22,9 @@
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 
 // Local project headers
-#include "../../path_coloring/hartman_skrekovski_color.hpp"
-#include "../../path_coloring/augmented_embedding.hpp"
-#include "../../path_coloring/incidence_list_helpers.hpp"
+#include "../../include/path_coloring/hartman_skrekovski_color.hpp"
+#include "../../include/path_coloring/augmented_embedding.hpp"
+#include "../../include/path_coloring/incidence_list_helpers.hpp"
 
 using namespace boost;
 

@@ -36,11 +36,11 @@
 #include <boost/graph/make_maximal_planar.hpp>
 
 // Local project headers
-#include "../path_coloring/poh_color.hpp"
-#include "../path_coloring/poh_color_bfs.hpp"
-#include "../path_coloring/augmented_embedding.hpp"
-#include "../path_coloring/hartman_skrekovski_color.hpp"
-#include "../visualization/draw_tikz_graph.hpp"
+#include "../include/path_coloring/poh_color.hpp"
+#include "../include/path_coloring/poh_color_bfs.hpp"
+#include "../include/path_coloring/augmented_embedding.hpp"
+#include "../include/path_coloring/hartman_skrekovski_color.hpp"
+#include "../include/visualization/draw_tikz_graph.hpp"
 
 using namespace boost;
 
