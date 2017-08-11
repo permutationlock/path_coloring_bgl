@@ -4,22 +4,15 @@
 
 ## Directories:
 
-### path_coloring
- This is the main directory of the project and contains header files for the
- three algorithms implemented. It also includes some headers for helper functions
- and data structures shared between the different algorithms. 
+### include
+ This directory contains the main header only library.
 
 ### examples
  This directory contains examples displaying how to call each algorithm
  implemented.
 
 ### unit_tests
- This directory contains a unit testing suite for the headers in the
- path_coloring directory.
-
-### visualization
- This directory contains a single header used to generate tikz drawings of
- boost graphs.
+ This directory contains a unit testing suite for the library.
 
 ## Requirements
  The [Boost Libraries](http://www.boost.org/) and a compiler that supports the
