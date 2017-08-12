@@ -24,7 +24,8 @@
 #include "incidence_list_helpers.hpp"
 
 
-/* poh_color_recursive
+/*
+ * poh_color_recursive
  * 
  * assumptions: There are two disjoint colored paths P=p_0...p_n and Q=q_0...q_m
  *     such that p_0...p_nq_m...q_0 is a cycle, and all vertices on the interior
@@ -62,7 +63,7 @@ namespace {
             color_t t_color, color_t p_color, color_t q_color
         )
     {
-        // Let t_i be the last vertex of T, and w the first interior vertex
+        // t_i will track the last vertex of T, and w the first interior vertex
         vertex_t t_i = u, w = u;
     
         // Initialize remaining variables for the loop constructing T
@@ -70,7 +71,7 @@ namespace {
         int below_t_mark = count++;
         color_map[u] = t_color;
     
-        // If t_0 is the only remaining interior vertex we are are done
+        // If u is the only remaining interior vertex we are are done
         if(neighbor_range_map[u].first == neighbor_range_map[u].second){
             return;
         }
@@ -88,7 +89,7 @@ namespace {
             bool continue_path = (mark_map[n] == face_mark
                 && color_map[n] != p_color && color_map[n] != q_color);
         
-            // If we are adding n to T or at the end, color any vertices above T
+            // If we will add n to T or we hit the end, color vertices above T
             if(continue_path || color_map[n] == p_color) {
                 if(continue_path) {
                     color_map[n] = t_color;
@@ -96,7 +97,7 @@ namespace {
             
                 vertex_t l = n;
             
-                // Loop through neighbors of p that lie above T
+                // Loop through neighbors of t_i that lie above T
                 while(edge_iter++ != neighbor_range_map[t_i].second) {
                     // If we hit the end of the list, wrap to the start
                     if(edge_iter == planar_embedding[t_i].end())
@@ -178,7 +179,8 @@ namespace {
 }
 
 
-/* poh_color
+/*
+ * poh_color
  * 
  * inputs: A weakly triangulated planar graph with vertex indices (predfined
  *     boost property), a valid planar embedding of the graph modeling the boost
@@ -245,7 +247,7 @@ void poh_color(
 }
 
 /*
- * A wrapper that automatically construct fast property maps for the mark_map
+ * A wrapper that automatically constructs fast property maps for the mark_map
  * and neighbor_range_map, but requires that graph_t is some definition of
  * boost::adjacency_list.
  */
@@ -266,7 +268,7 @@ void poh_color(
         color_map_t & color_map
     )
 {
-    // Vertex property map to store vertex marks
+    // Vertex property map type to store vertex marks
     typedef boost::iterator_property_map<
             std::vector<int>::iterator,
             typename boost::property_map<

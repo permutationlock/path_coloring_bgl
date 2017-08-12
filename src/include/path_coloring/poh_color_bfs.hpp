@@ -25,7 +25,8 @@
 #include "incidence_list_helpers.hpp"
 
 
-/* poh_color_bfs_recursive
+/*
+ * poh_color_bfs_recursive
  * 
  * inputs: A weakly triangulated planar graph with vertex indices (predfined
  *     boost property), a valid planar embedding of the graph modeling the boost
@@ -164,9 +165,8 @@ namespace {
         // If the edge p_iq_j is a chord we must color the rest
         if(p_i != p_0 || q_j != q_0) {
             poh_color_bfs_recursive(
-                    graph, planar_embedding, color_map,
-                    mark_map, parent_map, p_0, p_i, q_0, q_j,
-                    count, new_color
+                    graph, planar_embedding, color_map, mark_map, parent_map,
+                    p_0, p_i, q_0, q_j, count, new_color
                 );
         }
     
@@ -193,7 +193,8 @@ namespace {
 }
 
 
-/* poh_color_bfs
+/*
+ * poh_color_bfs
  * 
  * inputs: A weakly triangulated planar graph with vertex indices (predfined
  *     boost property), a valid planar embedding of the graph modeling the boost
@@ -249,7 +250,7 @@ void poh_color_bfs(
 
 
 /*
- * A wrapper that automatically construct fast property maps for the parent_map
+ * A wrapper that automatically constructs fast property maps for the parent_map
  * and neighbor_range_map, but requires that graph_t is some definition of
  * boost::adjacency_list.
  */
