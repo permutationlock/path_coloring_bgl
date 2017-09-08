@@ -23,3 +23,7 @@
  to construct colorings for plane graphs represented by Boost data
  structures.
 
+## Main Sections
+ - [header library and documentation](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/include/path_coloring)
+ - [paper](https://github.com/permutationlock/path_coloring_bgl/blob/master/doc/writeup/final_paper.pdf)
+ - [presentation slides](https://github.com/permutationlock/path_coloring_bgl/blob/master/doc/slides/presentation.pdf)
