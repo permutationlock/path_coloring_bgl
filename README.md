@@ -1,6 +1,10 @@
 # Path Coloring Algorithms for Plane Graphs
  A C++ implementation in the [Boost Graph Library](http://www.boost.org/doc/libs/1_64_0/libs/graph/doc/index.html) of two algorithms for path
- coloring and path list-coloring plane graphs.
+ coloring and path list-coloring plane graphs. The main parts of the project are
+ the [header library and documentation](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/include/path_coloring),
+ a [research paper](https://github.com/permutationlock/path_coloring_bgl/blob/master/doc/writeup/final_paper.pdf),
+ and [presentation slides](https://github.com/permutationlock/path_coloring_bgl/blob/master/doc/slides/presentation.pdf)
+ from a talk given on the research.
 
 ## Abstract
  A path coloring of a graph partitions its vertex set into color classes such
@@ -22,8 +26,3 @@
  Graph Library. Instructions are given on how to use the implementation
  to construct colorings for plane graphs represented by Boost data
  structures.
-
-## Main Sections
- - [header library and documentation](https://github.com/permutationlock/path_coloring_bgl/tree/master/src/include/path_coloring)
- - [paper](https://github.com/permutationlock/path_coloring_bgl/blob/master/doc/writeup/final_paper.pdf)
- - [presentation slides](https://github.com/permutationlock/path_coloring_bgl/blob/master/doc/slides/presentation.pdf)
