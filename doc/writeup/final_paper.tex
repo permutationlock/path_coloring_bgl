@@ -1372,7 +1372,9 @@ There are two cases to consider.
 $u\ne v_{j_l +1}$. Let $(r_1,r_2)=\text{Nbr}[u]$ and
 $(s_1,s_2)=\text{Nbr}[v_{j_l}]$. Let $r_v$ be a reference to the node for
 $v$ in $\text{Adj}[u]$ and $s_u$ be a reference to the node for $u$ in
-$\text{Adj}[v]$.
+$\text{Adj}[v]$. Note that the reference $r_v$ may be located in $\mathcal{O}(1)$
+time from the node for $u$ in $\text{Adj}[v]$ since we have an augmented adjacency
+list representation of $G$.
 
 Let us assign $\text{Nbr}[u]=(r_1,r_v)$ and $\text{Nbr}[v]=(s_u,s_2)$. We will
 then call \textit{Remove Path} (5.4) on the cycle consisting of $C[v,u]$ and the
@@ -1416,10 +1418,10 @@ $\text{Nbr}[v_i]$ as described above.
 
 \noindent\textbf{Input:} The vertices $v_1$, $x$, and $y$.
 
-\noindent\textbf{Output:} A path $L$-list-coloring of $G$ such that $x$ and
+\noindent\textbf{Output:} A path $L$-list-coloring of $\text{Int}(C)$ such that $x$ and
 $y$ each share a color with at most one of their neighbors, and no vertex in
-$G-P$ with a neighbor in $P$ receives the color $c$. If $x=y$ then no neighbor
-of $x$ in $G$ will receive the same color as $x$.
+$\text{Int}(C)-P$ with a neighbor in $P$ receives the color $c$. If $x=y$ then no neighbor
+of $x$ in $\text{Int}(C)$ will receive the same color as $x$.
 
 \begin{comment}
 \begin{figure}
@@ -1478,9 +1480,7 @@ let $C_2$ be the cycle consisting of $C[v_1,u]$ and the edge $v_1u$.
 Let $(r_1,r_2)=\text{Nbr}[u]$ and
 $(s_1,s_2)=\text{Nbr}[v]$. Let $r_v$ be a reference to the node for
 $v$ in $\text{Adj}[u]$ and $s_u$ be a reference to the node for $u$ in
-$\text{Adj}[v]$. Note that the reference $s_u$ may be located in $\mathcal{O}(1)$
-time from the node for $u$ in $\text{Adj}[v]$ since we have an augmented adjacency
-list representation of $G$.
+$\text{Adj}[v]$.
 
 In all cases below, before we apply an algorithm to color
 $\text{Int}(C_1)$ we will assign $\text{Nbr}[u]=(r_v,r_2)$ and $\text{Nbr}[v]=
