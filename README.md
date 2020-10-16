@@ -8,8 +8,7 @@
 
 ## Abstract
  A path coloring of a graph partitions its vertex set into color classes such
- that each class induces a disjoint union of paths. In slightly less technical
- terms, a set of vertices S in a graph G induces a disjoint union of paths if
+ that each class induces a disjoint union of paths. A set of vertices S in a graph G induces a disjoint union of paths if
  the subgraph of G formed by the vertices in S and
  all the edges between vertices in S is a collection of (disjoint) paths. In this project we
  implement several algorithms to compute path colorings of graphs embedded in
