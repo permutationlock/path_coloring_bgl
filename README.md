@@ -6,6 +6,10 @@
  and [presentation slides](https://github.com/permutationlock/path_coloring_bgl/blob/master/doc/slides/presentation.pdf)
  from a talk given on the research.
 
+ **DISCLAIMER:** The implementation in this repo is generic C++ nonsense I wrote before I knew better. A
+ simple C implementation exists in [libavengraph](https://github.com/permutationlock/libavengraph)
+ along with new animations and benchmarks.
+
 ## Abstract
  A path coloring of a graph partitions its vertex set into color classes such
  that each class induces a disjoint union of paths. A set of vertices S in a graph G induces a disjoint union of paths if
